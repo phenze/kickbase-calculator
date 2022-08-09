@@ -1,0 +1,1 @@
+ng build --prod --aot  --output-path='dist' --base-href /kickbase/

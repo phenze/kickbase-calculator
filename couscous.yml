@@ -1,0 +1,43 @@
+template:
+  url: https://github.com/CouscousPHP/Template-Dark
+  # Base URL of the published website
+baseUrl: https://pascalhenze.de/kickbase-doc
+
+title: Kickbase Rechner
+subTitle: " "
+
+# The left menu bar
+menu:
+  sections:
+    main:
+      name: Allgemein
+      items:
+        home:
+          text: Home
+          # You can use relative urls
+          relativeUrl: index.html
+        general:
+          text: Beschreibung
+          # You can use relative urls
+          relativeUrl: doc/general.html
+        header:
+          text: Optionen
+          # You can use relative urls
+          relativeUrl: doc/header.html
+        rechner:
+          text: Rechner
+          # Or absolute urls
+          relativeUrl: doc/rechner.html
+        mobile:
+          text: Mobile App
+          # Or absolute urls
+          relativeUrl: doc/mobile.html
+    other:
+      name: Nützliche Links
+      items:
+        ligainsider:
+          text: Marktwert Gewinner
+          absoluteUrl: https://www.ligainsider.de/stats/kickbase/marktwerte/tag/gewinner/
+        kickbase:
+          text: Kickbase
+          absoluteUrl: https://www.kickbase.com/

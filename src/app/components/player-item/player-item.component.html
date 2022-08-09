@@ -1,0 +1,109 @@
+<div class="card mb-2" [style.background-color]="player.color" (click)="onLoadAllDetailsForPlayer()">
+    <div class="card-header p-1">
+        <img *ngIf="!withoutApi" src="{{player.imageUrl}}" class="img-fluid profile-picture" alt="Responsive image"
+            (error)="errorHandler($event)" (click)="onRemovePlayer()">
+
+        <div *ngIf="withoutApi" class="remove-container" alt="Spieler entfernen">
+            <svg-icon (click)="onRemovePlayer()" class="player-icon" src="assets/person_remove-24px.svg">
+            </svg-icon>
+        </div>
+        <strong class>{{player.name}} </strong>&nbsp;
+        <svg-icon *ngIf="player.status === 1" class="nav-icon" src="assets/health_injured.svg"
+            [style.color]="'#e5311c'">
+        </svg-icon>
+        <svg-icon *ngIf="player.status === 2" class="nav-icon" src="assets/health_stricken.svg"
+            [style.color]="'#d8a47d'">
+        </svg-icon>
+        <!-- <svg-icon (click)="onRemovePlayer(player)" class="player-icon"
+                                    src="assets/person_remove-24px.svg">
+                                </svg-icon> -->
+        <svg-icon *ngIf="!player.isDeactivated" class="player-icon float-right" src="assets/check_box-24px.svg">
+        </svg-icon>
+        <svg-icon *ngIf="player.isDeactivated" class="player-icon float-right"
+            src="assets/check_box_outline_blank-24px.svg">
+        </svg-icon>
+        <svg-icon (click)="onSetPlayerPermanentDeleted($event,player,false)" *ngIf="player.isPersitantDeleted"
+            class="player-icon icon-permanent float-right" src="assets/person_remove-24px.svg"
+            title="Spieler dauerhaft entfernen">
+        </svg-icon>
+        <svg-icon (click)="onSetPlayerPermanentDeleted($event,player,true)" *ngIf="!player.isPersitantDeleted"
+            class="player-icon icon-permanent float-right" src="assets/person_add-24px.svg"
+            title="Spieler dauerhaft hinzufügen">
+        </svg-icon>
+    </div>
+    <div class="card-body p-2">
+        <div class="row">
+            <div class="col-12 col-sm-6">
+                <strong *ngIf="!printMode">MW: {{player.marketValueString}}</strong>
+                <strong *ngIf="printMode">Richtpreis: {{player.priceString}}</strong>
+            </div>
+            <div class="col-12 col-sm-6" [style.color]="player.colorOfferValue"
+                *ngIf="(player.hasOfferFromAny || withoutApi) && !printMode">
+                <ng-container *ngIf="withoutApi">
+                    <ng-container *ngIf="!player.isInEditMode">
+                        <strong>Angebot: {{player.valueString}}&nbsp;({{player.valuePercentString}})</strong>
+                        <ng-container *ngIf="withoutApi">
+                            <svg-icon (click)="onEditPlayerValue(player, $event)" class="edit-icon"
+                                src="assets/create-24px.svg">
+                            </svg-icon>
+                        </ng-container>
+                    </ng-container>
+                    <ng-container *ngIf="player.isInEditMode">
+                        <input type="number" min="0" inputmode="numeric" pattern="[0-9]*" [(ngModel)]="player.value"
+                            (ngModelChange)="onPlayerValueChanged($event)" min="0" step="1000" data-number-to-fixed="2"
+                            data-number-stepfactor="100" class="form-control currency" id="c2" class="player-edit"
+                            (keyup.enter)="onEditPlayerValueDone(player)" />
+                        <svg-icon (click)="onEditPlayerValueDone(player, $event)" class="edit-icon"
+                            src="assets/done-24px.svg">
+                        </svg-icon>
+                    </ng-container>
+
+                </ng-container>
+
+                <ng-container *ngIf="!withoutApi">
+                    <strong>Angebot: {{player.valueString}}&nbsp;({{player.valuePercentString}})</strong>
+                </ng-container>
+
+
+            </div>
+            <ng-container *ngIf="player.stats !== null && !printMode">
+                <div class="col-12">
+                    <hr />
+                </div>
+                <div *ngIf="!withoutApi" class="col-12 col-sm-6">
+                    Gekauft: {{player.stats.buyPriceValue}}
+                </div>
+                <div [style.color]="player.colorMarketValue" class="col-12 col-sm-6">
+                    Marktwertänderung:
+                    {{player.stats.realMarketValueChangeValue}}&nbsp;({{player.stats.realMarketValueChangeValuePrecent}})
+                </div>
+                <div [style.color]="player.colorOffsetValue" *ngIf="!withoutApi" class="col-12 col-sm-6">
+                    Verlust/Gewinn: {{player.offset}}
+                </div>
+
+                <div class="col-12 col-sm-6" [style.color]="player.colorSuccessValue" *ngIf="!withoutApi">
+                    Erfolge bei Verkauf: {{player.successValue}}</div>
+                <div class="col-12">
+                    <hr />
+                    <h6>3 Tage Trend</h6>
+                </div>
+                <div class="col-12">
+                    <div class="table-responsive">
+
+                        <table class="table table-striped table-sm table-bordered">
+                            <tbody>
+                                <tr>
+                                    <td *ngFor="let value of player.stats.threeDaysValues">{{value}}</td>
+                                </tr>
+                                <tr>
+                                    <td *ngFor="let value of player.stats.threeDaysValuesPercent">{{value}}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                </div>
+            </ng-container>
+        </div>
+    </div>
+</div>

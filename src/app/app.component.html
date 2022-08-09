@@ -1,0 +1,229 @@
+<div *ngIf="!apiService.isLoggedIn">
+    <app-login (loginWithoutAPI)="loginWithoutAPI()" (login)="login($event)"></app-login>
+</div>
+
+<ng-container *ngIf="apiService.isLoggedIn">
+    <div class="row mt-2">
+        <div class="col-12">
+            <button (click)="logout()" class="btn btn-primary btn-block">Logout</button>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <app-help [withoutApi]="withoutApi"></app-help>
+        </div>
+    </div>
+    <hr />
+    <div class="row" *ngIf="currentGift !== null && !withoutApi">
+        <div class="col-12">
+            <label class="mr-2">Geschenk</label>
+            <svg-icon [class.disabled]="!currentGift.isAvailable" (click)="getGift()" class="nav-icon gift-icon"
+                src="assets/card_giftcard-24px.svg">
+            </svg-icon>&nbsp;{{currentGift.value}}
+        </div>
+    </div>
+    <hr />
+    <div class="row">
+        <div class="col-12" *ngIf="!withoutApi">
+            <label>Liga</label>
+            <select class="form-control" [(ngModel)]="selectedLeague" (ngModelChange)="onSelectedLeagueChanged($event)">
+                <option *ngFor="let league of leagues" [ngValue]="league.id">{{league.name}}</option>
+            </select>
+        </div>
+    </div>
+    <ng-container *ngIf="displayMode === AppComponent.display_mode_calculator">
+        <div class="row mt-2">
+            <div class="col-12">
+                <label for="c2">Kontostand</label>
+                <div class="input-group">
+
+                    <div class="input-group-prepend">
+                        <span class="input-group-text" id="basic-addon1">€</span>
+                    </div>
+                    <ng-container *ngIf="!withoutApi">
+                        <input type="text" [ngModel]="minusValueString" readonly min="0" step="1000"
+                            data-number-to-fixed="2" data-number-stepfactor="100" class="form-control currency"
+                            id="c22" />
+                    </ng-container>
+                    <ng-container *ngIf="withoutApi">
+                        <input type="text" min="0" [ngModel]="minusValueString"
+                            (ngModelChange)="onMinusValueChanged($event)" min="0" step="1000" data-number-to-fixed="2"
+                            data-number-stepfactor="100" class="form-control currency" id="c22" />
+                    </ng-container>
+                </div>
+
+                <label for="c2">Erwarte Ausgaben/Ausstehende Angebote</label>
+                <div class="input-group">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text" id="basic-addon1">€</span>
+                    </div>
+                    <input type="text" min="0" inputmode="numeric" pattern="[0-9]*" [ngModel]="extraAmountString"
+                        (ngModelChange)="onExtraAmountChange($event)" min="0" step="1000" data-number-to-fixed="2"
+                        data-number-stepfactor="100" class="form-control currency" id="c2" />
+
+                </div>
+            </div>
+        </div>
+        <hr />
+        <h4>Optionen</h4>
+        <div class="row">
+            <div class="col-12">
+                <div class="custom-control custom-switch">
+                    <input type="checkbox" class="custom-control-input" [(ngModel)]="includeAdditionalAmount"
+                        (ngModelChange)="onIncludeAdditionalAmountChanged()" id="customSwitch1">
+                    <label class="custom-control-label" for="customSwitch1">Erwarte Ausgaben/Ausstehende Angebote
+                        einbeziehen</label>
+                </div>
+            </div>
+            <div class="col-12 mt-2">
+                <div class="custom-control custom-switch">
+                    <input type="checkbox" class="custom-control-input" [(ngModel)]="includeMinusMarketValues"
+                        (ngModelChange)="onIncludeAdditionalAmountChanged()" id="customSwitch2">
+                    <label class="custom-control-label" for="customSwitch2">Negative Marktwertänderung mit
+                        einbeziehen</label>
+                </div>
+            </div>
+            <div class="col-12 mt-2">
+                <h4>Sortierung</h4>
+                <select class="form-control" [(ngModel)]="selectedSorting"
+                    (ngModelChange)="onSelectedSortingChanged($event)">
+                    <option [ngValue]="-1">Standard</option>
+                    <option [ngValue]="1">MW &darr;</option>
+                    <option [ngValue]="2">MW &uarr;</option>
+                    <option [ngValue]="3">MW Änderung &darr;</option>
+                    <option [ngValue]="4">MW Änderung &uarr;</option>
+                </select>
+            </div>
+            <div class="col-12 mt-2" *ngIf="!withoutApi">
+                <h4>Einnahmen Anzahl Tage ({{fridayDate | date:'dd.MM.yyyy'}})</h4>
+                <input type="text" min="0" inputmode="numeric" pattern="[0-9]*" step="1" id="example"
+                    class="form-control" [ngModel]="dayUntilFriday" (ngModelChange)="onFridayDateChanged($event)">
+            </div>
+            <div class="col-12 mt-0">
+
+                <hr />
+            </div>
+
+            <div class="col-12 col-sm-4 mt-1">
+                <btn class="btn btn-outline-secondary btn-block" (click)="reload()">Reset</btn>
+            </div>
+            <div class="col-12 col-sm-4 mt-1">
+                <btn class="btn btn-outline-secondary btn-block" (click)="setPrintMode()">Druckansicht</btn>
+            </div>
+            <div class="col-12 col-sm-4 mt-1">
+                <button class="btn btn-outline-secondary btn-block" (click)="onLoadAllDetails()">Alle Details
+                    laden</button>
+            </div>
+        </div>
+        <hr />
+        <div class="row sticky-top">
+            <div class="col-12  sticky-header">
+                <div class="float-left" *ngIf="!printMode">
+                    <strong [style.color]="kickbaseGroup.color">Kontostand (nach Verkauf) : &nbsp;
+                        {{kickbaseGroup.difference}}</strong>
+                    <br />
+                    <strong [style.color]="kickbaseGroup.colorFriday">Mit
+                        möglichen
+                        Einnahmen :
+                        &nbsp;
+                        {{kickbaseGroup.differenceFriday}}</strong>
+                </div>
+                <svg-icon (click)="reload()" class="nav-icon refresh-icon" src="assets/refresh-24px.svg">
+                </svg-icon>
+                <svg-icon *ngIf="!showPermanentDeletedPlayers" (click)="showPermanentDeletedPlayers = true"
+                    class="nav-icon deleted-icon" src="assets/person_add-24px.svg"
+                    title="Deaktivierte Spieler einblenden">
+                </svg-icon>
+                <svg-icon *ngIf="showPermanentDeletedPlayers" (click)="showPermanentDeletedPlayers = false"
+                    class="nav-icon deleted-icon" src="assets/person_remove-24px.svg"
+                    title="Deaktivierte Spieler ausblenden">
+                </svg-icon>
+            </div>
+        </div>
+        <div class="row" *ngIf="loadingLigaInsiderStats">
+            <div class="col-12 text-center">
+                <div>
+                    Marktwerte werden aktualisiert...
+                </div>
+                <div class="spinner-border" role="status">
+                    <span class="sr-only">Loading...</span>
+                </div>
+            </div>
+        </div>
+        <div class="row mt-2" *ngIf="withoutApi && !loadingLigaInsiderStats">
+            <div class="col-12">
+                <h4 class="align-center">Spieler hinzufügen</h4>
+                <div class="ng-autocomplete">
+                    <ng-autocomplete #auto [data]="localApiService.typeaheadData" [searchKeyword]="'name'"
+                        (selected)='selectEvent($event)' (inputChanged)='onChangeSearch($event)'
+                        (inputFocused)='onFocused($event)' [itemTemplate]="itemTemplate"
+                        [notFoundTemplate]="notFoundTemplate" [(ngModel)]="newplayername">
+                    </ng-autocomplete>
+
+                    <ng-template #itemTemplate let-item>
+                        <a [innerHTML]="item.name"></a>
+                    </ng-template>
+
+                    <ng-template #notFoundTemplate let-notFound>
+                        <div [innerHTML]="notFound"></div>
+                    </ng-template>
+                </div>
+            </div>
+        </div>
+        <hr />
+        <h4 class="align-center">Kader: {{kickbaseGroup.team}}</h4>
+        <h6 class="align-center">Minus: {{kickbaseGroup.possibleMinus}}</h6>
+        <h6 class="align-center">Max Angebot: {{kickbaseGroup.possibleOffer}}</h6>
+
+        <div class="row">
+            <div class="col-12">
+                <ng-container *ngFor="let player of kickbaseGroup.players">
+
+                    <app-player-item *ngIf="showPlayer(player)" [player]="player" [printMode]="printMode"
+                        [withoutApi]="withoutApi" (loadDetails)="onLoadAllDetailsForPlayer(player)"
+                        (removePlayer)="onRemovePlayer(player)" (playerChanged)="onPlayerValueChanged()"
+                        (savePlayer)="saveLocalPlayers()">
+                    </app-player-item>
+                </ng-container>
+            </div>
+        </div>
+        <hr />
+        <div class="row mt-2">
+            <div class="col-12">
+                <strong>WICHTIG: Gewinn/Verlust bis Freitag sind nur geschätzt und NICHT genau</strong>
+            </div>
+
+            <div class="col-12" [style.color]="kickbaseGroup.color">
+                Einnahmen aus Verkäufen:<br /> {{kickbaseGroup.value}}
+                <hr class="mt-1 mb-1" />
+                Kontostand nach Verkäufen:<br /> {{kickbaseGroup.difference}}
+                <hr class="mt-1 mb-1" />
+            </div>
+            <div class="col-12" [style.color]="kickbaseGroup.colorFriday">
+                Kontostand nach Verkäufen + Einnahmen bis Freitag + Erfolge:<br />
+                {{kickbaseGroup.differenceFriday}}
+                <hr class="mt-1 mb-1" />
+            </div>
+
+            <div class="col-12">
+                Täglicher Gewinn:<br /> {{kickbaseGroup.profit}}
+                <hr class="mt-1 mb-1" />
+                Täglicher Verlust:<br /> {{kickbaseGroup.loss}}
+                <hr class="mt-1 mb-1" />
+                <ng-container *ngIf="includeMinusMarketValues">
+                    Einnahmen bis Freitag:<br /> {{kickbaseGroup.trendFriday}}
+                    <hr class="mt-1 mb-1" />
+                </ng-container>
+                <ng-container *ngIf="!includeMinusMarketValues">
+                    Einnahmen bis Freitag (ohne Verlust):<br /> {{kickbaseGroup.trendFriday}}
+                    <hr class="mt-1 mb-1" />
+                </ng-container>
+                Erfolge:<br /> {{kickbaseGroup.success}}
+                <hr class="mt-1 mb-1" />
+                Kaderwert:<br /> {{kickbaseGroup.team}}
+                <hr class="mt-1 mb-1" />
+            </div>
+
+        </div>
+    </ng-container>
+</ng-container>

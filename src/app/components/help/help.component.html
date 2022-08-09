@@ -1,0 +1,39 @@
+<div class="text-center mt-2">
+
+    <a href="https://pascalhenze.de/kickbase-doc/" target="_blank">
+        <h6>Ausführliche Dokumentation (Klick)</h6>
+    </a>
+</div>
+<button class="btn btn-link" (click)="showHelp = !showHelp;">Hilfe anzeigen</button>
+<ul *ngIf="showHelp">
+    <li *ngIf="!withoutApi">Das Team , die Schulden und alles Weitere wird automatisch geladen.
+        Danach könnt ihr aus der Gruppe aller Spieler einfach diejenigen entfernen/deaktivieren die ihr
+        nicht verkaufen
+        wollt. Alle die übrig bleiben, werden summiert. Ist der Betrag oben grün ist alles gut (ihr kommt
+        ins plus mit den Verkäufen). Bei Rot reichts nicht.
+        Zum resetten der Liste einfach die Seite neu laden.
+    </li>
+    <li *ngIf="withoutApi">
+        Mit Hilfe der Input Box könnt ihr Spieler hinzufügen. Der Marktwert wird automatisch von LigaInsider
+        gezogen.
+        Danach könnt ihr aus der Gruppe aller Spieler einfach diejenigen entfernen/deaktivieren die ihr
+        nicht verkaufen
+        wollt. Alle die übrig bleiben, werden summiert. Ist der Betrag oben grün ist alles gut (ihr kommt
+        ins plus mit den Verkäufen). Bei Rot reichts nicht.
+        Zum resetten der Liste einfach die Seite neu laden.
+    </li>
+    <li>Um Spieler komplett zu entfernen (wegen der besseren Übersicht) einfach auf das Spielerfoto klicken
+    </li>
+    <li>Der Verlust/Gewinn bis Freitag ist nur eine grobe Hausnummer und NICHT genau
+    </li>
+    <li>
+        Der Kontostand oben zeigt den Kontostand an würde man alle Spieler der Gruppe verkaufen
+    </li>
+    <li>
+        Ist ein Spieler grün hinterlegt kann dieser noch finanziert werden und muss nicht verkauft werden.
+        Ist er Rot hinterlegt würde man ins Minus gehen sollte man diesen nicht verkaufen
+    </li>
+    <li>
+        Version 3.3
+    </li>
+</ul>

@@ -1,0 +1,141 @@
+// /* You can add global styles to this file, and also import other style files */
+@import "variables"; // Custom styles
+
+@import "../node_modules/bootstrap/scss/bootstrap";
+
+body {
+  background-color: #F0F0F0;
+}
+
+// // Global icon stylings
+svg-icon {
+  fill: currentColor;
+  vertical-align: middle;
+  width: 24px;
+  height: 24px;
+  display: inline-block;
+
+  svg {
+    width: 100%;
+    height: 100%;
+  }
+
+  &.svg-icon-small {
+    width: 16px;
+    height: 16px;
+  }
+}
+
+
+svg-icon {
+  width: 20px;
+  height: 20px;
+
+}
+
+.ng-autocomplete {
+  width: 100% !important;
+}
+
+.player-icon {
+  width: 30px;
+  height: 30px;
+  cursor: pointer;
+
+  &.icon-permanent {
+    transform: scale(1.3);
+    margin-top: 3px;
+  }
+}
+
+
+.player-row {
+
+  // margin: 5px;
+  // padding: 5px;
+  // border: 1px dashed black;
+  &.hover:hover {
+    background-color: rgba($color: #000000, $alpha: 0.1);
+  }
+}
+
+.profile-picture {
+  width: 50px;
+  height: 50px;
+  object-fit: cover;
+  border-radius: 50%;
+  display: inline-block;
+  margin-right: 10px;
+  cursor: pointer;
+
+  &.list-picture {
+    width: 30px;
+    height: 30px;
+  }
+}
+
+.start-picture {
+  border-radius: 50%;
+}
+
+.sticky-header {
+  background-color: white;
+  width: 100%;
+  z-index: 999;
+  padding: 10px;
+  box-sizing: border-box;
+  box-shadow: 0 5px 5px -3px rgba(0, 0, 0, 0.2),
+    0 8px 10px 1px rgba(0, 0, 0, 0.14),
+    0 3px 14px 2px rgba(0, 0, 0, 0.12);
+}
+
+
+
+.btn-group.special {
+  display: flex;
+}
+
+.special .btn {
+  flex: 1
+}
+
+.refresh-icon {
+  float: right;
+  width: 36px;
+  height: 36px;
+  cursor: pointer;
+  color: #337ab7;
+  margin-right: 10px;
+}
+
+.deleted-icon {
+  float: right;
+  width: 36px;
+  height: 36px;
+  cursor: pointer;
+  color: #337ab7;
+  margin-right: 5px;
+  transform: scale(1.2);
+  margin-top: 7px;
+}
+
+.print-icon {
+  float: right;
+  width: 36px;
+  height: 36px;
+  cursor: pointer;
+  color: #337ab7;
+  margin-right: 10px;
+}
+
+.gift-icon {
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+  color: #337ab7;
+
+  &.disabled {
+    cursor: unset;
+    color: gray;
+  }
+}
