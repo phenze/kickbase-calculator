@@ -193,6 +193,14 @@ export class AppComponent implements OnInit, AfterViewInit {
       this.dayUntilFriday = Math.abs(5 - dow);
     }
     this.fridayDate = moment().add(this.dayUntilFriday, 'days').toDate();
+
+    let hod = date.hour();
+    if (hod >= 22 && dow!== 5){
+      this.dayUntilFriday--;
+    } else if (hod >= 22 && dow === 5){
+      this.dayUntilFriday = 7;
+      this.fridayDate = moment().add(this.dayUntilFriday, 'days').toDate();
+    }
   }
 
   loadLocalDataForApi = async () => {
