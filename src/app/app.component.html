@@ -138,6 +138,7 @@
                     class="nav-icon deleted-icon" src="assets/person_remove-24px.svg"
                     title="Deaktivierte Spieler ausblenden">
                 </svg-icon>
+                <h3 class="nav-icon number_players">{{amountPlayers}}</h3>
             </div>
         </div>
         <div class="row" *ngIf="loadingLigaInsiderStats">
@@ -181,7 +182,7 @@
 
                     <app-player-item *ngIf="showPlayer(player)" [player]="player" [printMode]="printMode"
                         [withoutApi]="withoutApi" (loadDetails)="onLoadAllDetailsForPlayer(player)"
-                        (removePlayer)="onRemovePlayer(player)" (playerChanged)="onPlayerValueChanged()"
+                        (removePlayer)="onRemovePlayer(player)" (playerChanged)="onPlayerValueChanged(player)"
                         (savePlayer)="saveLocalPlayers()">
                     </app-player-item>
                 </ng-container>
