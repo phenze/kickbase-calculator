@@ -34,6 +34,7 @@ export class AppComponent implements OnInit, AfterViewInit {
   public minusValue: number = 0;
   public minusValueString: string = '0';
   public availableAmountString: string = '0';
+  public amountPlayers: number = 0;
   public includeAdditionalAmount = false;
   public includeMinusMarketValues = false;
   public showPermanentDeletedPlayers = true;
@@ -192,6 +193,14 @@ export class AppComponent implements OnInit, AfterViewInit {
       this.dayUntilFriday = Math.abs(5 - dow);
     }
     this.fridayDate = moment().add(this.dayUntilFriday, 'days').toDate();
+
+    let hod = date.hour();
+    if (hod >= 22 && dow!== 5){
+      this.dayUntilFriday--;
+    } else if (hod >= 22 && dow === 5){
+      this.dayUntilFriday = 7;
+      this.fridayDate = moment().add(this.dayUntilFriday, 'days').toDate();
+    }
   }
 
   loadLocalDataForApi = async () => {
@@ -323,6 +332,7 @@ export class AppComponent implements OnInit, AfterViewInit {
       if (permantDeletedPlayerLocal !== null) {
         permantDeletedPlayers = JSON.parse(permantDeletedPlayerLocal)
       }
+      this.amountPlayers = 0
       for (let p of lineUp.players) {
         let marketPLayer = this.currentMarket.players.find(tmp => tmp.id == p.id)
         if (marketPLayer != null) {
@@ -332,6 +342,9 @@ export class AppComponent implements OnInit, AfterViewInit {
         p.leagueId = this.selectedLeague;
         p.isPersitantDeleted = permantDeletedPlayers.findIndex(t => t === p.id.toString()) !== -1;
         this.kickbaseGroup.players.push(p)
+        if (p.isPersitantDeleted){
+          this.amountPlayers++
+        }
       }
       this.onIncludeAdditionalAmountChanged();
       this.cdRef.detectChanges();
@@ -369,7 +382,12 @@ export class AppComponent implements OnInit, AfterViewInit {
     }
   }
 
-  onPlayerValueChanged() {
+  onPlayerValueChanged(player: KickbasePlayer) {
+    if (player.isPersitantDeleted){
+      this.amountPlayers++
+    } else {
+      this.amountPlayers--
+    }
     this.kickbaseGroup.calcValues(this.amountValue, this.includeMinusMarketValues, this.dayUntilFriday);
   }
 
@@ -447,11 +465,23 @@ export class AppComponent implements OnInit, AfterViewInit {
     } else {
       let index = this.kickbaseGroup.players.find(p => p.name == player.name);
       index.isDeleted = true;
+      if (!player.isPersitantDeleted){
+        this.amountPlayers++
+      }
     }
     this.refreshGroups();
   }
 
   onDeactivatePlayer(player: KickbasePlayer) {
+    console.log(player.isDeactivated)
+    if (!player.isPersitantDeleted){
+      if (player.isDeactivated){
+        this.amountPlayers--
+      } else {
+        this.amountPlayers++
+      }
+      
+    }
     player.isDeactivated = !player.isDeactivated;
     this.refreshGroups();
   }
