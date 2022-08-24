@@ -79,10 +79,13 @@ svg-icon {
 }
 
 .sticky-header {
+  margin-right: 0;
+  margin-left: 0;
   background-color: white;
   width: 100%;
   z-index: 999;
-  padding: 10px;
+  padding-top: 5px;
+  padding-bottom: 5px;
   box-sizing: border-box;
   box-shadow: 0 5px 5px -3px rgba(0, 0, 0, 0.2),
     0 8px 10px 1px rgba(0, 0, 0, 0.14),
@@ -102,7 +105,7 @@ svg-icon {
 .number_players {
   float: right;
   width: 36px;
-  height: 36px;
+  height: 24px;
   cursor: pointer;
   color: #337ab7;
   margin-right: 10px;
@@ -120,12 +123,12 @@ svg-icon {
 .deleted-icon {
   float: right;
   width: 36px;
-  height: 36px;
+  height: 24px;
   cursor: pointer;
   color: #337ab7;
   margin-right: 5px;
   transform: scale(1.2);
-  margin-top: 7px;
+  margin-top: 3px;
 }
 
 .print-icon {

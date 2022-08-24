@@ -116,8 +116,8 @@
             </div>
         </div>
         <hr />
-        <div class="row sticky-top">
-            <div class="col-12  sticky-header">
+        <div class="row sticky-top sticky-header">
+            <div class="col-12 col-md-8">
                 <div class="float-left" *ngIf="!printMode">
                     <strong [style.color]="kickbaseGroup.color">Kontostand (nach Verkauf) : &nbsp;
                         {{kickbaseGroup.difference}}</strong>
@@ -128,6 +128,8 @@
                         &nbsp;
                         {{kickbaseGroup.differenceFriday}}</strong>
                 </div>
+            </div>
+            <div class="col-12 col-md-4">
                 <svg-icon (click)="reload()" class="nav-icon refresh-icon" src="assets/refresh-24px.svg">
                 </svg-icon>
                 <svg-icon *ngIf="!showPermanentDeletedPlayers" (click)="showPermanentDeletedPlayers = true"
@@ -139,7 +141,10 @@
                     title="Deaktivierte Spieler ausblenden">
                 </svg-icon>
                 <h3 class="nav-icon number_players">{{amountPlayers}}</h3>
+
             </div>
+
+
         </div>
         <div class="row" *ngIf="loadingLigaInsiderStats">
             <div class="col-12 text-center">
