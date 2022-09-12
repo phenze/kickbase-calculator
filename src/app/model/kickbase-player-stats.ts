@@ -1,6 +1,7 @@
 
 
 import * as numeral from 'numeral';
+import { KickbasePlayerNextMatch } from './kickbase-player-next-match';
 export class KickbasePlayerStats {
 
   public id: string;
@@ -45,6 +46,7 @@ export class KickbasePlayerStats {
   public realMarketValueChangeValuePrecent = '';
   public buyPriceValue = '';
 
+  public nextThreeOpponents: KickbasePlayerNextMatch[];
 
 
   constructor(json: any) {
@@ -56,6 +58,14 @@ export class KickbasePlayerStats {
       if (leaguePlayer !== undefined) {
         this.buyDate = leaguePlayer['buyDate'];
         this.buyPrice = leaguePlayer['buyPrice'];
+      }
+
+      this.nextThreeOpponents = new Array();
+      const nextMatches = json["nm"];
+      if (nextMatches !== undefined) {
+        for (const nm of nextMatches) {
+          this.nextThreeOpponents.push(new KickbasePlayerNextMatch(nm, this.teamId));
+        }
       }
 
       if (this.marketValues.length > 1) {
@@ -88,24 +98,6 @@ export class KickbasePlayerStats {
           }
         }
       }
-      // this.value = json["marketValue"];
-      // if (json.hasOwnProperty("knownName")) {
-      //   this.name = json["knownName"]
-      // } else {
-      //   this.name = json["firstName"] + " " + json["lastName"];
-      // }
-
-      // if (json.hasOwnProperty('offers')) {
-      //   let offers = json["offers"];
-      //   let lastOfferPrice = 0;
-      //   for (let offer of offers as any) {
-      //     let price = offer["price"];
-      //     if (Number(price) != 1) {
-
-      //       this.value = Math.max(price, lastOfferPrice);
-      //       lastOfferPrice = price;
-      //     }
-      //   }
     }
 
 

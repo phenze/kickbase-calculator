@@ -101,7 +101,24 @@
                             </tbody>
                         </table>
                     </div>
-
+                </div>
+            </ng-container>
+            <ng-container *ngIf="player.stats !== null && !printMode">
+                <div class="col-12">
+                    <hr />
+                </div>
+                <div *ngIf="!withoutApi" class="col-12 col-sm-6">
+                    Punkte: {{player.stats.points}}
+                </div>
+                <div *ngIf="!withoutApi" class="col-12 col-sm-6">
+                    Durchschnitt: {{player.stats.averagePoints}}
+                </div>
+                <div *ngIf="!withoutApi" class="col-12 col-sm-6">
+                    Nächste Gegner:&nbsp;
+                    <ng-container *ngFor="let nm of player.stats.nextThreeOpponents">
+                        <img *ngIf="!withoutApi" src="{{nm.imageUrl}}" class="img-fluid team-picture"
+                            alt="Responsive image" (error)="errorHandler($event)">
+                    </ng-container>
                 </div>
             </ng-container>
         </div>
