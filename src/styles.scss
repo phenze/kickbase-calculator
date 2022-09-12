@@ -74,6 +74,16 @@ svg-icon {
   }
 }
 
+.team-picture {
+  width: 30px;
+  height: 30px;
+  object-fit: cover;
+  border-radius: 50%;
+  display: inline-block;
+  margin-right: 10px;
+  cursor: pointer;
+}
+
 .start-picture {
   border-radius: 50%;
 }
