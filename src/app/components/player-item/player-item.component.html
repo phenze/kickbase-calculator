@@ -118,6 +118,9 @@
                     <ng-container *ngFor="let nm of player.stats.nextThreeOpponents">
                         <img *ngIf="!withoutApi" src="{{nm.imageUrl}}" class="img-fluid team-picture"
                             alt="Responsive image" (error)="errorHandler($event)">
+
+                        <span class="next-match-homegame" *ngIf="nm.isHomeGame">(H)</span>
+                        <span class="next-match-homegame" *ngIf="!nm.isHomeGame">(A)</span>
                     </ng-container>
                 </div>
             </ng-container>

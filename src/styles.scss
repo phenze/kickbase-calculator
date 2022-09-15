@@ -75,13 +75,17 @@ svg-icon {
 }
 
 .team-picture {
-  width: 30px;
+  width: 25px;
   height: 30px;
   object-fit: cover;
   border-radius: 50%;
   display: inline-block;
-  margin-right: 10px;
+  margin-right: 2px;
   cursor: pointer;
+}
+
+.next-match-homegame {
+  margin-right: 5px;
 }
 
 .start-picture {
