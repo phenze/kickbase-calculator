@@ -13,6 +13,7 @@ export class PlayerItemComponent implements OnInit {
   @Input() player: KickbasePlayer;
   @Input() withoutApi: boolean;
   @Input() printMode: boolean;
+  @Input() isMarketOverview: boolean;
 
 
 

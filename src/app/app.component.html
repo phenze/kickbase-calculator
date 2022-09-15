@@ -31,6 +31,23 @@
             </select>
         </div>
     </div>
+    <div class="row mt-2" *ngIf="!withoutApi">
+        <div class="col-12 ">
+            <div class="btn-group special " role="group" aria-label="...">
+                <button (click)="switchDisplay(AppComponent.display_mode_calculator)" type="button"
+                    class="btn btn-light"
+                    [class.active]="displayMode === AppComponent.display_mode_calculator">Rechner</button>
+                <button (click)="switchDisplay(AppComponent.display_mode_market_overview)" type="button"
+                    class="btn btn-light"
+                    [class.active]="displayMode === AppComponent.display_mode_market_overview">Markt</button>
+            </div>
+
+        </div>
+    </div>
+    <ng-container *ngIf="displayMode === AppComponent.display_mode_market_overview">
+        <app-market-overview (loadDetails)="onLoadAllDetailsForPlayer($event)" (onReload)="reload()">
+        </app-market-overview>
+    </ng-container>
     <ng-container *ngIf="displayMode === AppComponent.display_mode_calculator">
         <div class="row mt-2">
             <div class="col-12">

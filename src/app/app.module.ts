@@ -23,6 +23,7 @@ import { RouterModule } from '@angular/router';
 import { LoginComponent } from './components/login/login.component';
 import { HelpComponent } from './components/help/help.component';
 import { PlayerItemComponent } from './components/player-item/player-item.component';
+import { MarketOverviewComponent } from './components/market-overview/market-overview.component';
 
 import { AutocompleteLibModule } from 'angular-ng-autocomplete';
 
@@ -37,7 +38,8 @@ import { AutocompleteLibModule } from 'angular-ng-autocomplete';
         NgbHighlight,
         LoginComponent,
         HelpComponent,
-        PlayerItemComponent
+        PlayerItemComponent,
+        MarketOverviewComponent
     ],
     imports: [
         BrowserModule,

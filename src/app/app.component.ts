@@ -19,6 +19,7 @@ import { NgbTypeahead, NgbTypeaheadSelectItemEvent } from './typeahead/typeahead
 import { merge, Observable, of, Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged, filter, map, switchMap } from 'rxjs/operators';
 import { LocalApiService } from './services/local-api.service';
+import { MarketOverviewComponent } from './components/market-overview/market-overview.component';
 
 @Component({
   selector: 'app-root',
@@ -67,6 +68,7 @@ export class AppComponent implements OnInit, AfterViewInit {
 
 
   public static readonly display_mode_calculator = 'calculator';
+  public static readonly display_mode_market_overview = 'marketOverview';
   public displayMode = AppComponent.display_mode_calculator;
 
   public extraAmount = 0;
@@ -78,7 +80,8 @@ export class AppComponent implements OnInit, AfterViewInit {
   public dayUntilFriday = 0;
   public fridayDate = new Date();
 
-
+  @ViewChild(MarketOverviewComponent, { static: false })
+  marketOverviewComponent: MarketOverviewComponent;
 
   @ViewChild('instance') instance: NgbTypeahead;
   focus$ = new Subject<string>();
@@ -195,9 +198,9 @@ export class AppComponent implements OnInit, AfterViewInit {
     this.fridayDate = moment().add(this.dayUntilFriday, 'days').toDate();
 
     let hod = date.hour();
-    if (hod >= 22 && dow!== 5){
+    if (hod >= 22 && dow !== 5) {
       this.dayUntilFriday--;
-    } else if (hod >= 22 && dow === 5){
+    } else if (hod >= 22 && dow === 5) {
       this.dayUntilFriday = 7;
       this.fridayDate = moment().add(this.dayUntilFriday, 'days').toDate();
     }
@@ -342,12 +345,16 @@ export class AppComponent implements OnInit, AfterViewInit {
         p.leagueId = this.selectedLeague;
         p.isPersitantDeleted = permantDeletedPlayers.findIndex(t => t === p.id.toString()) !== -1;
         this.kickbaseGroup.players.push(p)
-        if (p.isPersitantDeleted){
+        if (p.isPersitantDeleted) {
           this.amountPlayers++
         }
       }
       this.onIncludeAdditionalAmountChanged();
       this.cdRef.detectChanges();
+      if (this.marketOverviewComponent !== undefined) {
+        this.marketOverviewComponent.selectedLeague = this.selectedLeague;
+        this.marketOverviewComponent.setCurrentMarket(this.currentMarket);
+      }
     } catch (error) {
       console.log(error)
     }
@@ -383,7 +390,7 @@ export class AppComponent implements OnInit, AfterViewInit {
   }
 
   onPlayerValueChanged(player: KickbasePlayer) {
-    if (player.isPersitantDeleted){
+    if (player.isPersitantDeleted) {
       this.amountPlayers++
     } else {
       this.amountPlayers--
@@ -465,7 +472,7 @@ export class AppComponent implements OnInit, AfterViewInit {
     } else {
       let index = this.kickbaseGroup.players.find(p => p.name == player.name);
       index.isDeleted = true;
-      if (!player.isPersitantDeleted){
+      if (!player.isPersitantDeleted) {
         this.amountPlayers++
       }
     }
@@ -474,13 +481,13 @@ export class AppComponent implements OnInit, AfterViewInit {
 
   onDeactivatePlayer(player: KickbasePlayer) {
     console.log(player.isDeactivated)
-    if (!player.isPersitantDeleted){
-      if (player.isDeactivated){
+    if (!player.isPersitantDeleted) {
+      if (player.isDeactivated) {
         this.amountPlayers--
       } else {
         this.amountPlayers++
       }
-      
+
     }
     player.isDeactivated = !player.isDeactivated;
     this.refreshGroups();
@@ -594,6 +601,21 @@ export class AppComponent implements OnInit, AfterViewInit {
       return this.showPermanentDeletedPlayers;
     }
     return true;
+  }
+
+  switchDisplay(displayMode) {
+    this.displayMode = displayMode;
+    this.apiService.setLastDisplay(this.displayMode);
+
+    if (displayMode === AppComponent.display_mode_market_overview) {
+      this.cdRef.detectChanges();
+      if (this.marketOverviewComponent !== undefined) {
+        this.marketOverviewComponent.selectedLeague = this.selectedLeague;
+        this.marketOverviewComponent.setCurrentMarket(this.currentMarket);
+      }
+    }
+
+
   }
 
 

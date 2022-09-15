@@ -20,6 +20,7 @@ export class KickbasePlayer {
   public isPersitantDeleted: boolean;
   public marketValue: number;
   public priceString: string;
+  public priceMarketValueDifferString: string;
   public price: number;
   public expiryDate: string;
 
@@ -41,6 +42,7 @@ export class KickbasePlayer {
   public isInEditMode: boolean;
 
   public marketValuesShown: boolean;
+  public username: string;
 
   constructor(json: any, userID: string) {
     this.offervalue = 0;
@@ -51,6 +53,7 @@ export class KickbasePlayer {
     this.isPersitantDeleted = false;
     this.nameHash = '';
     this.leagueId = -1;
+    this.username = '';
     Object.assign(this, json);
     this.stats = null;
     if (json != null) {
@@ -75,6 +78,7 @@ export class KickbasePlayer {
             this.value = Math.max(price, lastOfferPrice);
             lastOfferPrice = price;
           }
+
         }
       }
       let date = moment(new Date()).add(this.expiry, 'seconds');
@@ -97,6 +101,7 @@ export class KickbasePlayer {
     this.offsetNumber = this.getOffsetNumberTmp();
     this.successValue = this.getSuccessValueTmp();
     this.priceString = this.getPriceTmp();
+    this.priceMarketValueDifferString = this.getPriceMarketValueDifferTmp();
     if (this.stats !== null) {
       this.stats.calcValues();
     }
@@ -125,6 +130,11 @@ export class KickbasePlayer {
 
   private getPriceTmp() {
     let n = numeral(this.price);
+    return n.format('0,0 $');
+  }
+
+  private getPriceMarketValueDifferTmp() {
+    let n = numeral(this.price - this.marketValue);
     return n.format('0,0 $');
   }
 
