@@ -1,5 +1,16 @@
 <div *ngIf="!apiService.isLoggedIn">
     <app-login (loginWithoutAPI)="loginWithoutAPI()" (login)="login($event)"></app-login>
+    <div class="row mt-4 mb-4">
+        <div class="col-12 text-center">
+            <h6>Wenn ihr mich und meine Arbeit unterstützen wollt könnt ihr mir eine kleine Spende da lassen. Diese
+                Spende ist
+                vollkommen freiwillig. Der Rechner wird auch weiterhin kostenlos für euch bleiben</h6>
+            <div id="donate-button-container">
+                <div id="donate-button"></div>
+            </div>
+
+        </div>
+    </div>
 </div>
 
 <ng-container *ngIf="apiService.isLoggedIn">
@@ -8,6 +19,19 @@
             <button (click)="logout()" class="btn btn-primary btn-block">Logout</button>
         </div>
     </div>
+    <hr />
+    <div class="row mt-4 mb-4">
+        <div class="col-12 text-center">
+            <h6>Wenn ihr mich und meine Arbeit unterstützen wollt könnt ihr mir eine kleine Spende da lassen. Diese
+                Spende ist
+                vollkommen freiwillig. Der Rechner wird auch weiterhin kostenlos für euch bleiben</h6>
+            <div id="donate-button-container">
+                <div id="donate-button"></div>
+            </div>
+
+        </div>
+    </div>
+    <hr />
     <div class="row">
         <div class="col-12">
             <app-help [withoutApi]="withoutApi"></app-help>

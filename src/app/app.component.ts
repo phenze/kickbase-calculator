@@ -1,4 +1,4 @@
-import { AfterViewInit, ChangeDetectorRef, Component, OnInit, ViewChild } from '@angular/core';
+import { AfterViewInit, ChangeDetectorRef, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 
 import { ApiService } from './services/api.service';
 
@@ -20,6 +20,12 @@ import { merge, Observable, of, Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged, filter, map, switchMap } from 'rxjs/operators';
 import { LocalApiService } from './services/local-api.service';
 import { MarketOverviewComponent } from './components/market-overview/market-overview.component';
+
+declare global {
+  interface Window { PayPal: any; }
+}
+
+window.PayPal = window.PayPal || {};
 
 @Component({
   selector: 'app-root',
@@ -164,7 +170,7 @@ export class AppComponent implements OnInit, AfterViewInit {
   }
 
   ngAfterViewInit() {
-
+    this.createPayPalButton();
   }
 
   ngOnInit() {
@@ -204,6 +210,20 @@ export class AppComponent implements OnInit, AfterViewInit {
       this.dayUntilFriday = 7;
       this.fridayDate = moment().add(this.dayUntilFriday, 'days').toDate();
     }
+
+  }
+
+  createPayPalButton() {
+    const donateButton = new window.PayPal.Donation.Button({
+      env: 'production',
+      hosted_button_id: 'XV5QAMT6RUMB8',
+      image: {
+        src: 'https://www.paypalobjects.com/de_DE/DE/i/btn/btn_donate_LG.gif',
+        alt: 'Spenden mit dem PayPal-Button',
+        title: 'PayPal - The safer, easier way to pay online!',
+      }
+    });
+    donateButton.render('#donate-button')
   }
 
   loadLocalDataForApi = async () => {
