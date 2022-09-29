@@ -100,6 +100,7 @@ export class KickbasePlayer {
     this.offset = this.getOffsetTmp();
     this.offsetNumber = this.getOffsetNumberTmp();
     this.successValue = this.getSuccessValueTmp();
+    this.successValueString = this.getsuccessValueStringTmp();
     this.priceString = this.getPriceTmp();
     this.priceMarketValueDifferString = this.getPriceMarketValueDifferTmp();
     if (this.stats !== null) {
@@ -165,6 +166,12 @@ export class KickbasePlayer {
     return '';
   }
 
+  public successValueString = '';
+  private getsuccessValueStringTmp() {
+    let n = numeral(this.successValue);
+    return n.format('0,0 $');
+  }
+
   public successValue = 0;
   private getSuccessValueTmp() {
     let retVal = 0;
@@ -176,19 +183,19 @@ export class KickbasePlayer {
        */
       // 25 mio
       if (offset > 25000000) {
-        return 2000000;
+        retVal += 2000000;
       }
       // 10 mio
       if (offset >= 10000000) {
-        return 1000000;
+        retVal += 1000000;
       }
       // 5 mio
       if (offset >= 5000000) {
-        return 500000;
+        retVal += 500000;
       }
       // 3 mio
       if (offset >= 3000000) {
-        return 250000;
+        retVal += 250000;
       }
     }
     return retVal;
