@@ -50,6 +50,12 @@
                     <strong *ngIf="printMode">Richtpreis: {{player.priceString}}</strong>
                 </ng-container>
             </div>
+            <div class="col-12 col-sm-6" *ngIf="isMarketOverview">
+                <div></div>
+                <strong>MW Änderung: {{player.stats.realMarketValueChangeValue}}</strong>
+                <div></div>
+                <strong>AblaufDatum: {{player.expiryDate}}</strong>
+            </div>
             <div class="col-12 col-sm-6" [style.color]="player.colorOfferValue"
                 *ngIf="(player.hasOfferFromAny || withoutApi) && !printMode && !isMarketOverview">
                 <ng-container *ngIf="withoutApi">

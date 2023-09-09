@@ -282,13 +282,13 @@ export class AppComponent implements OnInit, AfterViewInit {
     }
     for (let pl of this.currentMarket.players) {
       await pl.loadStats(this.selectedLeague, this.apiService);
+      pl.calcValues();
     }
     this.loadingData = false;
     this.cdRef.detectChanges();
     if (this.marketOverviewComponent !== undefined) {
       this.marketOverviewComponent.selectedLeague = this.selectedLeague
       this.marketOverviewComponent.setCurrentMarket(this.currentMarket);
-      console.log('here')
     }
   }
 
@@ -585,9 +585,13 @@ export class AppComponent implements OnInit, AfterViewInit {
   }
 
   sortCurrentPlayers() {
+    let playersToSort = this.kickbaseGroup.players;
+    if (this.displayMode === AppComponent.display_mode_market_overview) {
+      playersToSort = this.marketOverviewComponent.currentMarket.players;
+    }
     if (this.selectedSorting == this.sorting_mw_asc || this.selectedSorting == this.sorting_mw_desc) {
       const isAsc = this.selectedSorting == this.sorting_mw_asc;
-      this.kickbaseGroup.players.sort((a, b) => {
+      playersToSort.sort((a, b) => {
         if (a.marketValue > b.marketValue) {
           return isAsc ? 1 : -1;
         } else if (a.marketValue < b.marketValue) {
@@ -601,7 +605,7 @@ export class AppComponent implements OnInit, AfterViewInit {
 
     if (this.selectedSorting == this.sorting_mw_change_asc || this.selectedSorting == this.sorting_mw_change_desc) {
       const isAsc = this.selectedSorting == this.sorting_mw_change_asc;
-      this.kickbaseGroup.players.sort((a, b) => {
+      playersToSort.sort((a, b) => {
         if (a.stats !== null && b.stats !== null) {
           if (a.stats.realMarketValueChange > b.stats.realMarketValueChange) {
             return isAsc ? -1 : 1;
@@ -615,6 +619,18 @@ export class AppComponent implements OnInit, AfterViewInit {
         }
       });
 
+    }
+    if (this.selectedSorting == this.sorting_default) {
+      playersToSort.sort((a, b) => {
+        if (a.expiry === b.expiry) {
+          return 0;
+        }
+        return a.expiry > b.expiry ? 1 : -1;
+      });
+
+    }
+    if (this.displayMode === AppComponent.display_mode_market_overview) {
+      this.marketOverviewComponent.setSortedPlayers(playersToSort);
     }
   }
 
@@ -649,8 +665,10 @@ export class AppComponent implements OnInit, AfterViewInit {
     this.apiService.setLastDisplay(this.displayMode);
 
     if (displayMode === AppComponent.display_mode_market_overview) {
-      this.reloadMarket(false);
+      await this.reloadMarket(false);
     }
+    this.selectedSorting = this.sorting_default;
+    this.sortCurrentPlayers();
 
 
   }

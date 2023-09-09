@@ -39,6 +39,11 @@ export class MarketOverviewComponent implements OnInit {
     this.onReload.emit();
   }
 
+  setSortedPlayers(players: KickbasePlayer[]) {
+    this.players = players;
+    this.playersToShow = players;
+  }
+
   setCurrentMarket(market: KickbaseMarket) {
     this.currentMarket = market;
     this.onlyManualPrices = false;
