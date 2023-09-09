@@ -203,7 +203,6 @@ export class ApiService {
       responseType: 'json'
     }).toPromise()
       .then((response) => {
-        console.log(response)
         const user = response['user'];
         this.userID = user['id'];
         this.data = {

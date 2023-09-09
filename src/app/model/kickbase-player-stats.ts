@@ -67,40 +67,7 @@ export class KickbasePlayerStats {
           this.nextThreeOpponents.push(new KickbasePlayerNextMatch(nm, this.teamId));
         }
       }
-
-      if (this.marketValues.length > 1) {
-        const lastValue = this.marketValues[this.marketValues.length - 2]['m'];
-        const newestValue = this.marketValues[this.marketValues.length - 1]['m'];
-        let offset = 4;
-        if (newestValue === this.marketValue) {
-          this.realMarketValueChange = this.marketValue - lastValue;
-        } else {
-          this.realMarketValueChange = this.marketValue - newestValue;
-          offset -= 1;
-        }
-
-        const tmp = new Array();
-        for (let i = offset; i >= 1; i--) {
-          if (this.marketValues.length - i >= 0) {
-            tmp.push(this.marketValues[this.marketValues.length - i]['m']);
-          }
-        }
-        for (let i = 0; i < tmp.length; i++) {
-          const value = tmp[i];
-          if (i + 1 < tmp.length) {
-            const nextValue = tmp[i + 1];
-            const change = nextValue - value;
-            let n = numeral(change);
-            this.threeDaysValues.push(n.format('0,0 $'));
-            let np = numeral(change / this.marketValue);
-
-            this.threeDaysValuesPercent.push(np.format('0.000%'));
-          }
-        }
-      }
     }
-
-
   }
 
   public calcValues() {
@@ -122,6 +89,38 @@ export class KickbasePlayerStats {
   }
 
   calcThreeDays() {
+    this.threeDaysValues = new Array();
+    this.threeDaysValuesPercent = new Array();
+    if (this.marketValues.length > 1) {
+      const lastValue = this.marketValues[this.marketValues.length - 2]['m'];
+      const newestValue = this.marketValues[this.marketValues.length - 1]['m'];
+      let offset = 4;
+      if (newestValue === this.marketValue) {
+        this.realMarketValueChange = this.marketValue - lastValue;
+      } else {
+        this.realMarketValueChange = this.marketValue - newestValue;
+        offset -= 1;
+      }
+
+      const tmp = new Array();
+      for (let i = offset; i >= 1; i--) {
+        if (this.marketValues.length - i >= 0) {
+          tmp.push(this.marketValues[this.marketValues.length - i]['m']);
+        }
+      }
+      for (let i = 0; i < tmp.length; i++) {
+        const value = tmp[i];
+        if (i + 1 < tmp.length) {
+          const nextValue = tmp[i + 1];
+          const change = nextValue - value;
+          let n = numeral(change);
+          this.threeDaysValues.push(n.format('0,0 $'));
+          let np = numeral(change / this.marketValue);
+
+          this.threeDaysValuesPercent.push(np.format('0.000%'));
+        }
+      }
+    }
   }
 
   calcbuyPriceValue() {

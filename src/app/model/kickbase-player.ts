@@ -227,6 +227,11 @@ export class KickbasePlayer {
   loadStats = async (league: number, apiService: ApiService, force = false) => {
     if (this.stats === null || force) {
       this.stats = await apiService.getPlayerStats(league, this.id);
+      // sometimes mv from stats differs from the real one which is one the player
+      // This happens in Challenges. Dont know why
+      if (this.marketValue !== this.stats.marketValue) {
+        this.stats.marketValue = this.marketValue;
+      }
     }
   }
 

@@ -521,7 +521,6 @@ export class AppComponent implements OnInit, AfterViewInit {
   }
 
   onDeactivatePlayer(player: KickbasePlayer) {
-    console.log(player.isDeactivated)
     if (!player.isPersitantDeleted) {
       if (player.isDeactivated) {
         this.amountPlayers--
