@@ -48,6 +48,7 @@ export class AppComponent implements OnInit, AfterViewInit {
   public printMode = false;
 
   public loadingLigaInsiderStats = false;
+  public loadingData = false;
   // public token = ""
 
   public leagues: KickbaseLeague[];
@@ -274,6 +275,23 @@ export class AppComponent implements OnInit, AfterViewInit {
     // TODO: refresh market values
   }
 
+  reloadMarket = async (fullRefresh: boolean) => {
+    this.loadingData = true;
+    if (fullRefresh) {
+      this.currentMarket = await this.apiService.getMarket(this.selectedLeague);
+    }
+    for (let pl of this.currentMarket.players) {
+      await pl.loadStats(this.selectedLeague, this.apiService);
+    }
+    this.loadingData = false;
+    this.cdRef.detectChanges();
+    if (this.marketOverviewComponent !== undefined) {
+      this.marketOverviewComponent.selectedLeague = this.selectedLeague
+      this.marketOverviewComponent.setCurrentMarket(this.currentMarket);
+      console.log('here')
+    }
+  }
+
 
   reload() {
     if (this.withoutApi) {
@@ -329,7 +347,7 @@ export class AppComponent implements OnInit, AfterViewInit {
 
 
   onSelectedLeagueChanged = async (newValue) => {
-
+    this.loadingData = true;
     this.kickbaseGroup = new KickbaseGroup();
     if (newValue == "null") {
       this.selectedLeague = null;
@@ -369,7 +387,9 @@ export class AppComponent implements OnInit, AfterViewInit {
           this.amountPlayers++
         }
       }
+      await this.onLoadAllDetails();
       this.onIncludeAdditionalAmountChanged();
+      this.loadingData = false;
       this.cdRef.detectChanges();
       if (this.marketOverviewComponent !== undefined) {
         this.marketOverviewComponent.selectedLeague = this.selectedLeague;
@@ -377,6 +397,7 @@ export class AppComponent implements OnInit, AfterViewInit {
       }
     } catch (error) {
       console.log(error)
+      this.loadingData = false;
     }
   }
 
@@ -389,7 +410,7 @@ export class AppComponent implements OnInit, AfterViewInit {
     for (let pl of this.kickbaseGroup.players) {
       await pl.loadStats(this.selectedLeague, this.apiService);
     }
-    this.refreshGroups();
+    // this.refreshGroups();
   }
 
 
@@ -623,16 +644,12 @@ export class AppComponent implements OnInit, AfterViewInit {
     return true;
   }
 
-  switchDisplay(displayMode) {
+  switchDisplay = async (displayMode) => {
     this.displayMode = displayMode;
     this.apiService.setLastDisplay(this.displayMode);
 
     if (displayMode === AppComponent.display_mode_market_overview) {
-      this.cdRef.detectChanges();
-      if (this.marketOverviewComponent !== undefined) {
-        this.marketOverviewComponent.selectedLeague = this.selectedLeague;
-        this.marketOverviewComponent.setCurrentMarket(this.currentMarket);
-      }
+      this.reloadMarket(false);
     }
 
 

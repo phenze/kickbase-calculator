@@ -16,7 +16,7 @@ export class MarketOverviewComponent implements OnInit {
   public players: KickbasePlayer[] = [];
   public manualPricePlayers: KickbasePlayer[] = [];
   public selectedLeague: number = null;
-  public onlyManualPrices: boolean = true;
+  public onlyManualPrices: boolean = false;
 
   @Output() loadDetails = new EventEmitter();
   @Output() onReload = new EventEmitter();
@@ -41,7 +41,7 @@ export class MarketOverviewComponent implements OnInit {
 
   setCurrentMarket(market: KickbaseMarket) {
     this.currentMarket = market;
-    this.onlyManualPrices = true;
+    this.onlyManualPrices = false;
     this.players = new Array();
     this.manualPricePlayers = new Array();
     this.playersToShow = new Array();
@@ -53,7 +53,7 @@ export class MarketOverviewComponent implements OnInit {
         }
       }
     }
-    this.playersToShow = this.manualPricePlayers;
+    this.playersToShow = this.players;
   }
 
 }

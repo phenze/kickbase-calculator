@@ -143,6 +143,10 @@ svg-icon {
   margin-right: 5px;
   transform: scale(1.2);
   margin-top: 3px;
+
+  &.active {
+    color: #007D34;
+  }
 }
 
 .print-icon {
