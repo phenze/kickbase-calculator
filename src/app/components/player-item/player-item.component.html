@@ -52,9 +52,10 @@
             </div>
             <div class="col-12 col-sm-6" *ngIf="isMarketOverview">
                 <div></div>
-                <strong>MW Änderung: {{player.stats.realMarketValueChangeValue}}</strong>
+                <div [style.color]="player.colorMarketValue" class="test">MW Änderung:
+                    {{player.stats.realMarketValueChangeValue}}</div>
                 <div></div>
-                <strong>AblaufDatum: {{player.expiryDate}}</strong>
+                <strong [style.color]="player.expiryColor">Ablauf Datum: {{player.expiryDate}}</strong>
             </div>
             <div class="col-12 col-sm-6" [style.color]="player.colorOfferValue"
                 *ngIf="(player.hasOfferFromAny || withoutApi) && !printMode && !isMarketOverview">

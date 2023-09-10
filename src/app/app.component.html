@@ -148,6 +148,13 @@
                     </div>
                 </div>
                 <div class="col-12 mt-2">
+                    <div class="custom-control custom-switch">
+                        <input type="checkbox" class="custom-control-input" [(ngModel)]="loadStatsAlways"
+                            (ngModelChange)="onLoadStatsAlwaysChanged()" id="customSwitch3">
+                        <label class="custom-control-label" for="customSwitch3">Alle Details automatisch laden</label>
+                    </div>
+                </div>
+                <div class="col-12 mt-2">
                     <h4>Sortierung</h4>
                     <select class="form-control" [(ngModel)]="selectedSorting"
                         (ngModelChange)="onSelectedSortingChanged($event)">

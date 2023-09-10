@@ -16,6 +16,7 @@ export class KickbasePlayer {
   public id: number;
   public leagueId: number;
   public expiry: number;
+  public expiryColor: string;
   public status: number;
   public isPersitantDeleted: boolean;
   public marketValue: number;
@@ -126,6 +127,14 @@ export class KickbasePlayer {
     this.colorOffsetValue = this.offsetNumber > 0 ? KickbaseGroup.color_green : KickbaseGroup.color_red;
     this.colorOfferValue = this.value >= this.marketValue ? KickbaseGroup.color_green : KickbaseGroup.color_red;
     this.hasOfferFromAny = this.value !== this.marketValue;
+    this.expiryColor = '#212529';
+    // one hour
+    if (this.expiry <= 60 * 60) {
+      this.expiryColor = KickbaseGroup.color_red;
+    } else if (this.expiry <= 60 * 60 * 2) {
+      this.expiryColor = KickbaseGroup.color_green;
+    }
+
   }
 
 

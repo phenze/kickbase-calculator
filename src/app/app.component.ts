@@ -43,6 +43,7 @@ export class AppComponent implements OnInit, AfterViewInit {
   public availableAmountString: string = '0';
   public amountPlayers: number = 0;
   public includeAdditionalAmount = false;
+  public loadStatsAlways = true;
   public includeMinusMarketValues = false;
   public showPermanentDeletedPlayers = true;
   public printMode = false;
@@ -180,6 +181,11 @@ export class AppComponent implements OnInit, AfterViewInit {
       this.selectedSorting = Number.parseInt(sorting);
     }
 
+    const loadStatsAlwaysTmp = localStorage.getItem('loadStatsAlways');
+    if (loadStatsAlwaysTmp !== null && loadStatsAlwaysTmp !== undefined) {
+      this.loadStatsAlways = loadStatsAlwaysTmp === 'true' ? true : false;
+    }
+
     if (this.apiService.data !== null) {
       // old style
       this.displayMode = AppComponent.display_mode_calculator;
@@ -283,6 +289,8 @@ export class AppComponent implements OnInit, AfterViewInit {
     for (let pl of this.currentMarket.players) {
       await pl.loadStats(this.selectedLeague, this.apiService);
       pl.calcValues();
+      pl.isDeactivated = true;
+      pl.calcColors(0);
     }
     this.loadingData = false;
     this.cdRef.detectChanges();
@@ -387,7 +395,9 @@ export class AppComponent implements OnInit, AfterViewInit {
           this.amountPlayers++
         }
       }
-      await this.onLoadAllDetails();
+      if (this.loadStatsAlways) {
+        await this.onLoadAllDetails();
+      }
       this.onIncludeAdditionalAmountChanged();
       this.loadingData = false;
       this.cdRef.detectChanges();
@@ -462,6 +472,10 @@ export class AppComponent implements OnInit, AfterViewInit {
       this.amountValue = Number(this.minusValue);
     }
     this.refreshGroups();
+  }
+
+  onLoadStatsAlwaysChanged() {
+    localStorage.setItem('loadStatsAlways', this.loadStatsAlways.toString())
   }
 
   onExtraAmountChange(event) {
