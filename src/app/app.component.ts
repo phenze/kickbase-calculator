@@ -298,6 +298,7 @@ export class AppComponent implements OnInit, AfterViewInit {
       this.marketOverviewComponent.selectedLeague = this.selectedLeague
       this.marketOverviewComponent.setCurrentMarket(this.currentMarket);
     }
+    this.sortCurrentPlayers();
   }
 
 
@@ -678,11 +679,9 @@ export class AppComponent implements OnInit, AfterViewInit {
     this.apiService.setLastDisplay(this.displayMode);
 
     if (displayMode === AppComponent.display_mode_market_overview) {
+      this.selectedSorting = this.sorting_default;
       await this.reloadMarket(false);
     }
-    this.selectedSorting = this.sorting_default;
-    this.sortCurrentPlayers();
-
 
   }
 

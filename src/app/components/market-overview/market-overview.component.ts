@@ -14,9 +14,10 @@ export class MarketOverviewComponent implements OnInit {
   public currentMarket: KickbaseMarket = null;
   public playersToShow: KickbasePlayer[] = [];
   public players: KickbasePlayer[] = [];
-  public manualPricePlayers: KickbasePlayer[] = [];
+  // public manualPricePlayers: KickbasePlayer[] = [];
   public selectedLeague: number = null;
   public onlyManualPrices: boolean = false;
+  public onlyKickbasePlayers: boolean = false;
 
   @Output() loadDetails = new EventEmitter();
   @Output() onReload = new EventEmitter();
@@ -26,10 +27,26 @@ export class MarketOverviewComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    let onlyKickbasePlayersTmp = localStorage.getItem('onlyKickbasePlayers');
+    if (onlyKickbasePlayersTmp !== null && onlyKickbasePlayersTmp !== undefined) {
+      this.onlyKickbasePlayers = onlyKickbasePlayersTmp === 'true' ? true : false;
+    }
+
+    let onlyManualPricesTmp = localStorage.getItem('onlyManualPrices');
+    if (onlyManualPricesTmp !== null && onlyManualPricesTmp !== undefined) {
+      this.onlyManualPrices = onlyManualPricesTmp === 'true' ? true : false;
+    }
   }
 
+
   onOnlyManualPricesChanges() {
-    this.playersToShow = this.onlyManualPrices ? this.manualPricePlayers : this.players;
+    localStorage.setItem('onlyManualPrices', this.onlyManualPrices.toString())
+    this.filterPlayersToShow();
+  }
+
+  onOnlyKickbasePlayersChanged() {
+    localStorage.setItem('onlyKickbasePlayers', this.onlyKickbasePlayers.toString())
+    this.filterPlayersToShow();
   }
 
   onLoadAllDetailsForPlayer = (player: KickbasePlayer) => {
@@ -41,24 +58,34 @@ export class MarketOverviewComponent implements OnInit {
 
   setSortedPlayers(players: KickbasePlayer[]) {
     this.players = players;
-    this.playersToShow = players;
+    this.filterPlayersToShow();
+    // this.players = players;
+    // this.playersToShow = players;
+    console.log('setSortedPlayers')
+  }
+
+  filterPlayersToShow() {
+    // this.players = new Array();
+    // this.manualPricePlayers = new Array();
+    this.playersToShow = new Array();
+    for (const pl of this.players) {
+      if (this.onlyManualPrices) {
+        if (pl.price % 100 === 0 && pl.price !== 500000 && pl.price !== pl.marketValue) {
+          if (pl.username.length > 0) {
+            this.playersToShow.push(pl);
+          }
+        }
+      } else {
+        this.playersToShow.push(pl);
+      }
+    }
+    if (this.onlyKickbasePlayers) {
+      this.playersToShow = this.playersToShow.filter(t => t.username === '');
+    }
   }
 
   setCurrentMarket(market: KickbaseMarket) {
     this.currentMarket = market;
-    this.onlyManualPrices = false;
-    this.players = new Array();
-    this.manualPricePlayers = new Array();
-    this.playersToShow = new Array();
-    for (const pl of market.players) {
-      this.players.push(pl);
-      if (pl.price % 100 === 0 && pl.price !== 500000 && pl.price !== pl.marketValue) {
-        if (pl.username.length > 0) {
-          this.manualPricePlayers.push(pl);
-        }
-      }
-    }
-    this.playersToShow = this.players;
   }
 
 }
