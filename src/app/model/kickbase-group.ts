@@ -121,10 +121,10 @@ export class KickbaseGroup {
 
 		let tvf = numeral(this.trendValue * dayUntilFriday);
 		this.trendFriday = tvf.format('0,0 $');
-		this.calcColors(currentAmount, dayUntilFriday);
+		this.calcColors(currentAmount);
 	}
 
-	public calcColors(currentAmount: number, dayUntilFriday: number) {
+	public calcColors(currentAmount: number) {
 		for (const pl of this.players) {
 			// pl.calcColors(this.differenceValue * -1);
 			pl.calcColors(this.differenceValue);

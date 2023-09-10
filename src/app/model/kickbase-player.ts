@@ -125,7 +125,17 @@ export class KickbasePlayer {
     }
     this.colorSuccessValue = this.successValue > 0 ? KickbaseGroup.color_green : KickbaseGroup.color_red;
     this.colorOffsetValue = this.offsetNumber > 0 ? KickbaseGroup.color_green : KickbaseGroup.color_red;
-    this.colorOfferValue = this.value >= this.marketValue ? KickbaseGroup.color_green : KickbaseGroup.color_red;
+    // add percent when value should turn green
+    let offerOffset = 0;
+    const offerOffsetTmp = localStorage.getItem('offerOffset')
+    if (offerOffsetTmp !== null && offerOffsetTmp !== undefined) {
+      try {
+        offerOffset = Number.parseFloat(offerOffsetTmp) / 100;
+      } catch {
+        // no nothing when number could not be parsed
+      }
+    }
+    this.colorOfferValue = this.value >= (this.marketValue * (1 + offerOffset)) ? KickbaseGroup.color_green : KickbaseGroup.color_red;
     this.hasOfferFromAny = this.value !== this.marketValue;
     this.expiryColor = '#212529';
     // one hour
