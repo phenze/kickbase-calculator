@@ -42,7 +42,7 @@ export class AppComponent implements OnInit, AfterViewInit {
   public minusValueString: string = '0';
   public availableAmountString: string = '0';
   public amountPlayers: number = 0;
-  public offerOffset: number = 0;
+  public offerOffset: string = '0';
   public includeAdditionalAmount = false;
   public loadStatsAlways = true;
   public includeMinusMarketValues = false;
@@ -189,7 +189,7 @@ export class AppComponent implements OnInit, AfterViewInit {
 
     const offerOffsetTmp = localStorage.getItem('offerOffset');
     if (offerOffsetTmp !== null && offerOffsetTmp !== undefined) {
-      this.offerOffset = Number.parseFloat(offerOffsetTmp);
+      this.offerOffset = offerOffsetTmp;
     }
 
     if (this.apiService.data !== null) {
@@ -500,10 +500,9 @@ export class AppComponent implements OnInit, AfterViewInit {
 
   onOfferOffsetChange(event) {
     try {
-      let di = numeral(event);
-      let offerOffset = di.value();
-      this.offerOffset = offerOffset;
-      localStorage.setItem('offerOffset', offerOffset.toString());
+      let value: string = event;
+      this.offerOffset = value.replace(',', '.');
+      localStorage.setItem('offerOffset', this.offerOffset.toString());
       this.kickbaseGroup.calcColors(this.amountValue);
     } catch {
 

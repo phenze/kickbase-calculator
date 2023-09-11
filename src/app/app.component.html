@@ -131,9 +131,8 @@
                         <div class="input-group-prepend">
                             <span class="input-group-text" id="basic-addon1">%</span>
                         </div>
-                        <input type="number" min="0" inputmode="numeric" [ngModel]="offerOffset"
-                            (ngModelChange)="onOfferOffsetChange($event)" min="0" step="0.01"
-                            class="form-control currency" id="offerOffset" />
+                        <input type="text" min="0" [ngModel]="offerOffset" (ngModelChange)="onOfferOffsetChange($event)"
+                            min="0" step="0.01" class="form-control currency" id="offerOffset" />
 
                     </div>
                 </div>
