@@ -52,6 +52,7 @@ export class AppComponent implements OnInit, AfterViewInit {
 
   public loadingLigaInsiderStats = false;
   public loadingData = false;
+  public loadingAllDetailsManual = false;
   // public token = ""
 
   public leagues: KickbaseLeague[];
@@ -410,7 +411,7 @@ export class AppComponent implements OnInit, AfterViewInit {
         }
       }
       if (this.loadStatsAlways) {
-        await this.onLoadAllDetails();
+        await this.onLoadAllDetails(false);
       }
       this.onIncludeAdditionalAmountChanged();
       this.loadingData = false;
@@ -430,11 +431,26 @@ export class AppComponent implements OnInit, AfterViewInit {
   }
 
 
-  onLoadAllDetails = async () => {
-    for (let pl of this.kickbaseGroup.players) {
-      await pl.loadStats(this.selectedLeague, this.apiService);
+  onLoadAllDetails = async (refresh: boolean) => {
+    this.loadingAllDetailsManual = true;
+    if (this.displayMode === AppComponent.display_mode_market_overview) {
+      for (let pl of this.currentMarket.players) {
+        await pl.loadStats(this.selectedLeague, this.apiService);
+        if (refresh) {
+          pl.calcValues();
+          pl.isDeactivated = true;
+          pl.calcColors(0);
+        }
+      }
+    } else {
+      for (let pl of this.kickbaseGroup.players) {
+        await pl.loadStats(this.selectedLeague, this.apiService);
+        if (refresh) {
+          this.refreshGroups();
+        }
+      }
     }
-    // this.refreshGroups();
+    this.loadingAllDetailsManual = false;
   }
 
 

@@ -78,6 +78,15 @@
     <ng-container *ngIf="!loadingData">
         <ng-container *ngIf=" displayMode===AppComponent.display_mode_market_overview">
             <div class="row">
+                <div class="col-12 mt-4">
+                    <button class="btn btn-outline-secondary btn-block" (click)="onLoadAllDetails(true)">
+                        <span *ngIf="!loadingAllDetailsManual">Alle Details laden</span>
+                        <ng-container *ngIf="loadingAllDetailsManual">
+                            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                            Lade Details...
+                        </ng-container>
+                    </button>
+                </div>
                 <div class="col-12 mt-2">
                     <h4>Sortierung</h4>
                     <select class="form-control" [(ngModel)]="selectedSorting"
@@ -90,6 +99,7 @@
                     </select>
                 </div>
             </div>
+
             <app-market-overview (loadDetails)="onLoadAllDetailsForPlayer($event)" (onReload)="reloadMarket(true)">
             </app-market-overview>
         </ng-container>
@@ -253,7 +263,16 @@
             <h6 class="align-center">Max Angebot: {{kickbaseGroup.possibleOffer}}</h6>
 
             <div class="row">
-                <div class="col-12">
+                <div class="col-12 mt-1">
+                    <button class="btn btn-outline-secondary btn-block" (click)="onLoadAllDetails(true)">
+                        <span *ngIf="!loadingAllDetailsManual">Alle Details laden</span>
+                        <ng-container *ngIf="loadingAllDetailsManual">
+                            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                            Lade Details...
+                        </ng-container>
+                    </button>
+                </div>
+                <div class="col-12 mt-2">
                     <ng-container *ngFor="let player of kickbaseGroup.players">
 
                         <app-player-item *ngIf="showPlayer(player)" [player]="player" [printMode]="printMode"
