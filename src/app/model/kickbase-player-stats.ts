@@ -91,7 +91,7 @@ export class KickbasePlayerStats {
   calcThreeDays() {
     this.threeDaysValues = new Array();
     this.threeDaysValuesPercent = new Array();
-    if (this.marketValues.length > 1) {
+    if (this.marketValues !== undefined && this.marketValues.length > 1) {
       const lastValue = this.marketValues[this.marketValues.length - 2]['m'];
       const newestValue = this.marketValues[this.marketValues.length - 1]['m'];
       let offset = 4;

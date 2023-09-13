@@ -50,7 +50,7 @@
                     <strong *ngIf="printMode">Richtpreis: {{player.priceString}}</strong>
                 </ng-container>
             </div>
-            <div class="col-12 col-sm-6" *ngIf="isMarketOverview">
+            <div class="col-12 col-sm-6" *ngIf="isMarketOverview && player.stats !== null">
                 <div></div>
                 <div [style.color]="player.colorMarketValue" class="test">MW Änderung:
                     {{player.stats.realMarketValueChangeValue}}</div>
@@ -86,7 +86,7 @@
 
 
             </div>
-            <ng-container *ngIf="player.stats !== null && !printMode">
+            <ng-container *ngIf="player.stats !== null && !printMode && !withoutApi">
                 <ng-container *ngIf="!isMarketOverview">
                     <div class="col-12">
                         <hr />
