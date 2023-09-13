@@ -48,6 +48,7 @@ export class AppComponent implements OnInit, AfterViewInit {
   public includeMinusMarketValues = false;
   public showPermanentDeletedPlayers = true;
   public printMode = false;
+  public doLogin = false;
 
   public loadingLigaInsiderStats = false;
   public loadingData = false;
@@ -293,7 +294,9 @@ export class AppComponent implements OnInit, AfterViewInit {
       this.currentMarket = await this.apiService.getMarket(this.selectedLeague);
     }
     for (let pl of this.currentMarket.players) {
-      await pl.loadStats(this.selectedLeague, this.apiService);
+      if (this.loadStatsAlways) {
+        await pl.loadStats(this.selectedLeague, this.apiService);
+      }
       pl.calcValues();
       pl.isDeactivated = true;
       pl.calcColors(0);
@@ -321,6 +324,7 @@ export class AppComponent implements OnInit, AfterViewInit {
     this.withoutApi = true;
     if (payload.username.length > 0 && payload.password.length > 0) {
       try {
+        this.doLogin = true;
         let result = await this.apiService.getToken(payload.username, payload.password);
         if (!result) {
           alert('Bitte Username und Passwort überprüfen')
@@ -329,18 +333,21 @@ export class AppComponent implements OnInit, AfterViewInit {
           this.displayMode = AppComponent.display_mode_calculator;
           this.loadLeagues();
         }
+        this.doLogin = false;
       } catch {
         alert('Bitte Username und Passwort überprüfen')
+        this.doLogin = false;
       }
     } else {
-      alert('Bitte USername und Password angeben')
+      alert('Bitte Username und Password angeben')
+      this.doLogin = false;
     }
 
   }
 
-  loadLeagues() {
+  loadLeagues = async () => {
     this.withoutApi = false;
-    this.apiService.getLeagues().then(
+    await this.apiService.getLeagues().then(
       leagues => {
         this.leagues = leagues;
         if (this.leagues.length > 0) {
@@ -441,6 +448,8 @@ export class AppComponent implements OnInit, AfterViewInit {
     }
     if (player.stats === null) {
       await player.loadStats(this.selectedLeague, this.apiService);
+      player.calcValues();
+      player.calcColors(0);
       this.refreshGroups();
     } else {
       this.onDeactivatePlayer(player);

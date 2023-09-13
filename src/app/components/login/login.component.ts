@@ -1,4 +1,4 @@
-import { Component, EventEmitter, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 
 @Component({
@@ -11,6 +11,7 @@ export class LoginComponent implements OnInit {
 
   @Output() loginWithoutAPI = new EventEmitter();
   @Output() login = new EventEmitter();
+  @Input() doLogin: boolean = false;
 
 
   public username = '';
@@ -19,13 +20,6 @@ export class LoginComponent implements OnInit {
   public isAdminMode: boolean = false;
 
   constructor(private route: ActivatedRoute) {
-    this.route.queryParams
-      .subscribe(params => {
-        console.log(params); // { order: "popular" }
-        if (params.hasOwnProperty('admin')) {
-        }
-      }
-      );
     this.isAdminMode = true;
   }
 

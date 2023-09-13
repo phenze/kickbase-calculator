@@ -1,5 +1,5 @@
 <div *ngIf="!apiService.isLoggedIn">
-    <app-login (loginWithoutAPI)="loginWithoutAPI()" (login)="login($event)"></app-login>
+    <app-login (loginWithoutAPI)="loginWithoutAPI()" (login)="login($event)" [doLogin]="doLogin"></app-login>
     <div class="row mt-4 mb-4">
         <div class="col-12 text-center">
             <h6>Wenn ihr mich und meine Arbeit unterstützen wollt könnt ihr mir eine kleine Spende da lassen. Diese

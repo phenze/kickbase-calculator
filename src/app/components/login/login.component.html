@@ -12,7 +12,15 @@
             <input type="password" [(ngModel)]="password" class="form-control" id="exampleInputPassword1"
                 placeholder="Password">
         </div>
-        <button (click)="loginPrivate()" type="submit" class="btn btn-primary btn-block">Login</button>
+        <button (click)="loginPrivate()" type="submit" class="btn btn-primary btn-block">
+            <ng-container *ngIf="!doLogin">
+                <span>Login</span>
+            </ng-container>
+            <ng-container *ngIf="doLogin">
+                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                Loading...
+            </ng-container>
+        </button>
         <!-- </form> -->
     </div>
 </div>

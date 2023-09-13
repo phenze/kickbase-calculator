@@ -59,9 +59,6 @@ export class MarketOverviewComponent implements OnInit {
   setSortedPlayers(players: KickbasePlayer[]) {
     this.players = players;
     this.filterPlayersToShow();
-    // this.players = players;
-    // this.playersToShow = players;
-    console.log('setSortedPlayers')
   }
 
   filterPlayersToShow() {
