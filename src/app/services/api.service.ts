@@ -16,6 +16,7 @@ export class Data {
   public calculatorActive: string;
   public lastLeagueId: number;
   public loggedInWithoutApi: boolean;
+  public leagues: KickbaseLeague[];
 
 }
 
@@ -23,7 +24,7 @@ export class Data {
 export class ApiService {
 
 
-  private baseUrl = "https://api.kickbase.com/"
+  private baseUrl = "https://api.kickbase.com/v4/"
 
   public token = '';
   public userID = null;
@@ -61,7 +62,8 @@ export class ApiService {
       userID: -1,
       calculatorActive: AppComponent.display_mode_calculator,
       lastLeagueId: -1,
-      loggedInWithoutApi: true
+      loggedInWithoutApi: true,
+      leagues: []
     }
     localStorage.setItem('data', JSON.stringify(this.data))
   }
@@ -116,13 +118,17 @@ export class ApiService {
   }
 
   async getLeagues(): Promise<KickbaseLeague[]> {
-    let url = this.baseUrl + 'leagues?ext=true';
+    // let url = this.baseUrl + 'leagues';
     try {
-      const result = await this.http.get(url, {
-        headers: this.customApiHeaders(),
-        responseType: 'json'
-      }).toPromise()
-      return KickbaseLeague.createArrayInstance(result);
+      if ((this.data.leagues === undefined || this.data.leagues.length === 0) && this.data.loggedInWithoutApi === false) {
+      }
+      await this.refreshToken();
+      // const result = await this.http.get(url, {
+      //   headers: this.customApiHeaders(),
+      //   responseType: 'json'
+      // }).toPromise()
+      // return KickbaseLeague.createArrayInstance(result);
+      return this.data.leagues;
     } catch (e) {
       console.log(e);
       if (e.status === 401 || e.status === 403) {
@@ -165,21 +171,25 @@ export class ApiService {
 
   refreshToken(): Promise<boolean> {
     const url = this.baseUrl + 'user/login';
+
     const payload = {
-      'email': this.data.username,
-      'password': this.data.password
-    };
+      "ext": true,
+      "em": this.data.username,
+      "loy": false,
+      "pass": this.data.password,
+      "rep": {}
+    }
     return this.http.post(url, payload, {
       responseType: 'json'
     }).toPromise()
       .then((response) => {
-        console.log(response)
-        const user = response['user'];
+        const user = response['u'];
         this.userID = user['id'];
         this.data.userID = this.userID;
-        this.data.token = response['token'];
+        this.data.token = response['tkn'];
+        this.data.leagues = KickbaseLeague.createArrayInstance(response['srvl']);
         localStorage.setItem('data', JSON.stringify(this.data))
-        this.token = `Bearer ${response['token']}`;
+        this.token = `Bearer ${response['tkn']}`;
         return true;
 
       })
@@ -195,27 +205,35 @@ export class ApiService {
 
 
     const url = this.baseUrl + 'user/login';
+    // const payload = {
+    //   'email': username,
+    //   'password': password
+    // };
+
     const payload = {
-      'email': username,
-      'password': password
-    };
+      'ext': true,
+      'em': username,
+      'loy': false,
+      'pass': password,
+    }
     return this.http.post(url, payload, {
       responseType: 'json'
     }).toPromise()
       .then((response) => {
-        const user = response['user'];
+        const user = response['u'];
         this.userID = user['id'];
         this.data = {
           username: username,
           password: password,
-          token: response['token'],
+          token: response['tkn'],
           userID: this.userID,
           calculatorActive: this.data !== null ? this.data.calculatorActive : AppComponent.display_mode_calculator,
           lastLeagueId: this.data !== null ? this.data.lastLeagueId : -1,
-          loggedInWithoutApi: false
+          loggedInWithoutApi: false,
+          leagues: KickbaseLeague.createArrayInstance(response['srvl'])
         }
         localStorage.setItem('data', JSON.stringify(this.data))
-        this.token = `Bearer ${response['token']}`;
+        this.token = `Bearer ${response['tkn']}`;
         this.isLoggedIn = true;
         return true;
 
@@ -231,7 +249,7 @@ export class ApiService {
   async getLineup(league: number): Promise<KickbaseMarket> {
 
 
-    let url = this.baseUrl + 'leagues/' + league + '/lineupex';
+    let url = this.baseUrl + 'leagues/' + league + '/squad';
     try {
       const result = await this.http.get(url, {
         headers: this.customApiHeaders(),
@@ -296,7 +314,29 @@ export class ApiService {
 
   async getPlayerStats(league: number, playerID: number): Promise<KickbasePlayerStats> {
     // https://api.kickbase.com/leagues/868390/players/2322/stats
-    let url = this.baseUrl + 'leagues/' + league + '/players/' + playerID + '/stats';
+    let url = this.baseUrl + 'competitions/1/players/' + playerID + '?leagueId=' + league;
+    try {
+      const result = await this.http.get(url, {
+        headers: this.customApiHeaders(),
+        responseType: 'json'
+      }).toPromise()
+      return new KickbasePlayerStats(result);
+
+    } catch (e) {
+      console.log(e);
+      if (e.status === 401 || e.status === 403) {
+        await this.refreshToken();
+        return this.getPlayerStats(league, playerID);
+      } else {
+        // TODO : Handle Api Errors
+        return Promise.reject('error');
+      }
+    };
+  }
+
+  async getMarketValuePlayerStats(league: number, playerID: number): Promise<KickbasePlayerStats> {
+    // https://api.kickbase.com/leagues/868390/players/2322/stats
+    let url = this.baseUrl + 'competitions/1/players/' + playerID + '/marketValue/92?leagueId=' + league;
     try {
       const result = await this.http.get(url, {
         headers: this.customApiHeaders(),

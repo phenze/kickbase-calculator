@@ -16,8 +16,8 @@ export class KickbaseMarket {
         this.offerAmountForUser = 0;
         Object.assign(this, json);
         if (json != null) {
-            if (json.hasOwnProperty("players")) {
-                let p = json["players"]
+            if (json.hasOwnProperty("it")) {
+                let p = json["it"]
                 this.players = KickbasePlayer.createArrayInstance(p, userID);
             }
         }
@@ -25,18 +25,6 @@ export class KickbaseMarket {
         for (const player of this.players) {
             this.offerAmountForUser = this.offerAmountForUser + player.offervalue;
         }
-
-        // let player = new KickbasePlayer();
-        // player.name = "Bakalorz";
-        // player.value = 12000435
-        // this.players.push(player)
-
-
-        // let player2 = new KickbasePlayer();
-        // player2.name = "Bakalorz";
-        // player2.value = 12000435
-
-        // this.players.push(player2)
 
         this.players = this.players.sort((a: KickbasePlayer, b: KickbasePlayer) => {
             if (a.expiry < b.expiry) {

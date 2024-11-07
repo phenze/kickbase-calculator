@@ -37,7 +37,10 @@
         <div class="row">
             <div class="col-12 col-sm-6">
                 <ng-container *ngIf="isMarketOverview">
-                    <strong>Preis: {{player.priceString}}&nbsp;(+&nbsp;{{player.priceMarketValueDifferString}})</strong>
+                    <ng-container *ngIf="player.price !== 0">
+                        <strong>Gebot:
+                            {{player.priceString}}&nbsp;(+&nbsp;{{player.priceMarketValueDifferString}})</strong>
+                    </ng-container>
                     <div></div>
                     <strong>MW: {{player.marketValueString}}</strong>
                     <ng-container *ngIf="player.username.length > 0">

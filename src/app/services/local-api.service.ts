@@ -48,7 +48,7 @@ export class LocalApiService {
       player.marketValue = marktValue;
       player.value = marktValue;
       player.stats = new KickbasePlayerStats(null);
-      player.stats.marketValue = marktValue;
+      player.stats.mv = marktValue;
       player.stats.realMarketValueChange = realChange;
 
       player.calcValues();
