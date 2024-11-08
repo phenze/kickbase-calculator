@@ -42,7 +42,6 @@ export class PlayerItemComponent implements OnInit {
 
   onEditPlayerValue(player: KickbasePlayer, event: MouseEvent) {
     player.isInEditMode = true;
-    console.log(event);
     event.stopImmediatePropagation();
     event.preventDefault();
   }

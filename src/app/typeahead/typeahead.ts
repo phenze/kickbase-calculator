@@ -285,7 +285,6 @@ export class NgbTypeahead implements ControlValueAccessor,
     // tslint:disable-next-line:deprecation
     switch (event.which) {
       case Key.ArrowDown:
-        console.log('here');
         event.preventDefault();
         this._windowRef.instance.next();
         this._showHint();

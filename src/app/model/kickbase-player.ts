@@ -8,27 +8,30 @@ import { KickbaseGroup } from './kickbase-group';
 
 export class KickbasePlayer {
 
-  public name: string;
-  public nameHash: string;
-  public profile: string;
-  public profileBig: string;
-  public value: number;
   public id: number;
-  public leagueId: number;
+  public name: string;
+  public value: number;
+  public marketValue: number;
+  public uoid: string;
+
+
+  // local api fields
+  public nameHash: string;
+
+  // market fields
+  public expiryDate: string;
   public expiry: number;
   public expiryColor: string;
-  public status: number;
-  public isPersitantDeleted: boolean;
-  public marketValue: number;
   public priceString: string;
   public priceMarketValueDifferString: string;
   public price: number;
-  public expiryDate: string;
 
+  // custom fields
+  public status: number;
+  public leagueId: number;
   public stats: KickbasePlayerStats;
-
   public offervalue = 0;
-
+  public isPersitantDeleted: boolean;
   public imageUrl = '';
   public color = '';
   public colorMarketValue = '';
@@ -58,23 +61,32 @@ export class KickbasePlayer {
     Object.assign(this, json);
     this.stats = null;
     if (json != null) {
-      this.value = json["marketValue"];
-      if (json.hasOwnProperty("knownName")) {
-        this.name = json["knownName"]
-      } else {
-        this.name = json["firstName"] + " " + json["lastName"];
+      this.id = json["i"];
+      this.value = json["mv"];
+      this.marketValue = json["mv"];
+      this.status = json["st"];
+      this.price = json['prc'];
+      if (json.hasOwnProperty("n")) {
+        this.name = json["n"]
       }
 
-      if (json.hasOwnProperty('offers')) {
-        let offers = json["offers"];
+      if (json['uoid'] !== "0") {
+        this.price = json['uop'];
+      } else {
+        this.price = 0;
+      }
+      if (json.hasOwnProperty('ofs')) {
+        let offers = json["ofs"];
         let lastOfferPrice = 0;
 
         for (let offer of offers as any) {
-          let userIDOffer = offer['userId'];
-          let price = offer["price"];
-          if (Number(price) != 1) {
+          console.log(offer)
+          let userIDOffer = offer['u'];
+          let price = offer["uop"];
+          if (Number(price) !== 1) {
             if (userIDOffer == userID) {
               this.offervalue = Number(price)
+
             }
             this.value = Math.max(price, lastOfferPrice);
             lastOfferPrice = price;
@@ -82,14 +94,12 @@ export class KickbasePlayer {
 
         }
       }
+      this.expiry = json['exs']
       let date = moment(new Date()).add(this.expiry, 'seconds');
       this.expiryDate = date.format('DD.MM.YYYY HH:mm:ss');
     }
-    // if (this.profile === undefined || this.profile.length === 0) {
-    //   this.imageUrl = this.profileBig;
-    // } else {
-    // }
-    this.imageUrl = 'https://api.kickbase.com/files/players/' + this.id + '/1';
+
+    this.imageUrl = 'https://cdn.kickbase.com/files/players/' + this.id + '/1';
 
     this.calcValues();
   }
@@ -246,10 +256,13 @@ export class KickbasePlayer {
   loadStats = async (league: number, apiService: ApiService, force = false) => {
     if (this.stats === null || force) {
       this.stats = await apiService.getPlayerStats(league, this.id);
+      const marketValueStats = await apiService.getMarketValuePlayerStats(league, this.id);
+      this.stats.marketValues = marketValueStats['it']
+      this.stats.buyPrice = marketValueStats['trp']
       // sometimes mv from stats differs from the real one which is one the player
       // This happens in Challenges. Dont know why
-      if (this.marketValue !== this.stats.marketValue) {
-        this.stats.marketValue = this.marketValue;
+      if (this.marketValue !== this.stats.mv) {
+        this.stats.mv = this.marketValue;
       }
     }
   }
@@ -258,8 +271,6 @@ export class KickbasePlayer {
     const retVal = new KickbasePlayer(null, userId);
 
     retVal.name = this.name;
-    retVal.profile = this.profile;
-    retVal.profileBig = this.profileBig;
     retVal.value = this.value;
     retVal.id = this.id;
     retVal.expiry = this.expiry;

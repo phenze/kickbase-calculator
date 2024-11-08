@@ -4,34 +4,16 @@ import * as numeral from 'numeral';
 import { KickbasePlayerNextMatch } from './kickbase-player-next-match';
 export class KickbasePlayerStats {
 
+  // api fields
   public id: string;
-  public teamId: string;
-  public userId: string;
-  public userProfileUrl: string;
-  public userName: string;
-  public userFlags: string;
-  public firstName: string;
-  public lastName: string;
-  public profileUrl: string;
-  public teamUrl: string;
-  public teamCoverUrl: string;
+  public tid: string;
   public status: string;
-  public position: string;
-  public number: string;
+  public mv: number;
+
+  // custom fields
   public points: string;
   public averagePoints: string;
-  public marketValue: number;
-  public mvTrend: string;
-  public mvHigh: string;
-  public mvHighDate: string;
-  public mvLow: string;
-  public mvLowDate: string;
-  public buyDate: string;
   public buyPrice: number;
-  public matchesTotal: string;
-  public marketValueChange: string;
-  public marketValueChangePercent: string;
-
   public realMarketValueChange: number;
 
   public seasons: string;
@@ -54,17 +36,18 @@ export class KickbasePlayerStats {
     this.threeDaysValues = new Array();
     this.threeDaysValuesPercent = new Array();
     if (json != null) {
-      const leaguePlayer = json["leaguePlayer"];
-      if (leaguePlayer !== undefined) {
-        this.buyDate = leaguePlayer['buyDate'];
-        this.buyPrice = leaguePlayer['buyPrice'];
-      }
+      this.points = json['tp'];
+      this.averagePoints = json['ap'];
+      this.status = json['st'];
+      this.realMarketValueChange = json['tfhmvt'];
 
       this.nextThreeOpponents = new Array();
-      const nextMatches = json["nm"];
+      const nextMatches = json["mdsum"];
       if (nextMatches !== undefined) {
         for (const nm of nextMatches) {
-          this.nextThreeOpponents.push(new KickbasePlayerNextMatch(nm, this.teamId));
+          if (nm['cur'] === false) {
+            this.nextThreeOpponents.push(new KickbasePlayerNextMatch(nm, this.tid));
+          }
         }
       }
     }
@@ -79,7 +62,7 @@ export class KickbasePlayerStats {
   calcrealMarketValueChangeValue() {
     if (this.realMarketValueChange !== -1) {
       let n = numeral(this.realMarketValueChange);
-      let np = numeral((this.realMarketValueChange / this.marketValue));
+      let np = numeral((this.realMarketValueChange / this.mv));
       this.realMarketValueChangeValue = n.format('0,0 $');
 
       this.realMarketValueChangeValuePrecent = np.format('0.000%');
@@ -92,20 +75,20 @@ export class KickbasePlayerStats {
     this.threeDaysValues = new Array();
     this.threeDaysValuesPercent = new Array();
     if (this.marketValues !== undefined && this.marketValues.length > 1) {
-      const lastValue = this.marketValues[this.marketValues.length - 2]['m'];
-      const newestValue = this.marketValues[this.marketValues.length - 1]['m'];
+      const lastValue = this.marketValues[this.marketValues.length - 2]['mv'];
+      const newestValue = this.marketValues[this.marketValues.length - 1]['mv'];
       let offset = 4;
-      if (newestValue === this.marketValue) {
-        this.realMarketValueChange = this.marketValue - lastValue;
+      if (newestValue === this.mv) {
+        this.realMarketValueChange = this.mv - lastValue;
       } else {
-        this.realMarketValueChange = this.marketValue - newestValue;
+        this.realMarketValueChange = this.mv - newestValue;
         offset -= 1;
       }
 
       const tmp = new Array();
       for (let i = offset; i >= 1; i--) {
         if (this.marketValues.length - i >= 0) {
-          tmp.push(this.marketValues[this.marketValues.length - i]['m']);
+          tmp.push(this.marketValues[this.marketValues.length - i]['mv']);
         }
       }
       for (let i = 0; i < tmp.length; i++) {
@@ -115,7 +98,7 @@ export class KickbasePlayerStats {
           const change = nextValue - value;
           let n = numeral(change);
           this.threeDaysValues.push(n.format('0,0 $'));
-          let np = numeral(change / this.marketValue);
+          let np = numeral(change / this.mv);
 
           this.threeDaysValuesPercent.push(np.format('0.000%'));
         }

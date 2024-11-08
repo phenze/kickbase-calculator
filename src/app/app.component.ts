@@ -139,10 +139,6 @@ export class AppComponent implements OnInit, AfterViewInit {
   }
 
   onTypeAheadSelected(event: NgbTypeaheadSelectItemEvent) {
-    console.log(event.item);
-    // this.newplayername = event.item.name;
-    // this.newplayeramount = event.item.value;
-
     const player = (event.item as KickbasePlayer).copy('');
     this.kickbaseGroup.players.push(player);
     this.saveLocalPlayers();
@@ -156,7 +152,6 @@ export class AppComponent implements OnInit, AfterViewInit {
 
   selectEvent(item) {
     // do something with selected item
-    console.log(item);
     const player = this.localApiService.offlinePlayers.find(t => t.nameHash === item.id).copy('');
     this.kickbaseGroup.players.push(player);
     this.saveLocalPlayers();
@@ -321,7 +316,6 @@ export class AppComponent implements OnInit, AfterViewInit {
   }
 
   async login(payload) {
-    console.log(payload.username);
     this.withoutApi = true;
     if (payload.username.length > 0 && payload.password.length > 0) {
       try {
@@ -360,7 +354,6 @@ export class AppComponent implements OnInit, AfterViewInit {
             this.onSelectedLeagueChanged(leagues[0].id);
           }
         }
-        console.log(leagues)
 
       }
     ).catch(error => {
@@ -378,8 +371,7 @@ export class AppComponent implements OnInit, AfterViewInit {
     this.apiService.setLastLeague(this.selectedLeague);
     try {
       this.currentMarket = await this.apiService.getMarket(this.selectedLeague);
-      console.log(this.currentMarket);
-      this.currentGift = await this.apiService.getGiftStatus(this.selectedLeague);
+      this.currentGift = null;// await this.apiService.getGiftStatus(this.selectedLeague);
       let league = this.leagues.find(t => t.id == this.selectedLeague);
       let lineUp = await this.apiService.getLineup(this.selectedLeague);
 
@@ -699,8 +691,6 @@ export class AppComponent implements OnInit, AfterViewInit {
   onFridayDateChanged(countDays: string) {
     const intValue = Number.parseInt(countDays);
     if (!isNaN(intValue)) {
-
-      console.log(intValue);
 
       this.dayUntilFriday = Number.parseInt(countDays);
       this.fridayDate = moment().add(this.dayUntilFriday, 'days').toDate();

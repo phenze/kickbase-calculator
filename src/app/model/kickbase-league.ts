@@ -25,12 +25,10 @@ export class KickbaseLeague {
 
         const retVal: KickbaseLeague[] = new Array<KickbaseLeague>();
         if (json != null) {
-            if (json.hasOwnProperty('leagues')) {
-                let tmp = json["leagues"];
-                for (let tmpitem of tmp as any) {
-                    const post: KickbaseLeague = new KickbaseLeague(tmpitem);
-                    retVal.push(post);
-                }
+            let tmp = json;
+            for (let tmpitem of tmp as any) {
+                const post: KickbaseLeague = new KickbaseLeague(tmpitem);
+                retVal.push(post);
             }
         }
 
