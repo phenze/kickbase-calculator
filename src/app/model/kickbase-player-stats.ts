@@ -44,10 +44,12 @@ export class KickbasePlayerStats {
       this.nextThreeOpponents = new Array();
       const nextMatches = json["mdsum"];
       if (nextMatches !== undefined) {
+        let index = 0;
         for (const nm of nextMatches) {
-          if (nm['cur'] === false) {
+          if (index > 0) {
             this.nextThreeOpponents.push(new KickbasePlayerNextMatch(nm, this.tid));
           }
+          index++
         }
       }
     }
