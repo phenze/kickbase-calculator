@@ -22,7 +22,8 @@ export class KickbasePlayerNextMatch {
 
     this.matchDay = json["md"];
     this.date = new Date(json["d"]);
-    this.imageUrl = 'https://cdn.kickbase.com/files/teams/' + this.teamId + '/9';
+    
+    this.imageUrl = 'https://kickbase.b-cdn.net/pool/teams/' + this.teamId + '.png';
 
   }
 }
