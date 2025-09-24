@@ -99,7 +99,7 @@ export class KickbasePlayer {
       this.expiryDate = date.format('DD.MM.YYYY HH:mm:ss');
     }
 
-    this.imageUrl = 'https://cdn.kickbase.com/files/players/' + this.id + '/1';
+    this.imageUrl = 'https://kickbase.b-cdn.net/pool/playersbig/' + this.id + '.png';
 
     this.calcValues();
   }
