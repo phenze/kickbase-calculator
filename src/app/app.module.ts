@@ -48,7 +48,7 @@ import { AutocompleteLibModule } from 'angular-ng-autocomplete';
         BsDropdownModule.forRoot(),
         ModalModule.forRoot(),
         AngularSvgIconModule.forRoot(),
-        RouterModule.forRoot([], { relativeLinkResolution: 'legacy' }),
+        RouterModule.forRoot([], {}),
         AutocompleteLibModule
         // ServiceWorkerModule.register('ngsw-worker.js', { enabled: environment.production }),
     ],
