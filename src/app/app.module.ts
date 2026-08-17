@@ -52,7 +52,6 @@ import { AutocompleteLibModule } from 'angular-ng-autocomplete';
         AutocompleteLibModule
         // ServiceWorkerModule.register('ngsw-worker.js', { enabled: environment.production }),
     ],
-    entryComponents: [ModalComponent, NgbTypeaheadWindow],
     providers: [MyCurrencyPipe, ApiService, LocalApiService],
     bootstrap: [AppComponent]
 })
