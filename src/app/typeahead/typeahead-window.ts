@@ -18,10 +18,10 @@ export interface ResultTemplateContext {
 }
 
 @Component({
-  selector: 'ngb-typeahead-window',
-  exportAs: 'ngbTypeaheadWindow',
-  host: { '(mousedown)': '$event.preventDefault()', 'class': 'search-autocomplete menu show', 'role': 'listbox', '[id]': 'id' },
-  template: `
+    selector: 'ngb-typeahead-window',
+    exportAs: 'ngbTypeaheadWindow',
+    host: { '(mousedown)': '$event.preventDefault()', 'class': 'search-autocomplete menu show', 'role': 'listbox', '[id]': 'id' },
+    template: `
     <ng-template #rt let-result="result" let-term="term" let-formatter="formatter">
       <ngb-highlight [result]="formatter(result)" [term]="term"></ngb-highlight>
     </ng-template>
@@ -37,7 +37,8 @@ export interface ResultTemplateContext {
       
     </ng-template>
     
-  `
+  `,
+    standalone: false
 })
 export class NgbTypeaheadWindow implements OnInit {
   activeIdx = 0;

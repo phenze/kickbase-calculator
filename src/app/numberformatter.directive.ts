@@ -3,7 +3,8 @@ import { Directive, HostListener, ElementRef, OnInit } from "@angular/core";
 import { MyCurrencyPipe } from "./my-currency.pipe";
 
 @Directive({
-	selector: '[appNumberformatter]'
+    selector: '[appNumberformatter]',
+    standalone: false
 })
 export class NumberformatterDirective {
 

@@ -4,9 +4,10 @@ import { KickbasePlayer } from 'src/app/model/kickbase-player';
 import { ApiService } from 'src/app/services/api.service';
 
 @Component({
-  selector: 'app-player-item',
-  templateUrl: './player-item.component.html',
-  styleUrls: ['./player-item.component.scss']
+    selector: 'app-player-item',
+    templateUrl: './player-item.component.html',
+    styleUrls: ['./player-item.component.scss'],
+    standalone: false
 })
 export class PlayerItemComponent implements OnInit {
 

@@ -5,9 +5,10 @@ import { ApiService } from 'src/app/services/api.service';
 import * as numeral from 'numeral';
 
 @Component({
-  selector: 'app-market-overview',
-  templateUrl: './market-overview.component.html',
-  styleUrls: ['./market-overview.component.scss']
+    selector: 'app-market-overview',
+    templateUrl: './market-overview.component.html',
+    styleUrls: ['./market-overview.component.scss'],
+    standalone: false
 })
 export class MarketOverviewComponent implements OnInit {
 

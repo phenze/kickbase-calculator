@@ -60,23 +60,24 @@ let nextWindowId = 0;
  * A directive providing a simple way of creating powerful typeaheads from any text input.
  */
 @Directive({
-  selector: '[ngbTypeahead]',
-  exportAs: 'ngbTypeahead',
-  host: {
-    '(blur)': 'handleBlur()',
-    '[class.open]': 'isPopupOpen()',
-    '(keydown)': 'handleKeyDown($event)',
-    // '[autocomplete]': 'autocomplete',
-    'autocapitalize': 'off',
-    'autocorrect': 'off',
-    'role': 'combobox',
-    'aria-multiline': 'false',
-    '[attr.aria-autocomplete]': 'showHint ? "both" : "list"',
-    '[attr.aria-activedescendant]': 'activeDescendant',
-    '[attr.aria-owns]': 'isPopupOpen() ? popupId : null',
-    '[attr.aria-expanded]': 'isPopupOpen()'
-  },
-  providers: [NGB_TYPEAHEAD_VALUE_ACCESSOR]
+    selector: '[ngbTypeahead]',
+    exportAs: 'ngbTypeahead',
+    host: {
+        '(blur)': 'handleBlur()',
+        '[class.open]': 'isPopupOpen()',
+        '(keydown)': 'handleKeyDown($event)',
+        // '[autocomplete]': 'autocomplete',
+        'autocapitalize': 'off',
+        'autocorrect': 'off',
+        'role': 'combobox',
+        'aria-multiline': 'false',
+        '[attr.aria-autocomplete]': 'showHint ? "both" : "list"',
+        '[attr.aria-activedescendant]': 'activeDescendant',
+        '[attr.aria-owns]': 'isPopupOpen() ? popupId : null',
+        '[attr.aria-expanded]': 'isPopupOpen()'
+    },
+    providers: [NGB_TYPEAHEAD_VALUE_ACCESSOR],
+    standalone: false
 })
 export class NgbTypeahead implements ControlValueAccessor,
   OnInit, OnDestroy {
