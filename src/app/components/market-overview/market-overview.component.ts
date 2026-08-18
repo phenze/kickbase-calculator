@@ -1,4 +1,4 @@
-import { Component, EventEmitter, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, OnInit, Output, ChangeDetectionStrategy } from '@angular/core';
 import { KickbaseMarket } from 'src/app/model/kickbase-market';
 import { KickbasePlayer } from 'src/app/model/kickbase-player';
 import { ApiService } from 'src/app/services/api.service';
@@ -8,6 +8,7 @@ import * as numeral from 'numeral';
     selector: 'app-market-overview',
     templateUrl: './market-overview.component.html',
     styleUrls: ['./market-overview.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 export class MarketOverviewComponent implements OnInit {

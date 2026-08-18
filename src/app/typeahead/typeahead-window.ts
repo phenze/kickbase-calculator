@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, TemplateRef, OnInit } from '@angular/core';
+import { Component, Input, Output, EventEmitter, TemplateRef, OnInit, ChangeDetectionStrategy } from '@angular/core';
 
 import { toString } from './util/util';
 
@@ -36,6 +36,7 @@ export interface ResultTemplateContext {
     }
     
     `,
+    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 export class NgbTypeaheadWindow implements OnInit {

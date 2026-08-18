@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { Positioning } from './positioning';
 
@@ -208,6 +208,7 @@ describe('Positioning', () => {
 });
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <div
       id="element"

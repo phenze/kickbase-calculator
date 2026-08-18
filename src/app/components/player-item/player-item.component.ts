@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output, ChangeDetectionStrategy } from '@angular/core';
 import { KickbaseGroup } from 'src/app/model/kickbase-group';
 import { KickbasePlayer } from 'src/app/model/kickbase-player';
 import { ApiService } from 'src/app/services/api.service';
@@ -7,6 +7,7 @@ import { ApiService } from 'src/app/services/api.service';
     selector: 'app-player-item',
     templateUrl: './player-item.component.html',
     styleUrls: ['./player-item.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 export class PlayerItemComponent implements OnInit {

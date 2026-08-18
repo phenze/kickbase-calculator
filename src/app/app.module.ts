@@ -1,7 +1,7 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
+import { provideHttpClient, withInterceptorsFromDi, withXhr } from '@angular/common/http';
 
 import { AppComponent } from './app.component';
 
@@ -48,5 +48,5 @@ import { AutocompleteLibModule } from 'angular-ng-autocomplete';
         RouterModule.forRoot([], {}),
         AutocompleteLibModule
         // ServiceWorkerModule.register('ngsw-worker.js', { enabled: environment.production }),
-    ], providers: [MyCurrencyPipe, ApiService, LocalApiService, provideHttpClient(withInterceptorsFromDi())] })
+    ], providers: [MyCurrencyPipe, ApiService, LocalApiService, provideHttpClient(withXhr(), withInterceptorsFromDi())] })
 export class AppModule { }
