@@ -46,7 +46,7 @@ export class KickbasePlayerStats {
       if (nextMatches !== undefined) {
         let index = 0;
         for (const nm of nextMatches) {
-          if (index > 0) {
+          if (index >= 0) {
             this.nextThreeOpponents.push(new KickbasePlayerNextMatch(nm, this.tid));
           }
           index++
