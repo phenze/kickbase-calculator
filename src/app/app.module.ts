@@ -1,7 +1,7 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { HttpClientModule } from '@angular/common/http';
+import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 
 import { AppComponent } from './app.component';
 
@@ -27,8 +27,7 @@ import { MarketOverviewComponent } from './components/market-overview/market-ove
 
 import { AutocompleteLibModule } from 'angular-ng-autocomplete';
 
-@NgModule({
-    declarations: [
+@NgModule({ declarations: [
         AppComponent,
         NumberformatterDirective,
         MyCurrencyPipe,
@@ -41,18 +40,13 @@ import { AutocompleteLibModule } from 'angular-ng-autocomplete';
         PlayerItemComponent,
         MarketOverviewComponent
     ],
-    imports: [
-        BrowserModule,
+    bootstrap: [AppComponent], imports: [BrowserModule,
         FormsModule,
-        HttpClientModule,
         BsDropdownModule.forRoot(),
         ModalModule.forRoot(),
         AngularSvgIconModule.forRoot(),
         RouterModule.forRoot([], {}),
         AutocompleteLibModule
         // ServiceWorkerModule.register('ngsw-worker.js', { enabled: environment.production }),
-    ],
-    providers: [MyCurrencyPipe, ApiService, LocalApiService],
-    bootstrap: [AppComponent]
-})
+    ], providers: [MyCurrencyPipe, ApiService, LocalApiService, provideHttpClient(withInterceptorsFromDi())] })
 export class AppModule { }
