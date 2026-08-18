@@ -1,7 +1,21 @@
 // /* You can add global styles to this file, and also import other style files */
-@import "variables"; // Custom styles
+@use "variables" as variables;
 
-@import "../node_modules/bootstrap/scss/bootstrap";
+@use "bootstrap/scss/bootstrap" with (
+  $font-family-base: variables.$font-family-base,
+  $headings-font-family: variables.$headings-font-family,
+  $primary: variables.$primary,
+  $secondary: variables.$secondary,
+  $success: variables.$success,
+  $danger: variables.$danger,
+  $info: variables.$info,
+  $warning: variables.$warning,
+  $light: variables.$light,
+  $dark: variables.$dark
+);
+
+@import url("https://fonts.googleapis.com/css?family=Muli:200,300,400,700&display=swap");
+@import url("https://fonts.googleapis.com/css?family=Oswald:200,300,400,700&display=swap");
 
 body {
   background-color: #F0F0F0;

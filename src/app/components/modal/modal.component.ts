@@ -6,12 +6,12 @@ import { BsModalRef } from 'ngx-bootstrap/modal';
     templateUrl: './modal.component.html',
     styleUrls: ['./modal.component.scss'],
     changeDetection: ChangeDetectionStrategy.Eager,
-    standalone: false
+    standalone: true
 })
 export class ModalComponent implements OnInit {
 
-  title: string;
-  closeBtnName: string;
+  title = '';
+  closeBtnName = '';
   list: any[] = [];
 
   constructor(public bsModalRef: BsModalRef) { }

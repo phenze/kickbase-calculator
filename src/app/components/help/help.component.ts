@@ -5,12 +5,10 @@ import { Component, Input, OnInit, ChangeDetectionStrategy } from '@angular/core
     templateUrl: './help.component.html',
     styleUrls: ['./help.component.scss'],
     changeDetection: ChangeDetectionStrategy.Eager,
-    standalone: false
+    standalone: true
 })
 export class HelpComponent implements OnInit {
 
-
-  @Input() withoutApi: boolean;
   public showHelp = false;
 
   constructor() { }

@@ -2,15 +2,20 @@
   "compileOnSave": false,
   "compilerOptions": {
     "baseUrl": "./",
+    "ignoreDeprecations": "6.0",
     "outDir": "./dist/out-tsc",
     "esModuleInterop": true,
     "sourceMap": true,
     "declaration": false,
-    "module": "es2020",
+    "module": "ES2022",
     "moduleResolution": "bundler",
     "experimentalDecorators": true,
     "importHelpers": true,
     "target": "ES2022",
+    "lib": [
+      "ES2022",
+      "DOM"
+    ],
     "typeRoots": [
       "node_modules/@types"
     ],

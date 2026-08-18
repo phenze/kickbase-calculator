@@ -1,6 +1,6 @@
 @if (!apiService.isLoggedIn) {
   <div>
-    <app-login (loginWithoutAPI)="loginWithoutAPI()" (login)="login($event)" [doLogin]="doLogin"></app-login>
+    <app-login (login)="login($event)" [doLogin]="doLogin"></app-login>
     <div class="row mt-4 mb-4">
       <div class="col-12 text-center">
         <h6>Wenn ihr mich und meine Arbeit unterstützen wollt könnt ihr mir eine kleine Spende da lassen. Diese
@@ -34,11 +34,11 @@
   <hr />
   <div class="row">
     <div class="col-12">
-      <app-help [withoutApi]="withoutApi"></app-help>
+      <app-help></app-help>
     </div>
   </div>
   <hr />
-  @if (currentGift !== null && !withoutApi) {
+  @if (currentGift !== null) {
     <div class="row">
       <div class="col-12">
         <label class="mr-2">Geschenk</label>
@@ -50,18 +50,18 @@
   }
   <hr />
   <div class="row">
-    @if (!withoutApi) {
+
       <div class="col-12">
         <label>Liga</label>
         <select class="form-control" [(ngModel)]="selectedLeague" (ngModelChange)="onSelectedLeagueChanged($event)">
-          @for (league of leagues; track league) {
+          @for (league of leagues; track league.id) {
             <option [ngValue]="league.id">{{league.name}}</option>
           }
         </select>
       </div>
-    }
+
   </div>
-  @if (!withoutApi) {
+
     <div class="row mt-2">
       <div class="col-12 ">
         <div class="btn-group special " role="group" aria-label="...">
@@ -74,7 +74,7 @@
         </div>
       </div>
     </div>
-  }
+
   @if (loadingData) {
     <div class="d-flex justify-content-center">
       <div class="spinner-border m-5" role="status">
@@ -119,17 +119,11 @@
             <div class="input-group-prepend">
               <span class="input-group-text" id="basic-addon1">€</span>
             </div>
-            @if (!withoutApi) {
+
               <input type="text" [ngModel]="minusValueString" readonly min="0" step="1000"
                 data-number-to-fixed="2" data-number-stepfactor="100" class="form-control currency"
                 id="c22" />
-            }
-            @if (withoutApi) {
-              <input type="text" min="0" [ngModel]="minusValueString"
-                (ngModelChange)="onMinusValueChanged($event)" min="0" step="1000"
-                data-number-to-fixed="2" data-number-stepfactor="100" class="form-control currency"
-                id="c22" />
-            }
+
           </div>
           <label for="c2">Erwarte Ausgaben/Ausstehende Angebote</label>
           <div class="input-group">
@@ -187,13 +181,13 @@
             <option [ngValue]="4">MW Änderung &uarr;</option>
           </select>
         </div>
-        @if (!withoutApi) {
-          <div class="col-12 mt-2">
-            <h4>Einnahmen Anzahl Tage ({{fridayDate | date:'dd.MM.yyyy'}})</h4>
-            <input type="text" min="0" inputmode="numeric" pattern="[0-9]*" step="1" id="example"
-              class="form-control" [ngModel]="dayUntilFriday" (ngModelChange)="onFridayDateChanged($event)">
-          </div>
-        }
+
+      <div class="col-12 mt-2">
+        <h4>Einnahmen Anzahl Tage ({{fridayDate | date:'dd.MM.yyyy'}})</h4>
+        <input type="text" min="0" inputmode="numeric" pattern="[0-9]*" step="1" id="example"
+          class="form-control" [ngModel]="dayUntilFriday" (ngModelChange)="onFridayDateChanged($event)">
+      </div>
+
       </div>
       <hr />
       <div class="row sticky-top sticky-header">
@@ -237,44 +231,13 @@
           <h3 class="nav-icon number_players">{{amountPlayers}}</h3>
         </div>
       </div>
-      @if (loadingLigaInsiderStats) {
-        <div class="row">
-          <div class="col-12 text-center">
-            <div>
-              Marktwerte werden aktualisiert...
-            </div>
-            <div class="spinner-border" role="status">
-              <span class="sr-only">Loading...</span>
-            </div>
-          </div>
-        </div>
-      }
-      @if (withoutApi && !loadingLigaInsiderStats) {
-        <div class="row mt-2">
-          <div class="col-12">
-            <h4 class="align-center">Spieler hinzufügen</h4>
-            <div class="ng-autocomplete">
-              <ng-autocomplete #auto [data]="localApiService.typeaheadData" [searchKeyword]="'name'"
-                (selected)='selectEvent($event)' (inputChanged)='onChangeSearch($event)'
-                (inputFocused)='onFocused($event)' [itemTemplate]="itemTemplate"
-                [notFoundTemplate]="notFoundTemplate" [(ngModel)]="newplayername">
-              </ng-autocomplete>
-              <ng-template #itemTemplate let-item>
-                <a [innerHTML]="item.name"></a>
-              </ng-template>
-              <ng-template #notFoundTemplate let-notFound>
-                <div [innerHTML]="notFound"></div>
-              </ng-template>
-            </div>
-          </div>
-        </div>
-      }
+
       <hr />
       <h4 class="align-center">Kader: {{kickbaseGroup.team}}</h4>
       <h6 class="align-center">Minus: {{kickbaseGroup.possibleMinus}}</h6>
       <h6 class="align-center">Max Angebot: {{kickbaseGroup.possibleOffer}}</h6>
       <div class="row">
-        @if (!withoutApi) {
+
           <div class="col-12 mt-1">
             <button class="btn btn-outline-secondary btn-block" (click)="onLoadAllDetails(true)">
               @if (!loadingAllDetailsManual) {
@@ -286,14 +249,12 @@
               }
             </button>
           </div>
-        }
         <div class="col-12 mt-2">
-          @for (player of kickbaseGroup.players; track player) {
+          @for (player of kickbaseGroup.players; track player.id) {
             @if (showPlayer(player)) {
               <app-player-item [player]="player" [printMode]="printMode"
-                [withoutApi]="withoutApi" (loadDetails)="onLoadAllDetailsForPlayer(player)"
-                (removePlayer)="onRemovePlayer(player)" (playerChanged)="onPlayerValueChanged(player)"
-                (savePlayer)="saveLocalPlayers()">
+                (loadDetails)="onLoadAllDetailsForPlayer(player)"
+                (removePlayer)="onRemovePlayer(player)" (playerChanged)="onPlayerValueChanged(player)">
               </app-player-item>
             }
           }

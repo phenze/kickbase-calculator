@@ -7,26 +7,15 @@
 <button class="btn btn-link" (click)="showHelp = !showHelp;">Hilfe anzeigen</button>
 @if (showHelp) {
   <ul>
-    @if (!withoutApi) {
-      <li>Das Team , die Schulden und alles Weitere wird automatisch geladen.
-        Danach könnt ihr aus der Gruppe aller Spieler einfach diejenigen entfernen/deaktivieren die ihr
-        nicht verkaufen
-        wollt. Alle die übrig bleiben, werden summiert. Ist der Betrag oben grün ist alles gut (ihr kommt
-        ins plus mit den Verkäufen). Bei Rot reichts nicht.
-        Zum resetten der Liste einfach die Seite neu laden.
-      </li>
-    }
-    @if (withoutApi) {
-      <li>
-        Mit Hilfe der Input Box könnt ihr Spieler hinzufügen. Der Marktwert wird automatisch von LigaInsider
-        gezogen.
-        Danach könnt ihr aus der Gruppe aller Spieler einfach diejenigen entfernen/deaktivieren die ihr
-        nicht verkaufen
-        wollt. Alle die übrig bleiben, werden summiert. Ist der Betrag oben grün ist alles gut (ihr kommt
-        ins plus mit den Verkäufen). Bei Rot reichts nicht.
-        Zum resetten der Liste einfach die Seite neu laden.
-      </li>
-    }
+
+  <li>Das Team , die Schulden und alles Weitere wird automatisch geladen.
+    Danach könnt ihr aus der Gruppe aller Spieler einfach diejenigen entfernen/deaktivieren die ihr
+    nicht verkaufen
+    wollt. Alle die übrig bleiben, werden summiert. Ist der Betrag oben grün ist alles gut (ihr kommt
+    ins plus mit den Verkäufen). Bei Rot reichts nicht.
+    Zum resetten der Liste einfach die Seite neu laden.
+  </li>
+
     <li>Um Spieler komplett zu entfernen (wegen der besseren Übersicht) einfach auf das Spielerfoto klicken
     </li>
     <li>Der Verlust/Gewinn bis Freitag ist nur eine grobe Hausnummer und NICHT genau

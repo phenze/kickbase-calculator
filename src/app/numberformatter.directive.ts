@@ -4,7 +4,7 @@ import { MyCurrencyPipe } from "./my-currency.pipe";
 
 @Directive({
     selector: '[appNumberformatter]',
-    standalone: false
+    standalone: true
 })
 export class NumberformatterDirective {
 
@@ -21,14 +21,17 @@ export class NumberformatterDirective {
 		this.el.value = this.currencyPipe.transform(this.el.value);
 	}
 
-	@HostListener("focus", ["$event.target.value"])
-	onFocus(value) {
+	@HostListener("focus", ["$event"])
+	onFocus(_event: FocusEvent) {
 		//this.el.value = this.currencyPipe.parse(value); // opossite of transform
 	}
 
-	@HostListener("blur", ["$event.target.value"])
-	onBlur(value) {
-		this.el.value = this.currencyPipe.transform(value);
+	@HostListener("blur", ["$event"])
+	onBlur(event: FocusEvent) {
+		const target = event.target as HTMLInputElement | null;
+		if (target !== null) {
+			this.el.value = this.currencyPipe.transform(target.value);
+		}
 	}
 
 }

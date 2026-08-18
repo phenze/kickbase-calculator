@@ -5,7 +5,7 @@ const PADDING = "000000";
 
 @Pipe({
     name: 'myCurrency',
-    standalone: false
+    standalone: true
 })
 export class MyCurrencyPipe implements PipeTransform {
 

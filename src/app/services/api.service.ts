@@ -9,14 +9,13 @@ import { KickbaseGift } from '../model/kickbase-gift';
 import { AppComponent } from '../app.component';
 
 export class Data {
-  public userID: number;
-  public token: string;
-  public username: string;
-  public password: string;
-  public calculatorActive: string;
-  public lastLeagueId: number;
-  public loggedInWithoutApi: boolean;
-  public leagues: KickbaseLeague[];
+  public userID!: number;
+  public token!: string;
+  public username!: string;
+  public password!: string;
+  public calculatorActive!: string;
+  public lastLeagueId!: number;
+  public leagues!: KickbaseLeague[];
 
 }
 
@@ -27,8 +26,8 @@ export class ApiService {
   private baseUrl = "https://api.kickbase.com/v4/"
 
   public token = '';
-  public userID = null;
-  public data: Data = null;
+  public userID: any = null;
+  public data: any = null;
   public isLoggedIn = false;
 
   constructor(private http: HttpClient) {
@@ -36,10 +35,6 @@ export class ApiService {
     if (data !== null) {
       this.data = JSON.parse(data);
       if (this.data !== null) {
-        if (this.data.loggedInWithoutApi) {
-          this.isLoggedIn = true;
-          return;
-        }
         this.token = `Bearer ${this.data.token}`;
         this.userID = this.data.userID;
         this.isLoggedIn = true;
@@ -53,21 +48,6 @@ export class ApiService {
     }
   }
 
-  loginWithoutApi() {
-    this.isLoggedIn = true;
-    this.data = {
-      username: '',
-      password: '',
-      token: '',
-      userID: -1,
-      calculatorActive: AppComponent.display_mode_calculator,
-      lastLeagueId: -1,
-      loggedInWithoutApi: true,
-      leagues: []
-    }
-    localStorage.setItem('data', JSON.stringify(this.data))
-  }
-
   private customApiHeaders() {
     return new HttpHeaders()
       .set('Accept', 'application/json')
@@ -75,63 +55,17 @@ export class ApiService {
 
   }
 
-  async getMarketWinner(): Promise<string> {
-    // 
-    try {
-      const result = await this.http.get(
-        'https://pascalhenze.de/kickbase/corsproxy.php?url=https://www.ligainsider.de/stats/kickbase/marktwerte/tag/gewinner/', {
-        responseType: 'json'
-      }).toPromise()
-
-      return Promise.resolve(result['contents']);
-    } catch {
-      return Promise.reject('error');
-    }
-  }
-
-  async getMarketLooser(): Promise<string> {
-    // 
-    try {
-      const result = await this.http.get(
-        'https://pascalhenze.de/kickbase/corsproxy.php?url=https://www.ligainsider.de/stats/kickbase/marktwerte/tag/verlierer/', {
-        responseType: 'json'
-      }).toPromise()
-
-      return Promise.resolve(result['contents']);
-    } catch {
-      return Promise.reject('error');
-    }
-  }
-
-  async getMarketAll(): Promise<string> {
-    // 
-    try {
-      const result = await this.http.get(
-        'https://pascalhenze.de/kickbase/corsproxy.php?url=https://www.ligainsider.de/stats/kickbase/marktwerte/gesamt/', {
-        responseType: 'json'
-      }).toPromise()
-
-      return Promise.resolve(result['contents']);
-    } catch {
-      return Promise.reject('error');
-    }
-  }
-
   async getLeagues(): Promise<KickbaseLeague[]> {
     // let url = this.baseUrl + 'leagues';
     try {
-      if ((this.data.leagues === undefined || this.data.leagues.length === 0) && this.data.loggedInWithoutApi === false) {
-      }
+      // if ((this.data.leagues === undefined || this.data.leagues.length === 0) && this.data.loggedInWithoutApi === false) {
+      // }
       await this.refreshToken();
-      // const result = await this.http.get(url, {
-      //   headers: this.customApiHeaders(),
-      //   responseType: 'json'
-      // }).toPromise()
-      // return KickbaseLeague.createArrayInstance(result);
       return this.data.leagues;
     } catch (e) {
-      console.log(e);
-      if (e.status === 401 || e.status === 403) {
+      const error = e as any;
+      console.log(error);
+      if (error.status === 401 || error.status === 403) {
         await this.refreshToken();
         return this.getLeagues();
       } else {
@@ -152,8 +86,9 @@ export class ApiService {
       }).toPromise()
       return new KickbaseMarket(result, this.userID);
     } catch (e) {
-      console.log(e);
-      if (e.status === 401 || e.status === 403) {
+      const error = e as any;
+      console.log(error);
+      if (error.status === 401 || error.status === 403) {
         await this.refreshToken();
         return this.getMarket(league);
       } else {
@@ -182,10 +117,14 @@ export class ApiService {
     return this.http.post(url, payload, {
       responseType: 'json'
     }).toPromise()
-      .then((response) => {
+      .then((response: any) => {
+        if (!response) {
+          return Promise.reject('error');
+        }
         const user = response['u'];
-        this.userID = user['id'];
-        this.data.userID = this.userID;
+        const userId = user['id'];
+        this.userID = userId;
+        this.data.userID = userId;
         this.data.token = response['tkn'];
         this.data.leagues = KickbaseLeague.createArrayInstance(response['srvl']);
         localStorage.setItem('data', JSON.stringify(this.data))
@@ -201,7 +140,7 @@ export class ApiService {
   }
 
 
-  getToken(username, password): Promise<boolean> {
+  getToken(username: string, password: string): Promise<boolean> {
 
 
     const url = this.baseUrl + 'user/login';
@@ -219,17 +158,20 @@ export class ApiService {
     return this.http.post(url, payload, {
       responseType: 'json'
     }).toPromise()
-      .then((response) => {
+      .then((response: any) => {
+        if (!response) {
+          return Promise.reject('error');
+        }
         const user = response['u'];
-        this.userID = user['id'];
+        const userId = user['id'];
+        this.userID = userId;
         this.data = {
           username: username,
           password: password,
           token: response['tkn'],
-          userID: this.userID,
+          userID: userId,
           calculatorActive: this.data !== null ? this.data.calculatorActive : AppComponent.display_mode_calculator,
           lastLeagueId: this.data !== null ? this.data.lastLeagueId : -1,
-          loggedInWithoutApi: false,
           leagues: KickbaseLeague.createArrayInstance(response['srvl'])
         }
         localStorage.setItem('data', JSON.stringify(this.data))
@@ -257,8 +199,9 @@ export class ApiService {
       }).toPromise()
       return new KickbaseMarket(result, this.userID);
     } catch (e) {
-      console.log(e);
-      if (e.status === 401 || e.status === 403) {
+      const error = e as any;
+      console.log(error);
+      if (error.status === 401 || error.status === 403) {
         await this.refreshToken();
         return this.getLineup(league);
       } else {
@@ -279,8 +222,9 @@ export class ApiService {
       }).toPromise()
       return new KickbaseGift(result);
     } catch (e) {
-      console.log(e);
-      if (e.status === 401 || e.status === 403) {
+      const error = e as any;
+      console.log(error);
+      if (error.status === 401 || error.status === 403) {
         await this.refreshToken();
         return this.getGiftStatus(league);
       } else {
@@ -301,13 +245,14 @@ export class ApiService {
       }).toPromise();
       return result;
     } catch (e) {
-      console.log(e);
-      if (e.status === 401 || e.status === 403) {
+      const error = e as any;
+      console.log(error);
+      if (error.status === 401 || error.status === 403) {
         await this.refreshToken();
         return this.collectGift(league);
       } else {
         // TODO : Handle Api Errors
-        return Promise.reject(e.error);
+        return Promise.reject(error.error);
       }
     };
   }
@@ -323,8 +268,9 @@ export class ApiService {
       return new KickbasePlayerStats(result);
 
     } catch (e) {
-      console.log(e);
-      if (e.status === 401 || e.status === 403) {
+      const error = e as any;
+      console.log(error);
+      if (error.status === 401 || error.status === 403) {
         await this.refreshToken();
         return this.getPlayerStats(league, playerID);
       } else {
@@ -345,8 +291,9 @@ export class ApiService {
       return new KickbasePlayerStats(result);
 
     } catch (e) {
-      console.log(e);
-      if (e.status === 401 || e.status === 403) {
+      const error = e as any;
+      console.log(error);
+      if (error.status === 401 || error.status === 403) {
         await this.refreshToken();
         return this.getPlayerStats(league, playerID);
       } else {
@@ -356,12 +303,12 @@ export class ApiService {
     };
   }
 
-  public setLastDisplay(displayMode) {
+  public setLastDisplay(displayMode: string) {
     this.data.calculatorActive = displayMode;
     localStorage.setItem('data', JSON.stringify(this.data))
   }
 
-  public setLastLeague(leagueId) {
+  public setLastLeague(leagueId: number) {
     this.data.lastLeagueId = leagueId;
     localStorage.setItem('data', JSON.stringify(this.data))
   }
@@ -372,10 +319,12 @@ export class ApiService {
     if ((permantDeletedPlayer === null || permantDeletedPlayer === undefined) && deleted) {
       localStorage.setItem(key, JSON.stringify([playerId]))
     } else {
-      const tmpArray = JSON.parse(permantDeletedPlayer)
-      const playerIndex = tmpArray.findIndex(t => t === playerId.toString());
+      const parsedPlayers = JSON.parse(permantDeletedPlayer ?? '[]') as unknown;
+      const tmpArray = Array.isArray(parsedPlayers) ? parsedPlayers.map(player => String(player)) : [];
+      const playerIdAsString = playerId.toString();
+      const playerIndex = tmpArray.findIndex(player => player === playerIdAsString);
       if (deleted && playerIndex === -1) {
-        tmpArray.push(playerId)
+        tmpArray.push(playerIdAsString)
       }
       if (!deleted && playerIndex !== -1) {
         tmpArray.splice(playerIndex, 1)

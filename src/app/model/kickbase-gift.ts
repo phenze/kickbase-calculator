@@ -1,14 +1,14 @@
 
 
-import * as numeral from 'numeral';
+import numeral from 'numeral';
 
 
 export class KickbaseGift {
 
 
-    public isAvailable: boolean;
-    public amount: number;
-    public level: number;
+    public isAvailable = false;
+    public amount = 0;
+    public level = 0;
     public value = '';
 
     constructor(json: any) {

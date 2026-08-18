@@ -2,10 +2,10 @@
 
 export class KickbaseLeague {
 
-    public id: number;
-    public name: string;
-    public teamValue: number;
-    public budget: number;
+    public id = 0;
+    public name = '';
+    public teamValue = 0;
+    public budget = 0;
 
 
 

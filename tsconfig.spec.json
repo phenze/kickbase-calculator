@@ -7,7 +7,10 @@
       "node"
     ]
   },
-  "files": [],
+  "files": [
+    "src/test.ts",
+    "src/polyfills.ts"
+  ],
   "include": [
     "src/**/*.spec.ts",
     "src/**/*.d.ts"
@@ -19,6 +22,6 @@
         "optionalChainNotNullable": "suppress"
       }
     },
-    "strictTemplates": false
+    "strictTemplates": true
   }
 }

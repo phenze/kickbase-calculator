@@ -22,8 +22,8 @@
     </div>
     <div class="row">
       <div class="col-12">
-        @for (player of playersToShow; track player) {
-          <app-player-item [player]="player" [printMode]="false" [withoutApi]="false" [isMarketOverview]="true"
+        @for (player of playersToShow; track player.id) {
+          <app-player-item [player]="player" [printMode]="false" [isMarketOverview]="true"
             (loadDetails)="onLoadAllDetailsForPlayer(player)">
           </app-player-item>
         }

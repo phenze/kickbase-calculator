@@ -1,24 +1,24 @@
 
 
 import { KickbasePlayer } from './kickbase-player';
-import * as numeral from 'numeral';
+import numeral from 'numeral';
 
 
 export class KickbaseLivePlayer {
-    public name: string;
-    public lastname: string;
-    public teamID: string;
-    public id: number;
-    public a: number;
-    public g: number;
-    public nr: number;
-    public p: number;
-    public r: number;
-    public s: number;
-    public t: number;
-    public y: number;
-    public yr: number;
-    public image: string;
+    public name = '';
+    public lastname = '';
+    public teamID = '';
+    public id = 0;
+    public a = 0;
+    public g = 0;
+    public nr = 0;
+    public p = 0;
+    public r = 0;
+    public s = 0;
+    public t = 0;
+    public y = 0;
+    public yr = 0;
+    public image = '';
 
     constructor(json: any) {
         Object.assign(this, json);
@@ -33,10 +33,10 @@ export class KickbaseLivePlayer {
 }
 
 export class KickbaseLiveUser {
-    public players = new Array();
-    public userID: string;
-    public image: string;
-    public name: string;
+    public players: KickbaseLivePlayer[] = [];
+    public userID = '';
+    public image = '';
+    public name = '';
 
     constructor(json: any) {
         Object.assign(this, json);
@@ -73,9 +73,9 @@ export class KickbaseLiveUser {
 }
 
 export class KickbaseLiveTeam {
-    public name: string;
-    public points: number;
-    public ps: number;
+    public name = '';
+    public points = 0;
+    public ps = 0;
 
     constructor(json: any) {
         Object.assign(this, json);
@@ -89,10 +89,10 @@ export class KickbaseLiveTeam {
 
 export class KickbaseLiveData {
 
-    public users = new Array();
-    public notLinedPlayers = new Array();
-    public teams = new Array();
-    public userID: string;
+    public users: KickbaseLiveUser[] = [];
+    public notLinedPlayers: KickbaseLivePlayer[] = [];
+    public teams: KickbaseLiveTeam[] = [];
+    public userID = '';
 
     constructor(json: any, jsonTeams: any, jsonNotLined: any, userID: string) {
         Object.assign(this, json);

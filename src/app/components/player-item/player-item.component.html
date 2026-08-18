@@ -1,16 +1,11 @@
 <div class="card mb-2" [style.background-color]="player.color" (click)="onLoadAllDetailsForPlayer()">
   <div class="card-header p-1">
-    @if (!withoutApi) {
+
       <img src="{{player.imageUrl}}" class="img-fluid profile-picture" alt="Responsive image"
         (error)="errorHandler($event)" (click)="onRemovePlayer()">
-    }
 
-    @if (withoutApi) {
-      <div class="remove-container" alt="Spieler entfernen">
-        <svg-icon (click)="onRemovePlayer()" class="player-icon" src="assets/person_remove-24px.svg">
-        </svg-icon>
-      </div>
-    }
+
+
     <strong class>{{player.name}} </strong>&nbsp;
     @if (player.status === 1) {
       <svg-icon class="nav-icon" src="assets/health_injured.svg"
@@ -82,56 +77,36 @@
         <strong [style.color]="player.expiryColor">Ablauf Datum: {{player.expiryDate}}</strong>
       </div>
     }
-    @if ((player.hasOfferFromAny || withoutApi) && !printMode && !isMarketOverview) {
+    @if ((player.hasOfferFromAny) && !printMode && !isMarketOverview) {
       <div class="col-12 col-sm-6" [style.color]="player.colorOfferValue"
         >
-        @if (withoutApi) {
-          @if (!player.isInEditMode) {
-            <strong>Angebot: {{player.valueString}}&nbsp;({{player.valuePercentString}})</strong>
-            @if (withoutApi) {
-              <svg-icon (click)="onEditPlayerValue(player, $event)" class="edit-icon"
-                src="assets/create-24px.svg">
-              </svg-icon>
-            }
-          }
-          @if (player.isInEditMode) {
-            <input type="number" min="0" inputmode="numeric" pattern="[0-9]*" [(ngModel)]="player.value"
-              (ngModelChange)="onPlayerValueChanged($event)" min="0" step="1000" data-number-to-fixed="2"
-              data-number-stepfactor="100" class="form-control currency" id="c2" class="player-edit"
-              (keyup.enter)="onEditPlayerValueDone(player)" />
-            <svg-icon (click)="onEditPlayerValueDone(player, $event)" class="edit-icon"
-              src="assets/done-24px.svg">
-            </svg-icon>
-          }
-        }
-        @if (!withoutApi) {
-          <strong>Angebot: {{player.valueString}}&nbsp;({{player.valuePercentString}})</strong>
-        }
+        <strong>Angebot: {{player.valueString}}&nbsp;({{player.valuePercentString}})</strong>
+
       </div>
     }
-    @if (player.stats !== null && !printMode && !withoutApi) {
+    @if (player.stats !== null && !printMode) {
       @if (!isMarketOverview) {
         <div class="col-12">
           <hr />
         </div>
-        @if (!withoutApi) {
+
           <div class="col-12 col-sm-6">
             Gekauft: {{player.stats.buyPriceValue}}
           </div>
-        }
+
         <div [style.color]="player.colorMarketValue" class="col-12 col-sm-6">
           Marktwertänderung:
           {{player.stats.realMarketValueChangeValue}}&nbsp;({{player.stats.realMarketValueChangeValuePrecent}})
         </div>
-        @if (!withoutApi) {
+
           <div [style.color]="player.colorOffsetValue" class="col-12 col-sm-6">
             Verlust/Gewinn: {{player.offset}}
           </div>
-        }
-        @if (!withoutApi) {
+
+
           <div class="col-12 col-sm-6" [style.color]="player.colorSuccessValue">
           Erfolge bei Verkauf: {{player.successValueString}}</div>
-        }
+
       }
       <div class="col-12">
         <hr />
@@ -142,13 +117,13 @@
           <table class="table table-striped table-sm table-bordered">
             <tbody>
               <tr>
-                @for (value of player.stats.threeDaysValues; track value) {
-                  <td>{{value}}</td>
+                @for (item of player.stats.threeDaysValues; track item.key) {
+                  <td>{{item.value}}</td>
                 }
               </tr>
               <tr>
-                @for (value of player.stats.threeDaysValuesPercent; track value) {
-                  <td>{{value}}</td>
+                @for (item of player.stats.threeDaysValuesPercent; track item.key) {
+                  <td>{{item.value}}</td>
                 }
               </tr>
             </tbody>
@@ -160,24 +135,24 @@
       <div class="col-12">
         <hr />
       </div>
-      @if (!withoutApi) {
+
         <div class="col-12 col-sm-6">
           Punkte: {{player.stats.points}}
         </div>
-      }
-      @if (!withoutApi) {
+
+
         <div class="col-12 col-sm-6">
           Durchschnitt: {{player.stats.averagePoints}}
         </div>
-      }
-      @if (!withoutApi) {
+
+
         <div class="col-12 col-sm-6">
           Nächste Gegner:&nbsp;
           @for (nm of player.stats.nextThreeOpponents; track nm) {
-            @if (!withoutApi) {
+
               <img src="{{nm.imageUrl}}" class="img-fluid team-picture"
                 alt="Responsive image" (error)="errorHandler($event)">
-            }
+
             @if (nm.isHomeGame) {
               <span class="next-match-homegame">(H)</span>
             }
@@ -186,7 +161,7 @@
             }
           }
         </div>
-      }
+
     }
   </div>
 </div>

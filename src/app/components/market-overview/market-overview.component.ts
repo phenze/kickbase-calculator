@@ -1,23 +1,26 @@
 import { Component, EventEmitter, OnInit, Output, ChangeDetectionStrategy } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { KickbaseMarket } from 'src/app/model/kickbase-market';
 import { KickbasePlayer } from 'src/app/model/kickbase-player';
 import { ApiService } from 'src/app/services/api.service';
-import * as numeral from 'numeral';
+import { AngularSvgIconModule } from 'angular-svg-icon';
+import { PlayerItemComponent } from '../player-item/player-item.component';
 
 @Component({
     selector: 'app-market-overview',
     templateUrl: './market-overview.component.html',
     styleUrls: ['./market-overview.component.scss'],
     changeDetection: ChangeDetectionStrategy.Eager,
-    standalone: false
+    standalone: true,
+    imports: [FormsModule, AngularSvgIconModule, PlayerItemComponent]
 })
 export class MarketOverviewComponent implements OnInit {
 
-  public currentMarket: KickbaseMarket = null;
+  public currentMarket: KickbaseMarket | null = null;
   public playersToShow: KickbasePlayer[] = [];
   public players: KickbasePlayer[] = [];
   // public manualPricePlayers: KickbasePlayer[] = [];
-  public selectedLeague: number = null;
+  public selectedLeague: number | null = null;
   public onlyManualPrices: boolean = false;
   public onlyKickbasePlayers: boolean = false;
 

@@ -1,8 +1,7 @@
 
 
 import { KickbasePlayer } from './kickbase-player';
-import * as numeral from 'numeral';
-import * as moment from 'moment';
+import numeral from 'numeral';
 
 export class KickbaseGroup {
 

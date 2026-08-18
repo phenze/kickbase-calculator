@@ -1,7 +1,7 @@
 
 
 import { KickbasePlayer } from './kickbase-player';
-import * as numeral from 'numeral';
+import numeral from 'numeral';
 
 
 export class KickbaseMarket {

@@ -15,12 +15,13 @@
       "prefix": "app",
       "architect": {
         "build": {
-          "builder": "@angular-devkit/build-angular:application",
+          "builder": "@angular/build:application",
           "options": {
             "outputPath": {
               "base": "dist/kickbase-calculator"
             },
             "index": "src/index.html",
+            "browser": "src/main.ts",
             "polyfills": [
               "src/polyfills.ts"
             ],
@@ -37,8 +38,7 @@
             "extractLicenses": false,
             "sourceMap": true,
             "optimization": false,
-            "namedChunks": true,
-            "browser": "src/main.ts"
+            "namedChunks": true
           },
           "configurations": {
             "production": {
@@ -48,6 +48,7 @@
                   "with": "src/environments/environment.prod.ts"
                 }
               ],
+              "baseHref": "/kickbase/",
               "optimization": true,
               "outputHashing": "all",
               "sourceMap": false,
@@ -66,11 +67,10 @@
               ],
               "serviceWorker": "ngsw-config.json"
             }
-          },
-          "defaultConfiguration": ""
+          }
         },
         "serve": {
-          "builder": "@angular-devkit/build-angular:dev-server",
+          "builder": "@angular/build:dev-server",
           "options": {
             "buildTarget": "kickbase-calculator:build"
           },
@@ -81,16 +81,18 @@
           }
         },
         "extract-i18n": {
-          "builder": "@angular-devkit/build-angular:extract-i18n",
+          "builder": "@angular/build:extract-i18n",
           "options": {
             "buildTarget": "kickbase-calculator:build"
           }
         },
-        "kickbase-calculator": {
-          "builder": "@angular-devkit/build-angular:karma",
+        "test": {
+          "builder": "@angular/build:karma",
           "options": {
-            "main": "src/main.ts",
-            "polyfills": "src/polyfills.ts",
+            "main": "src/test.ts",
+            "polyfills": [
+              "src/polyfills.ts"
+            ],
             "tsConfig": "tsconfig.spec.json",
             "karmaConfig": "karma.conf.js",
             "assets": [
@@ -102,18 +104,6 @@
               "src/styles.scss"
             ],
             "scripts": []
-          }
-        },
-        "e2e": {
-          "builder": "@angular-devkit/build-angular:protractor",
-          "options": {
-            "protractorConfig": "e2e/protractor.conf.js",
-            "devServerTarget": "kickbase-calculator:serve"
-          },
-          "configurations": {
-            "production": {
-              "devServerTarget": "kickbase-calculator:serve:production"
-            }
           }
         }
       }
@@ -144,5 +134,8 @@
     "@schematics/angular:resolver": {
       "typeSeparator": "."
     }
+  },
+  "cli": {
+    "analytics": false
   }
 }
