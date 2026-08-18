@@ -22,23 +22,23 @@
   </svg-icon> -->
   @if (!isMarketOverview) {
     @if (!player.isDeactivated) {
-      <svg-icon class="player-icon float-right" src="assets/check_box-24px.svg">
+      <svg-icon class="player-icon float-end" src="assets/check_box-24px.svg">
       </svg-icon>
     }
     @if (player.isDeactivated) {
-      <svg-icon class="player-icon float-right"
+      <svg-icon class="player-icon float-end"
         src="assets/check_box_outline_blank-24px.svg">
       </svg-icon>
     }
     @if (player.isPersitantDeleted) {
       <svg-icon (click)="onSetPlayerPermanentDeleted($event,player,false)"
-        class="player-icon icon-permanent float-right" src="assets/person_remove-24px.svg"
+        class="player-icon icon-permanent float-end" src="assets/person_remove-24px.svg"
         title="Spieler dauerhaft entfernen">
       </svg-icon>
     }
     @if (!player.isPersitantDeleted) {
       <svg-icon (click)="onSetPlayerPermanentDeleted($event,player,true)"
-        class="player-icon icon-permanent float-right" src="assets/person_add-24px.svg"
+        class="player-icon icon-permanent float-end" src="assets/person_add-24px.svg"
         title="Spieler dauerhaft hinzufügen">
       </svg-icon>
     }

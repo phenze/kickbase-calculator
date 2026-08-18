@@ -2,17 +2,17 @@
   <div>
     <div class="row">
       <div class="col-12 mt-4">
-        <div class="custom-control custom-switch">
-          <input type="checkbox" class="custom-control-input" [(ngModel)]="onlyManualPrices"
+        <div class="form-check form-switch">
+          <input type="checkbox" class="form-check-input" role="switch" [(ngModel)]="onlyManualPrices"
             (ngModelChange)="onOnlyManualPricesChanges()" id="customSwitchRichtpreis">
-          <label class="custom-control-label" for="customSwitchRichtpreis">Nur Richtpreise anzeigen</label>
+          <label class="form-check-label" for="customSwitchRichtpreis">Nur Richtpreise anzeigen</label>
         </div>
       </div>
       <div class="col-8 mb-4 mt-2">
-        <div class="custom-control custom-switch">
-          <input type="checkbox" class="custom-control-input" [(ngModel)]="onlyKickbasePlayers"
+        <div class="form-check form-switch">
+          <input type="checkbox" class="form-check-input" role="switch" [(ngModel)]="onlyKickbasePlayers"
             (ngModelChange)="onOnlyKickbasePlayersChanged()" id="customSwitchOnlyKickbasePlayer">
-          <label class="custom-control-label" for="customSwitchOnlyKickbasePlayer">Spieler von Mitspielern
+          <label class="form-check-label" for="customSwitchOnlyKickbasePlayer">Spieler von Mitspielern
           ausblenden</label>
         </div>
       </div>

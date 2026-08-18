@@ -3,17 +3,17 @@
     <h4>Kickbase Login</h4>
     <div class="col-12">
       <!-- <form> -->
-      <div class="form-group">
-        <label for="exampleInputEmail1">Email address</label>
+      <div class="mb-3">
+        <label class="form-label" for="exampleInputEmail1">Email address</label>
         <input type="email" [(ngModel)]="username" class="form-control" id="exampleInputEmail1"
           aria-describedby="emailHelp" placeholder="Enter email">
       </div>
-      <div class="form-group">
-        <label for="exampleInputPassword1">Password</label>
+      <div class="mb-3">
+        <label class="form-label" for="exampleInputPassword1">Password</label>
         <input type="password" [(ngModel)]="password" class="form-control" id="exampleInputPassword1"
           placeholder="Password">
       </div>
-      <button (click)="loginPrivate()" type="submit" class="btn btn-primary btn-block">
+      <button (click)="loginPrivate()" type="button" class="btn btn-primary w-100">
         @if (!doLogin) {
           <span>Login</span>
         }
