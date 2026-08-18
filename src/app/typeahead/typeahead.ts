@@ -16,10 +16,11 @@ import {
   Renderer2,
   TemplateRef,
   ViewContainerRef,
-  ApplicationRef
+  ApplicationRef,
+  DOCUMENT
 } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
-import { DOCUMENT } from '@angular/common';
+
 import { BehaviorSubject, fromEvent, Observable, Subject, Subscription } from 'rxjs';
 import { map, switchMap, tap } from 'rxjs/operators';
 

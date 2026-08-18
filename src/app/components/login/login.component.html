@@ -1,38 +1,40 @@
-<div class="row card p-3 mt-2" *ngIf="isAdminMode">
+@if (isAdminMode) {
+  <div class="row card p-3 mt-2">
     <h4>Kickbase Login</h4>
     <div class="col-12">
-        <!-- <form> -->
-        <div class="form-group">
-            <label for="exampleInputEmail1">Email address</label>
-            <input type="email" [(ngModel)]="username" class="form-control" id="exampleInputEmail1"
-                aria-describedby="emailHelp" placeholder="Enter email">
-        </div>
-        <div class="form-group">
-            <label for="exampleInputPassword1">Password</label>
-            <input type="password" [(ngModel)]="password" class="form-control" id="exampleInputPassword1"
-                placeholder="Password">
-        </div>
-        <button (click)="loginPrivate()" type="submit" class="btn btn-primary btn-block">
-            <ng-container *ngIf="!doLogin">
-                <span>Login</span>
-            </ng-container>
-            <ng-container *ngIf="doLogin">
-                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-                Loading...
-            </ng-container>
-        </button>
-        <!-- </form> -->
-    </div>
+      <!-- <form> -->
+      <div class="form-group">
+        <label for="exampleInputEmail1">Email address</label>
+        <input type="email" [(ngModel)]="username" class="form-control" id="exampleInputEmail1"
+          aria-describedby="emailHelp" placeholder="Enter email">
+      </div>
+      <div class="form-group">
+        <label for="exampleInputPassword1">Password</label>
+        <input type="password" [(ngModel)]="password" class="form-control" id="exampleInputPassword1"
+          placeholder="Password">
+      </div>
+      <button (click)="loginPrivate()" type="submit" class="btn btn-primary btn-block">
+        @if (!doLogin) {
+          <span>Login</span>
+        }
+        @if (doLogin) {
+          <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+          Loading...
+        }
+      </button>
+    <!-- </form> -->
+  </div>
 </div>
+}
 <div class="row card p-3 mt-4">
-    <h4>Ligainsider Anbindung</h4>
-    <div class="col-12 text-center">
+  <h4>Ligainsider Anbindung</h4>
+  <div class="col-12 text-center">
 
-        <div class="hcenter">
-            <img class="start-picture" src="assets/favicon/android-icon-144x144.png" />
-        </div>
+    <div class="hcenter">
+      <img class="start-picture" src="assets/favicon/android-icon-144x144.png" />
     </div>
-    <div class="col-12 text-center mt-2">
-        <button (click)="loginWithoutAPI.emit()" type="submit" class="btn btn-primary btn-block">Starten</button>
-    </div>
+  </div>
+  <div class="col-12 text-center mt-2">
+    <button (click)="loginWithoutAPI.emit()" type="submit" class="btn btn-primary btn-block">Starten</button>
+  </div>
 </div>

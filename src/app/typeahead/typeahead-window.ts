@@ -25,19 +25,17 @@ export interface ResultTemplateContext {
     <ng-template #rt let-result="result" let-term="term" let-formatter="formatter">
       <ngb-highlight [result]="formatter(result)" [term]="term"></ngb-highlight>
     </ng-template>
-    <ng-template ngFor [ngForOf]="results" let-result let-idx="index">
+    @for (result of results; track result; let idx = $index) {
       <li class="menu-item" role="option"
         [id]="id + '-' + idx"
         [class.active]="idx === activeIdx"
-        
         (click)="select(result)">
-          <ng-template [ngTemplateOutlet]="resultTemplate || rt"
-          [ngTemplateOutletContext]="{result: result, term: term, formatter: formatter}"></ng-template>
+        <ng-template [ngTemplateOutlet]="resultTemplate || rt"
+        [ngTemplateOutletContext]="{result: result, term: term, formatter: formatter}"></ng-template>
       </li>
-      
-    </ng-template>
+    }
     
-  `,
+    `,
     standalone: false
 })
 export class NgbTypeaheadWindow implements OnInit {

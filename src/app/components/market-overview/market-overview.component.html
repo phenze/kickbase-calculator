@@ -1,33 +1,33 @@
-<div *ngIf="currentMarket !== null">
+@if (currentMarket !== null) {
+  <div>
     <div class="row">
-        <div class="col-12 mt-4">
-            <div class="custom-control custom-switch">
-                <input type="checkbox" class="custom-control-input" [(ngModel)]="onlyManualPrices"
-                    (ngModelChange)="onOnlyManualPricesChanges()" id="customSwitchRichtpreis">
-                <label class="custom-control-label" for="customSwitchRichtpreis">Nur Richtpreise anzeigen</label>
-            </div>
+      <div class="col-12 mt-4">
+        <div class="custom-control custom-switch">
+          <input type="checkbox" class="custom-control-input" [(ngModel)]="onlyManualPrices"
+            (ngModelChange)="onOnlyManualPricesChanges()" id="customSwitchRichtpreis">
+          <label class="custom-control-label" for="customSwitchRichtpreis">Nur Richtpreise anzeigen</label>
         </div>
-        <div class="col-8 mb-4 mt-2">
-            <div class="custom-control custom-switch">
-                <input type="checkbox" class="custom-control-input" [(ngModel)]="onlyKickbasePlayers"
-                    (ngModelChange)="onOnlyKickbasePlayersChanged()" id="customSwitchOnlyKickbasePlayer">
-                <label class="custom-control-label" for="customSwitchOnlyKickbasePlayer">Spieler von Mitspielern
-                    ausblenden</label>
-            </div>
+      </div>
+      <div class="col-8 mb-4 mt-2">
+        <div class="custom-control custom-switch">
+          <input type="checkbox" class="custom-control-input" [(ngModel)]="onlyKickbasePlayers"
+            (ngModelChange)="onOnlyKickbasePlayersChanged()" id="customSwitchOnlyKickbasePlayer">
+          <label class="custom-control-label" for="customSwitchOnlyKickbasePlayer">Spieler von Mitspielern
+          ausblenden</label>
         </div>
-        <div class="col-4 mb-4 mt-2">
-            <svg-icon (click)="reload()" class="nav-icon refresh-icon" src="assets/refresh-24px.svg"></svg-icon>
-        </div>
+      </div>
+      <div class="col-4 mb-4 mt-2">
+        <svg-icon (click)="reload()" class="nav-icon refresh-icon" src="assets/refresh-24px.svg"></svg-icon>
+      </div>
     </div>
     <div class="row">
-        <div class="col-12">
-            <ng-container *ngFor="let player of playersToShow">
-                <app-player-item [player]="player" [printMode]="false" [withoutApi]="false" [isMarketOverview]="true"
-                    (loadDetails)="onLoadAllDetailsForPlayer(player)">
-                </app-player-item>
-            </ng-container>
-        </div>
-
+      <div class="col-12">
+        @for (player of playersToShow; track player) {
+          <app-player-item [player]="player" [printMode]="false" [withoutApi]="false" [isMarketOverview]="true"
+            (loadDetails)="onLoadAllDetailsForPlayer(player)">
+          </app-player-item>
+        }
+      </div>
     </div>
-
-</div>
+  </div>
+}
