@@ -109,8 +109,14 @@
           </select>
         </div>
       </div>
-      <app-market-overview (loadDetails)="onLoadAllDetailsForPlayer($event)" (onReload)="reloadMarket(true)">
-      </app-market-overview>
+
+    <app-market-overview
+            [sortedPlayers]="marketOverviewPlayers"
+            [selectedLeague]="selectedLeague"
+            (loadDetails)="onLoadAllDetailsForPlayer($event)"
+            (onReload)="reloadMarket(true)"
+    />
+
     }
     @if (displayMode === AppComponent.display_mode_calculator) {
       <div class="row mt-2">

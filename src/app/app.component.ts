@@ -103,8 +103,7 @@ export class AppComponent implements OnInit, AfterViewInit {
   public dayUntilFriday = 0;
   public fridayDate = new Date();
 
-  @ViewChild(MarketOverviewComponent, { static: false })
-  marketOverviewComponent?: MarketOverviewComponent;
+  public marketOverviewPlayers: KickbasePlayer[] = [];
 
   constructor(
     public apiService: ApiService,
@@ -183,34 +182,54 @@ export class AppComponent implements OnInit, AfterViewInit {
 
 
 
-  reloadMarket = async (fullRefresh: boolean) => {
+  // private updateMarketOverview(): void {
+  //   console.log('updateMarketOverview', this.marketOverviewComponent);
+  //   if (this.marketOverviewComponent === undefined) {
+  //     return;
+  //
+  //   }
+  //
+  //   this.marketOverviewComponent.selectedLeague = this.selectedLeague;
+  //   this.marketOverviewComponent.setCurrentMarket(this.currentMarket);
+  //
+  //   this.cdRef.detectChanges();
+  // }
+
+
+  reloadMarket = async (fullRefresh: boolean): Promise<void> => {
     if (this.selectedLeague === null) {
       return;
     }
+
     this.loadingData = true;
-    if (fullRefresh) {
-      this.currentMarket = await this.apiService.getMarket(this.selectedLeague);
-    }
-    if (this.currentMarket === null) {
-      this.loadingData = false;
-      return;
-    }
-    for (let pl of this.currentMarket.players) {
-      if (this.loadStatsAlways) {
-        await pl.loadStats(this.selectedLeague, this.apiService);
+
+    try {
+      if (fullRefresh || this.currentMarket === null) {
+        this.currentMarket = await this.apiService.getMarket(
+            this.selectedLeague
+        );
       }
-      pl.calcValues();
-      pl.isDeactivated = true;
-      pl.calcColors(0);
+      if (this.currentMarket === null) {
+        return;
+      }
+
+
+      for (const player of this.currentMarket.players) {
+        if (this.loadStatsAlways) {
+          await player.loadStats(this.selectedLeague, this.apiService);
+        }
+
+        player.calcValues();
+        player.isDeactivated = true;
+        player.calcColors(0);
+      }
+
+      this.sortCurrentPlayers();
+    } finally {
+      this.loadingData = false;
+      this.cdRef.detectChanges();
     }
-    this.loadingData = false;
-    this.cdRef.detectChanges();
-    if (this.marketOverviewComponent !== undefined) {
-      this.marketOverviewComponent.selectedLeague = this.selectedLeague
-      this.marketOverviewComponent.setCurrentMarket(this.currentMarket);
-    }
-    this.sortCurrentPlayers();
-  }
+  };
 
 
   reload() {
@@ -261,69 +280,104 @@ export class AppComponent implements OnInit, AfterViewInit {
   }
 
 
-  onSelectedLeagueChanged = async (newValue: number | string | null) => {
+  onSelectedLeagueChanged = async (
+      newValue: number | null
+  ): Promise<void> => {
     this.loadingData = true;
     this.kickbaseGroup = new KickbaseGroup();
-    if (newValue === 'null' || newValue === null) {
+
+    if (newValue === null) {
       this.selectedLeague = null;
+      this.currentMarket = null;
+      this.currentGift = null;
       this.loadingData = false;
       return;
     }
-    this.selectedLeague = typeof newValue === 'number' ? newValue : Number.parseInt(newValue, 10);
-    this.apiService.setLastLeague(this.selectedLeague);
+
+    this.selectedLeague = newValue;
+    this.apiService.setLastLeague(newValue);
+
     try {
-      this.currentMarket = await this.apiService.getMarket(this.selectedLeague);
-      this.currentGift = null;// await this.apiService.getGiftStatus(this.selectedLeague);
-      const league = this.leagues.find(t => t.id == this.selectedLeague);
+      // Markt der neu ausgewählten Liga laden
+      this.currentMarket = await this.apiService.getMarket(newValue);
+      this.currentGift = null;
+
+      const league = this.leagues.find(
+          item => Number(item.id) === newValue
+      );
+
       if (league === undefined) {
-        this.loadingData = false;
         return;
       }
-      const lineUp = await this.apiService.getLineup(this.selectedLeague);
 
-      const di = numeral(league.budget);
-      this.minusValue = di.value() ?? 0;
-      this.minusValueString = di.format('0,0');
+      const lineUp = await this.apiService.getLineup(newValue);
+
+      const budget = numeral(league.budget);
+      this.minusValue = budget.value() ?? 0;
+      this.minusValueString = budget.format('0,0');
+
       if (this.currentMarket !== null) {
-        this.extraAmount = Number(this.currentMarket.offerAmountForUser);
+        this.extraAmount = Number(
+            this.currentMarket.offerAmountForUser
+        );
+
         const extraAmountNumeral = numeral(this.extraAmount);
         this.extraAmountString = extraAmountNumeral.format('0,0');
       }
-      const permantDeletedPlayerLocal = localStorage.getItem('permantDeletedPlayer_' + this.selectedLeague.toString());
-      let permantDeletedPlayers: string[] = [];
-      if (permantDeletedPlayerLocal !== null) {
-        const parsedDeletedPlayers = JSON.parse(permantDeletedPlayerLocal) as unknown;
-        permantDeletedPlayers = Array.isArray(parsedDeletedPlayers) ? parsedDeletedPlayers.map(value => String(value)) : [];
+
+      const deletedPlayersStorage = localStorage.getItem(
+          `permantDeletedPlayer_${newValue}`
+      );
+
+      let permanentlyDeletedPlayers: string[] = [];
+
+      if (deletedPlayersStorage !== null) {
+        const parsedDeletedPlayers: unknown =
+            JSON.parse(deletedPlayersStorage);
+
+        permanentlyDeletedPlayers = Array.isArray(parsedDeletedPlayers)
+            ? parsedDeletedPlayers.map(value => String(value))
+            : [];
       }
-      this.amountPlayers = 0
-      for (let p of lineUp.players) {
-        let marketPLayer = this.currentMarket.players.find(tmp => tmp.id == p.id)
-        if (marketPLayer != null) {
-          p.value = marketPLayer.value
-          p.price = marketPLayer.price;
+
+      this.amountPlayers = 0;
+
+      for (const player of lineUp.players) {
+        const marketPlayer = this.currentMarket?.players.find(
+            marketItem => marketItem.id === player.id
+        );
+
+        if (marketPlayer !== undefined) {
+          player.value = marketPlayer.value;
+          player.price = marketPlayer.price;
         }
-        p.leagueId = this.selectedLeague;
-        p.isPersitantDeleted = permantDeletedPlayers.findIndex(t => t === p.id.toString()) !== -1;
-        this.kickbaseGroup.players.push(p)
-        if (p.isPersitantDeleted) {
-          this.amountPlayers++
+
+        player.leagueId = newValue;
+        player.isPersitantDeleted =
+            permanentlyDeletedPlayers.includes(String(player.id));
+
+        this.kickbaseGroup.players.push(player);
+
+        if (player.isPersitantDeleted) {
+          this.amountPlayers++;
         }
       }
+
+      // Nur zusätzliche Details laden, wenn aktiviert.
+      // Die Marktübersicht wurde bereits vorher aktualisiert.
       if (this.loadStatsAlways) {
         await this.onLoadAllDetails(false);
       }
+
       this.onIncludeAdditionalAmountChanged();
+
+    } catch (error) {
+      console.error('Fehler beim Wechseln der Liga:', error);
+    } finally {
       this.loadingData = false;
       this.cdRef.detectChanges();
-      if (this.marketOverviewComponent !== undefined) {
-        this.marketOverviewComponent.selectedLeague = this.selectedLeague;
-        this.marketOverviewComponent.setCurrentMarket(this.currentMarket);
-      }
-    } catch (error) {
-      console.log(error)
-      this.loadingData = false;
     }
-  }
+  };
 
   onAmountChange(newValue: number | string) {
     console.log(newValue)
@@ -528,53 +582,74 @@ export class AppComponent implements OnInit, AfterViewInit {
     this.sortCurrentPlayers();
   }
 
-  sortCurrentPlayers() {
-    let playersToSort = this.kickbaseGroup.players;
-    if (this.displayMode === AppComponent.display_mode_market_overview && this.marketOverviewComponent?.currentMarket !== null && this.marketOverviewComponent?.currentMarket !== undefined) {
-      playersToSort = this.marketOverviewComponent.currentMarket.players;
-    }
-    if (this.selectedSorting == this.sorting_mw_asc || this.selectedSorting == this.sorting_mw_desc) {
-      const isAsc = this.selectedSorting == this.sorting_mw_asc;
+  sortCurrentPlayers(): void {
+    const isMarketOverview =
+        this.displayMode === AppComponent.display_mode_market_overview;
+
+    const sourcePlayers = isMarketOverview
+        ? this.currentMarket?.players ?? []
+        : this.kickbaseGroup.players;
+
+    const playersToSort = [...sourcePlayers];
+
+    if (
+        this.selectedSorting === this.sorting_mw_asc ||
+        this.selectedSorting === this.sorting_mw_desc
+    ) {
+      const ascending =
+          this.selectedSorting === this.sorting_mw_asc;
+
       playersToSort.sort((a, b) => {
-        if (a.marketValue > b.marketValue) {
-          return isAsc ? 1 : -1;
-        } else if (a.marketValue < b.marketValue) {
-          return isAsc ? -1 : 1;
-        } else {
+        if (a.marketValue === b.marketValue) {
           return 0;
         }
-      });
 
+        const result =
+            a.marketValue < b.marketValue ? -1 : 1;
+
+        return ascending ? result : -result;
+      });
     }
 
-    if (this.selectedSorting == this.sorting_mw_change_asc || this.selectedSorting == this.sorting_mw_change_desc) {
-      const isAsc = this.selectedSorting == this.sorting_mw_change_asc;
+    if (
+        this.selectedSorting === this.sorting_mw_change_asc ||
+        this.selectedSorting === this.sorting_mw_change_desc
+    ) {
+      const ascending =
+          this.selectedSorting === this.sorting_mw_change_asc;
+
       playersToSort.sort((a, b) => {
-        if (a.stats !== null && b.stats !== null) {
-          if (a.stats.realMarketValueChange > b.stats.realMarketValueChange) {
-            return isAsc ? -1 : 1;
-          } else if (a.stats.realMarketValueChange < b.stats.realMarketValueChange) {
-            return isAsc ? 1 : -1;
-          } else {
-            return 0;
-          }
-        } else {
+        const aChange = a.stats?.realMarketValueChange;
+        const bChange = b.stats?.realMarketValueChange;
+
+        if (aChange === undefined || bChange === undefined) {
           return 0;
         }
-      });
 
+        if (aChange === bChange) {
+          return 0;
+        }
+
+        const result = aChange < bChange ? -1 : 1;
+
+        return ascending ? result : -result;
+      });
     }
-    if (this.selectedSorting == this.sorting_default) {
+
+    if (this.selectedSorting === this.sorting_default) {
       playersToSort.sort((a, b) => {
         if (a.expiry === b.expiry) {
           return 0;
         }
+
         return a.expiry > b.expiry ? 1 : -1;
       });
-
     }
-    if (this.displayMode === AppComponent.display_mode_market_overview) {
-      this.marketOverviewComponent?.setSortedPlayers(playersToSort);
+
+    if (isMarketOverview) {
+      this.marketOverviewPlayers = playersToSort;
+    } else {
+      this.kickbaseGroup.players = playersToSort;
     }
   }
 
@@ -608,17 +683,15 @@ export class AppComponent implements OnInit, AfterViewInit {
     return true;
   }
 
-  switchDisplay = async (displayMode: string) => {
+  switchDisplay = async (displayMode: string): Promise<void> => {
     this.displayMode = displayMode;
     this.apiService.setLastDisplay(this.displayMode);
 
     if (displayMode === AppComponent.display_mode_market_overview) {
       this.selectedSorting = this.sorting_default;
-      await this.reloadMarket(false);
+
+      await this.reloadMarket(true);
     }
-
-  }
-
-
+  };
 
 }
