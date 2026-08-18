@@ -73,18 +73,18 @@
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
           "options": {
-            "browserTarget": "kickbase-calculator:build"
+            "buildTarget": "kickbase-calculator:build"
           },
           "configurations": {
             "production": {
-              "browserTarget": "kickbase-calculator:build:production"
+              "buildTarget": "kickbase-calculator:build:production"
             }
           }
         },
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
-            "browserTarget": "kickbase-calculator:build"
+            "buildTarget": "kickbase-calculator:build"
           }
         },
         "kickbase-calculator": {
