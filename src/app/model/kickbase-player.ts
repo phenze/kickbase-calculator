@@ -94,7 +94,10 @@ export class KickbasePlayer {
         }
       }
       this.expiry = json['exs']
-      this.expiryDate = this.formatGermanDateTime(this.addSeconds(new Date(), this.expiry));
+      const safeExpiry = Number(this.expiry) || 0;
+
+      const date = this.addSeconds(new Date(), safeExpiry);
+      this.expiryDate = this.formatGermanDateTime(date);
     }
 
     this.imageUrl = 'https://kickbase.b-cdn.net/pool/playersbig/' + this.id + '.png';
