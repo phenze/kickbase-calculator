@@ -1,24 +1,24 @@
 
 
-import * as numeral from 'numeral';
+import numeral from 'numeral';
 import { KickbasePlayerNextMatch } from './kickbase-player-next-match';
 export class KickbasePlayerStats {
 
   // api fields
-  public id: string;
-  public tid: string;
-  public status: string;
-  public mv: number;
+  public id!: string;
+  public tid!: string;
+  public status!: string;
+  public mv!: number;
 
   // custom fields
-  public points: string;
-  public averagePoints: string;
-  public buyPrice: number;
-  public realMarketValueChange: number;
+  public points!: string;
+  public averagePoints!: string;
+  public buyPrice!: number;
+  public realMarketValueChange!: number;
 
-  public seasons: string;
+  public seasons!: string;
 
-  public marketValues: any[];
+  public marketValues!: any[];
 
   public threeDaysValues: any[];
   public threeDaysValuesPercent: any[];
@@ -28,7 +28,7 @@ export class KickbasePlayerStats {
   public realMarketValueChangeValuePrecent = '';
   public buyPriceValue = '';
 
-  public nextThreeOpponents: KickbasePlayerNextMatch[];
+  public nextThreeOpponents!: KickbasePlayerNextMatch[];
 
 
   constructor(json: any) {
@@ -46,7 +46,7 @@ export class KickbasePlayerStats {
       if (nextMatches !== undefined) {
         let index = 0;
         for (const nm of nextMatches) {
-          if (index > 0) {
+          if (index >= 0) {
             this.nextThreeOpponents.push(new KickbasePlayerNextMatch(nm, this.tid));
           }
           index++
@@ -99,10 +99,16 @@ export class KickbasePlayerStats {
           const nextValue = tmp[i + 1];
           const change = nextValue - value;
           let n = numeral(change);
-          this.threeDaysValues.push(n.format('0,0 $'));
+          this.threeDaysValues.push({
+            key: i,
+            value: n.format('0,0 $')
+          });
           let np = numeral(change / this.mv);
 
-          this.threeDaysValuesPercent.push(np.format('0.000%'));
+          this.threeDaysValuesPercent.push({
+            key: i,
+            value: np.format('0.000%')
+          });
         }
       }
     }

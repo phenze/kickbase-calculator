@@ -1,10 +1,9 @@
-import { AfterViewInit, ChangeDetectorRef, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { AfterViewInit, ChangeDetectorRef, Component, OnInit, ViewChild, ChangeDetectionStrategy } from '@angular/core';
 
 import { ApiService } from './services/api.service';
 
-import * as numeral from 'numeral';
+import numeral from 'numeral';
 import 'numeral/locales/de'
-import * as moment from 'moment';
 
 import { KickbaseGroup } from './model/kickbase-group';
 import { KickbasePlayer } from './model/kickbase-player';
@@ -14,28 +13,44 @@ import { KickbaseMarket } from './model/kickbase-market';
 import { KickbaseGift } from './model/kickbase-gift';
 import { BsModalService, BsModalRef } from 'ngx-bootstrap/modal';
 import { ModalComponent } from './components/modal/modal.component';
-import { KickbasePlayerStats } from './model/kickbase-player-stats';
-import { NgbTypeahead, NgbTypeaheadSelectItemEvent } from './typeahead/typeahead';
-import { merge, Observable, of, Subject } from 'rxjs';
-import { debounceTime, distinctUntilChanged, filter, map, switchMap } from 'rxjs/operators';
-import { LocalApiService } from './services/local-api.service';
 import { MarketOverviewComponent } from './components/market-overview/market-overview.component';
+import { LoginPayload } from './components/login/login.component';
+
+interface PayPalDonationButton {
+  render(selector: string): void;
+}
+
+interface PayPalNamespace {
+  Donation?: {
+    Button: new (options: {
+      env: string;
+      hosted_button_id: string;
+      image: {
+        src: string;
+        alt: string;
+        title: string;
+      };
+    }) => PayPalDonationButton;
+  };
+}
 
 declare global {
-  interface Window { PayPal: any; }
+  interface Window { PayPal?: PayPalNamespace; }
 }
 
 window.PayPal = window.PayPal || {};
 
 @Component({
-  selector: 'app-root',
-  templateUrl: './app.component.html',
-  styleUrls: ['./app.component.scss']
+    selector: 'app-root',
+    templateUrl: './app.component.html',
+    styleUrls: ['./app.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false
 })
 export class AppComponent implements OnInit, AfterViewInit {
   title = 'app';
 
-  bsModalRef: BsModalRef;
+  bsModalRef: BsModalRef | undefined;
 
   public AppComponent = AppComponent;
   public minusValue: number = 0;
@@ -50,15 +65,14 @@ export class AppComponent implements OnInit, AfterViewInit {
   public printMode = false;
   public doLogin = false;
 
-  public loadingLigaInsiderStats = false;
   public loadingData = false;
   public loadingAllDetailsManual = false;
   // public token = ""
 
-  public leagues: KickbaseLeague[];
-  public currentMarket: KickbaseMarket = null;
-  public currentGift: KickbaseGift = null;
-  public selectedLeague: number;
+  public leagues: KickbaseLeague[] = [];
+  public currentMarket: KickbaseMarket | null = null;
+  public currentGift: KickbaseGift | null = null;
+  public selectedLeague: number | null = null;
 
 
   public readonly sorting_default = -1;
@@ -72,8 +86,8 @@ export class AppComponent implements OnInit, AfterViewInit {
   // public groups: KickbaseGroup[];
 
 
-  public newplayername: string;
-  public newplayeramount: number;
+  public newplayername = '';
+  public newplayeramount = 0;
 
   public kickbaseGroup = new KickbaseGroup();
 
@@ -86,88 +100,18 @@ export class AppComponent implements OnInit, AfterViewInit {
   public extraAmountString = '0';
   public amountValue = 0;
 
-  public withoutApi = false;
-
   public dayUntilFriday = 0;
   public fridayDate = new Date();
 
-  @ViewChild(MarketOverviewComponent, { static: false })
-  marketOverviewComponent: MarketOverviewComponent;
-
-  @ViewChild('instance') instance: NgbTypeahead;
-  focus$ = new Subject<string>();
-  click$ = new Subject<string>();
-
-  @ViewChild('auto') auto;
+  public marketOverviewPlayers: KickbasePlayer[] = [];
 
   constructor(
     public apiService: ApiService,
     private modalService: BsModalService,
-    public cdRef: ChangeDetectorRef,
-    public localApiService: LocalApiService) {
+    public cdRef: ChangeDetectorRef) {
     numeral.locale("de");
-    moment.locale("de");
   }
 
-  searchForPlayer = (text$: Observable<string>) => {
-
-
-    const debouncedText$ = text$.pipe(debounceTime(200), distinctUntilChanged());
-    const clicksWithClosedPopup$ = this.click$.pipe(filter(() => !this.instance.isPopupOpen()));
-    const inputFocus$ = this.focus$;
-
-    return merge(debouncedText$, clicksWithClosedPopup$).pipe(
-      filter((term: string) => {
-        if (term.length === 0) {
-          return false;
-        } else {
-          return true;
-        }
-      }),
-      map((term: string) => {
-        // because switch map will cancel all previous request
-        // we just send our own "DEADBEEF" request before and after switching to search view
-        // so all pending typeaheads are canceled and not shown to the user
-        if (term === 'DEADBEEF') {
-          return [];
-        }
-        const player = this.localApiService.offlinePlayers.filter(v => v.name.toLowerCase().indexOf(term.toLowerCase()) > -1).slice(0, 10);
-        return player;
-      }
-      )
-    );
-  }
-
-  onTypeAheadSelected(event: NgbTypeaheadSelectItemEvent) {
-    const player = (event.item as KickbasePlayer).copy('');
-    this.kickbaseGroup.players.push(player);
-    this.saveLocalPlayers();
-    this.kickbaseGroup.calcValues(this.amountValue, this.includeMinusMarketValues, this.dayUntilFriday);
-    this.newplayername = '';
-  }
-
-  typeaheadFormatter(player: KickbasePlayer) {
-    return player.name;
-  }
-
-  selectEvent(item) {
-    // do something with selected item
-    const player = this.localApiService.offlinePlayers.find(t => t.nameHash === item.id).copy('');
-    this.kickbaseGroup.players.push(player);
-    this.saveLocalPlayers();
-    this.kickbaseGroup.calcValues(this.amountValue, this.includeMinusMarketValues, this.dayUntilFriday);
-    this.newplayername = '';
-    this.auto.clear();
-  }
-
-  onChangeSearch(val: string) {
-    // fetch remote data from here
-    // And reassign the 'data' which is binded to 'data' property.
-  }
-
-  onFocused(e) {
-    // do something when input is focused
-  }
 
   ngAfterViewInit() {
     this.createPayPalButton();
@@ -192,39 +136,39 @@ export class AppComponent implements OnInit, AfterViewInit {
     if (this.apiService.data !== null) {
       // old style
       this.displayMode = AppComponent.display_mode_calculator;
-      if (this.apiService.data.loggedInWithoutApi) {
-        this.withoutApi = true;
-        this.loadLocalData()
-      }
     }
 
-    if (this.apiService.isLoggedIn && !this.withoutApi) {
+    if (this.apiService.isLoggedIn) {
       this.loadLeagues();
     }
     this.displayMode = AppComponent.display_mode_calculator;
 
 
-    let date = moment();
-    let dow = date.day();
+    const date = new Date();
+    const dow = date.getDay();
     if (dow === 6) {
       this.dayUntilFriday = 6;
     } else {
       this.dayUntilFriday = Math.abs(5 - dow);
     }
-    this.fridayDate = moment().add(this.dayUntilFriday, 'days').toDate();
+    this.fridayDate = this.addDays(new Date(), this.dayUntilFriday);
 
-    let hod = date.hour();
+    const hod = date.getHours();
     if (hod >= 22 && dow !== 5) {
       this.dayUntilFriday--;
     } else if (hod >= 22 && dow === 5) {
       this.dayUntilFriday = 7;
-      this.fridayDate = moment().add(this.dayUntilFriday, 'days').toDate();
+      this.fridayDate = this.addDays(new Date(), this.dayUntilFriday);
     }
 
   }
 
   createPayPalButton() {
-    const donateButton = new window.PayPal.Donation.Button({
+    const donationButton = window.PayPal?.Donation?.Button;
+    if (donationButton === undefined) {
+      return;
+    }
+    const donateButton = new donationButton({
       env: 'production',
       hosted_button_id: 'XV5QAMT6RUMB8',
       image: {
@@ -236,87 +180,63 @@ export class AppComponent implements OnInit, AfterViewInit {
     donateButton.render('#donate-button')
   }
 
-  loadLocalDataForApi = async () => {
-    this.loadingLigaInsiderStats = true;
-    await this.localApiService.refreshLocalMarketValues();
-    this.loadingLigaInsiderStats = false;
-  }
 
-  loadLocalData = async () => {
-    this.loadingLigaInsiderStats = true;
-    this.kickbaseGroup = new KickbaseGroup();
-    await this.localApiService.refreshLocalMarketValues();
-    const minusValueTmp = localStorage.getItem('minusValue');
-    if (minusValueTmp !== null && minusValueTmp !== undefined) {
 
-      let di = numeral(minusValueTmp);
-      this.minusValue = di.value();
-      this.minusValueString = di.format('0,0');
-      this.onIncludeAdditionalAmountChanged();
+  // private updateMarketOverview(): void {
+  //   console.log('updateMarketOverview', this.marketOverviewComponent);
+  //   if (this.marketOverviewComponent === undefined) {
+  //     return;
+  //
+  //   }
+  //
+  //   this.marketOverviewComponent.selectedLeague = this.selectedLeague;
+  //   this.marketOverviewComponent.setCurrentMarket(this.currentMarket);
+  //
+  //   this.cdRef.detectChanges();
+  // }
+
+
+  reloadMarket = async (fullRefresh: boolean): Promise<void> => {
+    if (this.selectedLeague === null) {
+      return;
     }
 
-
-
-    let playersJson = localStorage.getItem('players');
-    if (playersJson !== null && playersJson !== undefined) {
-      const players = JSON.parse(playersJson);
-
-      for (const json of players) {
-
-        let player = new KickbasePlayer(null, '');
-        player.name = json['name'];
-        player.nameHash = json['nameHash'];
-        if (player.nameHash === undefined) {
-          player.nameHash = '';
-        }
-        player.value = Number(json['value']);
-        player.marketValue = Number(json['marketValue']);
-        player.stats = new KickbasePlayerStats(null);
-        player.stats.realMarketValueChange = Number(json['realMarketValueChange'])
-        this.localApiService.updateMarketValue(player);
-        this.kickbaseGroup.players.push(player);
-      }
-    }
-    this.kickbaseGroup.calcValues(this.amountValue, this.includeMinusMarketValues, this.dayUntilFriday);
-    this.saveLocalPlayers();
-    this.loadingLigaInsiderStats = false;
-
-    // TODO: refresh market values
-  }
-
-  reloadMarket = async (fullRefresh: boolean) => {
     this.loadingData = true;
-    if (fullRefresh) {
-      this.currentMarket = await this.apiService.getMarket(this.selectedLeague);
-    }
-    for (let pl of this.currentMarket.players) {
-      if (this.loadStatsAlways) {
-        await pl.loadStats(this.selectedLeague, this.apiService);
+
+    try {
+      if (fullRefresh || this.currentMarket === null) {
+        this.currentMarket = await this.apiService.getMarket(
+            this.selectedLeague
+        );
       }
-      pl.calcValues();
-      pl.isDeactivated = true;
-      pl.calcColors(0);
+      if (this.currentMarket === null) {
+        return;
+      }
+
+
+      for (const player of this.currentMarket.players) {
+        if (this.loadStatsAlways) {
+          await player.loadStats(this.selectedLeague, this.apiService);
+        }
+
+        player.calcValues();
+        player.isDeactivated = true;
+        player.calcColors(0);
+      }
+
+      this.sortCurrentPlayers();
+    } finally {
+      this.loadingData = false;
+      this.cdRef.detectChanges();
     }
-    this.loadingData = false;
-    this.cdRef.detectChanges();
-    if (this.marketOverviewComponent !== undefined) {
-      this.marketOverviewComponent.selectedLeague = this.selectedLeague
-      this.marketOverviewComponent.setCurrentMarket(this.currentMarket);
-    }
-    this.sortCurrentPlayers();
-  }
+  };
 
 
   reload() {
-    if (this.withoutApi) {
-      this.loadLocalData();
-    } else {
-      this.loadLeagues();
-    }
+    this.loadLeagues();
   }
 
-  async login(payload) {
-    this.withoutApi = true;
+  async login(payload: LoginPayload) {
     if (payload.username.length > 0 && payload.password.length > 0) {
       try {
         this.doLogin = true;
@@ -324,7 +244,6 @@ export class AppComponent implements OnInit, AfterViewInit {
         if (!result) {
           alert('Bitte Username und Passwort überprüfen')
         } else {
-          this.withoutApi = false;
           this.displayMode = AppComponent.display_mode_calculator;
           this.loadLeagues();
         }
@@ -341,7 +260,6 @@ export class AppComponent implements OnInit, AfterViewInit {
   }
 
   loadLeagues = async () => {
-    this.withoutApi = false;
     await this.apiService.getLeagues().then(
       leagues => {
         this.leagues = leagues;
@@ -362,70 +280,120 @@ export class AppComponent implements OnInit, AfterViewInit {
   }
 
 
-  onSelectedLeagueChanged = async (newValue) => {
+  onSelectedLeagueChanged = async (
+      newValue: number | null
+  ): Promise<void> => {
     this.loadingData = true;
     this.kickbaseGroup = new KickbaseGroup();
-    if (newValue == "null") {
-      this.selectedLeague = null;
-    }
-    this.apiService.setLastLeague(this.selectedLeague);
-    try {
-      this.currentMarket = await this.apiService.getMarket(this.selectedLeague);
-      this.currentGift = null;// await this.apiService.getGiftStatus(this.selectedLeague);
-      let league = this.leagues.find(t => t.id == this.selectedLeague);
-      let lineUp = await this.apiService.getLineup(this.selectedLeague);
 
-      let di = numeral(league.budget);
-      this.minusValue = di.value();
-      this.minusValueString = di.format('0,0');
+    if (newValue === null) {
+      this.selectedLeague = null;
+      this.currentMarket = null;
+      this.currentGift = null;
+      this.loadingData = false;
+      return;
+    }
+
+    this.selectedLeague = newValue;
+    this.apiService.setLastLeague(newValue);
+
+    try {
+      // Markt der neu ausgewählten Liga laden
+      this.currentMarket = await this.apiService.getMarket(newValue);
+      this.currentGift = null;
+
+      const league = this.leagues.find(
+          item => Number(item.id) === newValue
+      );
+
+      if (league === undefined) {
+        return;
+      }
+
+      const lineUp = await this.apiService.getLineup(newValue);
+
+      const budget = numeral(league.budget);
+      this.minusValue = budget.value() ?? 0;
+      this.minusValueString = budget.format('0,0');
+
       if (this.currentMarket !== null) {
-        this.extraAmount = Number(this.currentMarket.offerAmountForUser);
-        let di = numeral(this.extraAmount);
-        this.extraAmountString = di.format('0,0');
+        this.extraAmount = Number(
+            this.currentMarket.offerAmountForUser
+        );
+
+        const extraAmountNumeral = numeral(this.extraAmount);
+        this.extraAmountString = extraAmountNumeral.format('0,0');
       }
-      const permantDeletedPlayerLocal = localStorage.getItem('permantDeletedPlayer_' + this.selectedLeague.toString());
-      let permantDeletedPlayers = new Array();
-      if (permantDeletedPlayerLocal !== null) {
-        permantDeletedPlayers = JSON.parse(permantDeletedPlayerLocal)
+
+      const deletedPlayersStorage = localStorage.getItem(
+          `permantDeletedPlayer_${newValue}`
+      );
+
+      let permanentlyDeletedPlayers: string[] = [];
+
+      if (deletedPlayersStorage !== null) {
+        const parsedDeletedPlayers: unknown =
+            JSON.parse(deletedPlayersStorage);
+
+        permanentlyDeletedPlayers = Array.isArray(parsedDeletedPlayers)
+            ? parsedDeletedPlayers.map(value => String(value))
+            : [];
       }
-      this.amountPlayers = 0
-      for (let p of lineUp.players) {
-        let marketPLayer = this.currentMarket.players.find(tmp => tmp.id == p.id)
-        if (marketPLayer != null) {
-          p.value = marketPLayer.value
-          p.price = marketPLayer.price;
+
+      this.amountPlayers = 0;
+
+      for (const player of lineUp.players) {
+        const marketPlayer = this.currentMarket?.players.find(
+            marketItem => marketItem.id === player.id
+        );
+
+        if (marketPlayer !== undefined) {
+          player.value = marketPlayer.value;
+          player.price = marketPlayer.price;
         }
-        p.leagueId = this.selectedLeague;
-        p.isPersitantDeleted = permantDeletedPlayers.findIndex(t => t === p.id.toString()) !== -1;
-        this.kickbaseGroup.players.push(p)
-        if (p.isPersitantDeleted) {
-          this.amountPlayers++
+
+        player.leagueId = newValue;
+        player.isPersitantDeleted =
+            permanentlyDeletedPlayers.includes(String(player.id));
+
+        this.kickbaseGroup.players.push(player);
+
+        if (player.isPersitantDeleted) {
+          this.amountPlayers++;
         }
       }
+
+      // Nur zusätzliche Details laden, wenn aktiviert.
+      // Die Marktübersicht wurde bereits vorher aktualisiert.
       if (this.loadStatsAlways) {
         await this.onLoadAllDetails(false);
       }
+
       this.onIncludeAdditionalAmountChanged();
+
+    } catch (error) {
+      console.error('Fehler beim Wechseln der Liga:', error);
+    } finally {
       this.loadingData = false;
       this.cdRef.detectChanges();
-      if (this.marketOverviewComponent !== undefined) {
-        this.marketOverviewComponent.selectedLeague = this.selectedLeague;
-        this.marketOverviewComponent.setCurrentMarket(this.currentMarket);
-      }
-    } catch (error) {
-      console.log(error)
-      this.loadingData = false;
     }
-  }
+  };
 
-  onAmountChange(newValue) {
+  onAmountChange(newValue: number | string) {
     console.log(newValue)
   }
 
 
   onLoadAllDetails = async (refresh: boolean) => {
+    if (this.selectedLeague === null) {
+      return;
+    }
     this.loadingAllDetailsManual = true;
     if (this.displayMode === AppComponent.display_mode_market_overview) {
+      if (this.currentMarket === null) {
+        this.loadingAllDetailsManual = false;
+        return;
+      }
       for (let pl of this.currentMarket.players) {
         await pl.loadStats(this.selectedLeague, this.apiService);
         if (refresh) {
@@ -447,13 +415,13 @@ export class AppComponent implements OnInit, AfterViewInit {
 
 
   onLoadAllDetailsForPlayer = async (player: KickbasePlayer) => {
+    if (this.selectedLeague === null) {
+      return;
+    }
     if (player.isInEditMode) {
       return;
     }
-    if (this.withoutApi) {
-      this.onDeactivatePlayer(player);
-      return;
-    }
+
     if (player.stats === null) {
       await player.loadStats(this.selectedLeague, this.apiService);
       player.calcValues();
@@ -475,14 +443,11 @@ export class AppComponent implements OnInit, AfterViewInit {
 
 
 
-  onMinusValueChanged(value) {
+  onMinusValueChanged(value: number | string) {
     try {
-      let di = numeral(value);
-      this.minusValue = di.value();
+      const di = numeral(value);
+      this.minusValue = di.value() ?? 0;
       this.minusValueString = di.format('0,0');
-      if (this.withoutApi) {
-        localStorage.setItem('minusValue', this.minusValue.toString())
-      }
       this.onIncludeAdditionalAmountChanged();
     } catch {
 
@@ -502,10 +467,10 @@ export class AppComponent implements OnInit, AfterViewInit {
     localStorage.setItem('loadStatsAlways', this.loadStatsAlways.toString())
   }
 
-  onExtraAmountChange(event) {
+  onExtraAmountChange(event: number | string) {
     try {
-      let di = numeral(event);
-      this.extraAmount = di.value();
+      const di = numeral(event);
+      this.extraAmount = di.value() ?? 0;
       this.extraAmountString = di.format('0,0');
       this.onIncludeAdditionalAmountChanged();
     } catch {
@@ -515,9 +480,9 @@ export class AppComponent implements OnInit, AfterViewInit {
 
   }
 
-  onOfferOffsetChange(event) {
+  onOfferOffsetChange(event: string) {
     try {
-      let value: string = event;
+      const value: string = event;
       this.offerOffset = value.replace(',', '.');
       localStorage.setItem('offerOffset', this.offerOffset.toString());
       this.kickbaseGroup.calcColors(this.amountValue);
@@ -528,17 +493,7 @@ export class AppComponent implements OnInit, AfterViewInit {
 
   }
 
-  saveLocalPlayers() {
-    if (!this.withoutApi) {
-      return;
-    }
-    const test = [];
-    for (const pl of this.kickbaseGroup.players) {
-      test.push(pl.toJSON());
-    }
-    const string = JSON.stringify(test);
-    localStorage.setItem('players', string)
-  }
+
 
 
   onAddPlayer() {
@@ -551,22 +506,16 @@ export class AppComponent implements OnInit, AfterViewInit {
     this.newplayeramount = 0;
     this.newplayername = "";
 
-    if (this.withoutApi) {
-      this.saveLocalPlayers();
-    }
   }
 
   onRemovePlayer(player: KickbasePlayer) {
-    if (this.withoutApi) {
-      let index = this.kickbaseGroup.players.findIndex(p => p.name == player.name);
-      this.kickbaseGroup.players.splice(index, 1);
-      this.saveLocalPlayers();
-    } else {
-      let index = this.kickbaseGroup.players.find(p => p.name == player.name);
-      index.isDeleted = true;
-      if (!player.isPersitantDeleted) {
-        this.amountPlayers++
-      }
+    const index = this.kickbaseGroup.players.find(p => p.name == player.name);
+    if (index === undefined) {
+      return;
+    }
+    index.isDeleted = true;
+    if (!player.isPersitantDeleted) {
+      this.amountPlayers++
     }
     this.refreshGroups();
   }
@@ -590,6 +539,9 @@ export class AppComponent implements OnInit, AfterViewInit {
   }
 
   getGift = async () => {
+    if (this.selectedLeague === null) {
+      return;
+    }
     try {
       await this.apiService.collectGift(this.selectedLeague);
       this.reload();
@@ -609,18 +561,14 @@ export class AppComponent implements OnInit, AfterViewInit {
 
 
 
-  errorHandler(event) {
+  errorHandler(event: Event) {
     console.debug(event);
-    event.target.src = "https://cdn.browshot.com/static/images/not-found.png";
+    const target = event.target as HTMLImageElement | null;
+    if (target !== null) {
+      target.src = "https://cdn.browshot.com/static/images/not-found.png";
+    }
   }
 
-  loginWithoutAPI() {
-    this.kickbaseGroup = new KickbaseGroup();
-    this.withoutApi = true;
-    this.apiService.loginWithoutApi();
-    this.minusValue = 0;
-    this.loadLocalData();
-  }
 
   logout() {
     this.apiService.logout();
@@ -634,53 +582,74 @@ export class AppComponent implements OnInit, AfterViewInit {
     this.sortCurrentPlayers();
   }
 
-  sortCurrentPlayers() {
-    let playersToSort = this.kickbaseGroup.players;
-    if (this.displayMode === AppComponent.display_mode_market_overview) {
-      playersToSort = this.marketOverviewComponent.currentMarket.players;
-    }
-    if (this.selectedSorting == this.sorting_mw_asc || this.selectedSorting == this.sorting_mw_desc) {
-      const isAsc = this.selectedSorting == this.sorting_mw_asc;
+  sortCurrentPlayers(): void {
+    const isMarketOverview =
+        this.displayMode === AppComponent.display_mode_market_overview;
+
+    const sourcePlayers = isMarketOverview
+        ? this.currentMarket?.players ?? []
+        : this.kickbaseGroup.players;
+
+    const playersToSort = [...sourcePlayers];
+
+    if (
+        this.selectedSorting === this.sorting_mw_asc ||
+        this.selectedSorting === this.sorting_mw_desc
+    ) {
+      const ascending =
+          this.selectedSorting === this.sorting_mw_asc;
+
       playersToSort.sort((a, b) => {
-        if (a.marketValue > b.marketValue) {
-          return isAsc ? 1 : -1;
-        } else if (a.marketValue < b.marketValue) {
-          return isAsc ? -1 : 1;
-        } else {
+        if (a.marketValue === b.marketValue) {
           return 0;
         }
-      });
 
+        const result =
+            a.marketValue < b.marketValue ? -1 : 1;
+
+        return ascending ? result : -result;
+      });
     }
 
-    if (this.selectedSorting == this.sorting_mw_change_asc || this.selectedSorting == this.sorting_mw_change_desc) {
-      const isAsc = this.selectedSorting == this.sorting_mw_change_asc;
+    if (
+        this.selectedSorting === this.sorting_mw_change_asc ||
+        this.selectedSorting === this.sorting_mw_change_desc
+    ) {
+      const ascending =
+          this.selectedSorting === this.sorting_mw_change_asc;
+
       playersToSort.sort((a, b) => {
-        if (a.stats !== null && b.stats !== null) {
-          if (a.stats.realMarketValueChange > b.stats.realMarketValueChange) {
-            return isAsc ? -1 : 1;
-          } else if (a.stats.realMarketValueChange < b.stats.realMarketValueChange) {
-            return isAsc ? 1 : -1;
-          } else {
-            return 0;
-          }
-        } else {
+        const aChange = a.stats?.realMarketValueChange;
+        const bChange = b.stats?.realMarketValueChange;
+
+        if (aChange === undefined || bChange === undefined) {
           return 0;
         }
-      });
 
+        if (aChange === bChange) {
+          return 0;
+        }
+
+        const result = aChange < bChange ? -1 : 1;
+
+        return ascending ? result : -result;
+      });
     }
-    if (this.selectedSorting == this.sorting_default) {
+
+    if (this.selectedSorting === this.sorting_default) {
       playersToSort.sort((a, b) => {
         if (a.expiry === b.expiry) {
           return 0;
         }
+
         return a.expiry > b.expiry ? 1 : -1;
       });
-
     }
-    if (this.displayMode === AppComponent.display_mode_market_overview) {
-      this.marketOverviewComponent.setSortedPlayers(playersToSort);
+
+    if (isMarketOverview) {
+      this.marketOverviewPlayers = playersToSort;
+    } else {
+      this.kickbaseGroup.players = playersToSort;
     }
   }
 
@@ -693,9 +662,15 @@ export class AppComponent implements OnInit, AfterViewInit {
     if (!isNaN(intValue)) {
 
       this.dayUntilFriday = Number.parseInt(countDays);
-      this.fridayDate = moment().add(this.dayUntilFriday, 'days').toDate();
+      this.fridayDate = this.addDays(new Date(), this.dayUntilFriday);
       this.refreshGroups();
     }
+  }
+
+  private addDays(baseDate: Date, days: number): Date {
+    const updatedDate = new Date(baseDate);
+    updatedDate.setDate(updatedDate.getDate() + days);
+    return updatedDate;
   }
 
   showPlayer(player: KickbasePlayer) {
@@ -708,17 +683,15 @@ export class AppComponent implements OnInit, AfterViewInit {
     return true;
   }
 
-  switchDisplay = async (displayMode) => {
+  switchDisplay = async (displayMode: string): Promise<void> => {
     this.displayMode = displayMode;
     this.apiService.setLastDisplay(this.displayMode);
 
     if (displayMode === AppComponent.display_mode_market_overview) {
       this.selectedSorting = this.sorting_default;
-      await this.reloadMarket(false);
+
+      await this.reloadMarket(true);
     }
-
-  }
-
-
+  };
 
 }

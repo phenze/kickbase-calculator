@@ -1,35 +1,34 @@
 
 
-import * as numeral from 'numeral';
+import numeral from 'numeral';
 import { ApiService } from '../services/api.service';
 import { KickbasePlayerStats } from './kickbase-player-stats';
-import * as moment from 'moment';
 import { KickbaseGroup } from './kickbase-group';
 
 export class KickbasePlayer {
 
-  public id: number;
-  public name: string;
-  public value: number;
-  public marketValue: number;
-  public uoid: string;
+  public id!: number;
+  public name!: string;
+  public value!: number;
+  public marketValue!: number;
+  public uoid!: string;
 
 
   // local api fields
-  public nameHash: string;
+  public nameHash!: string;
 
   // market fields
-  public expiryDate: string;
-  public expiry: number;
-  public expiryColor: string;
-  public priceString: string;
-  public priceMarketValueDifferString: string;
-  public price: number;
+  public expiryDate!: string;
+  public expiry!: number;
+  public expiryColor!: string;
+  public priceString!: string;
+  public priceMarketValueDifferString!: string;
+  public price!: number;
 
   // custom fields
-  public status: number;
-  public leagueId: number;
-  public stats: KickbasePlayerStats;
+  public status!: number;
+  public leagueId!: number;
+  public stats: KickbasePlayerStats | null = null;
   public offervalue = 0;
   public isPersitantDeleted: boolean;
   public imageUrl = '';
@@ -39,16 +38,16 @@ export class KickbasePlayer {
   public colorSuccessValue = '';
   public colorOffsetValue = '';
 
-  public hasOfferFromAny: boolean;
-  public isDeactivated: boolean;
-  public isDeleted: boolean;
+  public hasOfferFromAny!: boolean;
+  public isDeactivated!: boolean;
+  public isDeleted!: boolean;
 
-  public isInEditMode: boolean;
+  public isInEditMode!: boolean;
 
-  public marketValuesShown: boolean;
-  public username: string;
+  public marketValuesShown!: boolean;
+  public username!: string;
 
-  constructor(json: any, userID: string) {
+  constructor(json: any, userID: string | number) {
     this.offervalue = 0;
     this.hasOfferFromAny = false;
     this.isDeactivated = false;
@@ -59,7 +58,6 @@ export class KickbasePlayer {
     this.leagueId = -1;
     this.username = '';
     Object.assign(this, json);
-    this.stats = null;
     if (json != null) {
       this.id = json["i"];
       this.value = json["mv"];
@@ -76,13 +74,14 @@ export class KickbasePlayer {
         this.price = 0;
       }
       if (json.hasOwnProperty('ofs')) {
-        let offers = json["ofs"];
+        const offers = json["ofs"] as unknown[];
         let lastOfferPrice = 0;
 
-        for (let offer of offers as any) {
+        for (const offer of offers) {
           console.log(offer)
-          let userIDOffer = offer['u'];
-          let price = offer["uop"];
+          const typedOffer = offer as Record<string, unknown>;
+          const userIDOffer = typedOffer['u'];
+          const price = Number(typedOffer["uop"]);
           if (Number(price) !== 1) {
             if (userIDOffer == userID) {
               this.offervalue = Number(price)
@@ -95,8 +94,10 @@ export class KickbasePlayer {
         }
       }
       this.expiry = json['exs']
-      let date = moment(new Date()).add(this.expiry, 'seconds');
-      this.expiryDate = date.format('DD.MM.YYYY HH:mm:ss');
+      const safeExpiry = Number(this.expiry) || 0;
+
+      const date = this.addSeconds(new Date(), safeExpiry);
+      this.expiryDate = this.formatGermanDateTime(date);
     }
 
     this.imageUrl = 'https://kickbase.b-cdn.net/pool/playersbig/' + this.id + '.png';
@@ -118,6 +119,20 @@ export class KickbasePlayer {
       this.stats.calcValues();
     }
 
+  }
+
+  private addSeconds(baseDate: Date, seconds: number): Date {
+    return new Date(baseDate.getTime() + (seconds * 1000));
+  }
+
+  private formatGermanDateTime(date: Date): string {
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    const seconds = String(date.getSeconds()).padStart(2, '0');
+    return `${day}.${month}.${year} ${hours}:${minutes}:${seconds}`;
   }
 
   public calcColors(differenceValue: number) {
@@ -168,13 +183,13 @@ export class KickbasePlayer {
     return n.format('0,0 $');
   }
 
-  public valueString = 0;
+  public valueString = '';
   private getValueTmp() {
     let n = numeral(this.value);
     return n.format('0,0 $');
   }
 
-  public valuePercentString = 0;
+  public valuePercentString = '';
   private getValuePercentTmp() {
     let n = numeral((this.value - this.marketValue) / this.marketValue);
     return n.format('0.000%');
@@ -238,7 +253,7 @@ export class KickbasePlayer {
     return 0;
   }
 
-  public static createArrayInstance(json: any, userID: string): KickbasePlayer[] {
+  public static createArrayInstance(json: any, userID: string | number): KickbasePlayer[] {
 
     const retVal: KickbasePlayer[] = new Array<KickbasePlayer>();
     if (json != null) {
@@ -256,9 +271,9 @@ export class KickbasePlayer {
   loadStats = async (league: number, apiService: ApiService, force = false) => {
     if (this.stats === null || force) {
       this.stats = await apiService.getPlayerStats(league, this.id);
-      const marketValueStats = await apiService.getMarketValuePlayerStats(league, this.id);
-      this.stats.marketValues = marketValueStats['it']
-      this.stats.buyPrice = marketValueStats['trp']
+      const marketValueStats = await apiService.getMarketValuePlayerStats(league, this.id) as unknown as Record<string, unknown>;
+      this.stats.marketValues = (marketValueStats['it'] as unknown[]) ?? [];
+      this.stats.buyPrice = Number(marketValueStats['trp']);
       // sometimes mv from stats differs from the real one which is one the player
       // This happens in Challenges. Dont know why
       if (this.marketValue !== this.stats.mv) {
@@ -267,7 +282,7 @@ export class KickbasePlayer {
     }
   }
 
-  copy(userId: string) {
+  copy(userId: string | number) {
     const retVal = new KickbasePlayer(null, userId);
 
     retVal.name = this.name;
@@ -306,7 +321,7 @@ export class KickbasePlayer {
       nameHash: this.nameHash,
       value: this.value,
       marketValue: this.marketValue,
-      realMarketValueChange: this.stats.realMarketValueChange,
+      realMarketValueChange: this.stats?.realMarketValueChange ?? 0,
     }
   }
 

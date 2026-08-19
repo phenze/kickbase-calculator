@@ -1,326 +1,364 @@
-<div *ngIf="!apiService.isLoggedIn">
-    <app-login (loginWithoutAPI)="loginWithoutAPI()" (login)="login($event)" [doLogin]="doLogin"></app-login>
+@if (!apiService.isLoggedIn) {
+  <div>
+    <app-login (login)="login($event)" [doLogin]="doLogin"></app-login>
     <div class="row mt-4 mb-4">
-        <div class="col-12 text-center">
-            <h6>Wenn ihr mich und meine Arbeit unterstützen wollt könnt ihr mir eine kleine Spende da lassen. Diese
-                Spende ist
-                vollkommen freiwillig. Der Rechner wird auch weiterhin kostenlos für euch bleiben</h6>
-            <div id="donate-button-container">
-                <div id="donate-button"></div>
-            </div>
-
+      <div class="col-12 text-center">
+        <h6>Wenn ihr mich und meine Arbeit unterstützen wollt könnt ihr mir eine kleine Spende da lassen. Diese
+          Spende ist
+        vollkommen freiwillig. Der Rechner wird auch weiterhin kostenlos für euch bleiben</h6>
+        <div id="donate-button-container">
+          <div id="donate-button"></div>
         </div>
+      </div>
     </div>
-</div>
+  </div>
+}
 
-<ng-container *ngIf="apiService.isLoggedIn">
+@if (apiService.isLoggedIn) {
+  <div class="row mt-2">
+    <div class="col-12">
+      <button (click)="logout()" type="button" class="btn btn-primary w-100">Logout</button>
+    </div>
+  </div>
+  <hr />
+  <div class="row mt-4 mb-4">
+    <div class="col-12 text-center">
+      <h6>Wenn ihr mich und meine Arbeit unterstützen wollt könnt ihr mir eine kleine Spende da lassen. Diese
+        Spende ist
+      vollkommen freiwillig. Der Rechner wird auch weiterhin kostenlos für euch bleiben</h6>
+      <div id="donate-button-container">
+        <div id="donate-button"></div>
+      </div>
+    </div>
+  </div>
+  <hr />
+  <div class="row">
+    <div class="col-12">
+      <app-help></app-help>
+    </div>
+  </div>
+  <hr />
+  @if (currentGift !== null) {
+    <div class="row">
+      <div class="col-12">
+        <label class="me-2">Geschenk</label>
+        <svg-icon [class.disabled]="!currentGift.isAvailable" (click)="getGift()" class="nav-icon gift-icon"
+          src="assets/card_giftcard-24px.svg">
+        </svg-icon>&nbsp;{{currentGift.value}}
+      </div>
+    </div>
+  }
+  <hr />
+  <div class="row">
+
+      <div class="col-12">
+        <label class="form-label" for="selectedLeague">Liga</label>
+        <select id="selectedLeague" class="form-select" [(ngModel)]="selectedLeague"
+          (ngModelChange)="onSelectedLeagueChanged($event)">
+          @for (league of leagues; track league.id) {
+            <option [ngValue]="+league.id">{{league.name}}</option>
+          }
+        </select>
+      </div>
+
+  </div>
+
     <div class="row mt-2">
+      <div class="col-12 ">
+        <div class="btn-group special " role="group" aria-label="...">
+          <button (click)="switchDisplay(AppComponent.display_mode_calculator)" type="button"
+            class="btn btn-light"
+          [class.active]="displayMode === AppComponent.display_mode_calculator">Rechner</button>
+          <button (click)="switchDisplay(AppComponent.display_mode_market_overview)" type="button"
+            class="btn btn-light"
+          [class.active]="displayMode === AppComponent.display_mode_market_overview">Markt</button>
+        </div>
+      </div>
+    </div>
+
+  @if (loadingData) {
+    <div class="d-flex justify-content-center">
+      <div class="spinner-border m-5" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+    </div>
+  }
+  @if (!loadingData) {
+    @if ( displayMode===AppComponent.display_mode_market_overview) {
+      <div class="row">
+        <div class="col-12 mt-4">
+          <button type="button" class="btn btn-outline-secondary w-100" (click)="onLoadAllDetails(true)">
+            @if (!loadingAllDetailsManual) {
+              <span>Alle Details laden</span>
+            }
+            @if (loadingAllDetailsManual) {
+              <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+              Lade Details...
+            }
+          </button>
+        </div>
+        <div class="col-12 mt-2">
+          <h4>Sortierung</h4>
+          <select class="form-select" [(ngModel)]="selectedSorting"
+            (ngModelChange)="onSelectedSortingChanged($event)">
+            <option [ngValue]="-1">Standard</option>
+            <option [ngValue]="1">MW &darr;</option>
+            <option [ngValue]="2">MW &uarr;</option>
+            <option [ngValue]="3">MW Änderung &darr;</option>
+            <option [ngValue]="4">MW Änderung &uarr;</option>
+          </select>
+        </div>
+      </div>
+
+    <app-market-overview
+            [sortedPlayers]="marketOverviewPlayers"
+            [selectedLeague]="selectedLeague"
+            (loadDetails)="onLoadAllDetailsForPlayer($event)"
+            (onReload)="reloadMarket(true)"
+    />
+
+    }
+    @if (displayMode === AppComponent.display_mode_calculator) {
+      <div class="row mt-2">
         <div class="col-12">
-            <button (click)="logout()" class="btn btn-primary btn-block">Logout</button>
-        </div>
-    </div>
-    <hr />
-    <div class="row mt-4 mb-4">
-        <div class="col-12 text-center">
-            <h6>Wenn ihr mich und meine Arbeit unterstützen wollt könnt ihr mir eine kleine Spende da lassen. Diese
-                Spende ist
-                vollkommen freiwillig. Der Rechner wird auch weiterhin kostenlos für euch bleiben</h6>
-            <div id="donate-button-container">
-                <div id="donate-button"></div>
-            </div>
+          <label class="form-label" for="balanceValue">Kontostand</label>
+          <div class="input-group mb-3">
+            <span class="input-group-text">€</span>
 
+            <input type="text" [ngModel]="minusValueString" readonly min="0" step="1000"
+              data-number-to-fixed="2" data-number-stepfactor="100" class="form-control currency"
+              id="balanceValue" />
+
+          </div>
+          <label class="form-label" for="extraAmount">Erwarte Ausgaben/Ausstehende Angebote</label>
+          <div class="input-group mb-3">
+            <span class="input-group-text">€</span>
+            <input type="text" min="0" inputmode="numeric" pattern="[0-9]*" [ngModel]="extraAmountString"
+              (ngModelChange)="onExtraAmountChange($event)" min="0" step="1000" data-number-to-fixed="2"
+              data-number-stepfactor="100" class="form-control currency" id="extraAmount" />
+          </div>
+          <label class="form-label" for="offerOffset">Offset für Angebote</label>
+          <div class="input-group">
+            <span class="input-group-text">%</span>
+            <input type="text" min="0" [ngModel]="offerOffset" (ngModelChange)="onOfferOffsetChange($event)"
+              min="0" step="0.01" class="form-control currency" id="offerOffset" />
+          </div>
         </div>
-    </div>
-    <hr />
-    <div class="row">
+      </div>
+      <hr />
+      <h4>Optionen</h4>
+      <div class="row">
         <div class="col-12">
-            <app-help [withoutApi]="withoutApi"></app-help>
+          <div class="form-check form-switch">
+            <input type="checkbox" class="form-check-input" role="switch" [(ngModel)]="includeAdditionalAmount"
+              (ngModelChange)="onIncludeAdditionalAmountChanged()" id="customSwitch1">
+            <label class="form-check-label" for="customSwitch1">Erwarte Ausgaben/Ausstehende Angebote
+            einbeziehen</label>
+          </div>
         </div>
+        <div class="col-12 mt-2">
+          <div class="form-check form-switch">
+            <input type="checkbox" class="form-check-input" role="switch" [(ngModel)]="includeMinusMarketValues"
+              (ngModelChange)="onIncludeAdditionalAmountChanged()" id="customSwitch2">
+            <label class="form-check-label" for="customSwitch2">Negative Marktwertänderung mit
+            einbeziehen</label>
+          </div>
+        </div>
+        <div class="col-12 mt-2">
+          <div class="form-check form-switch">
+            <input type="checkbox" class="form-check-input" role="switch" [(ngModel)]="loadStatsAlways"
+              (ngModelChange)="onLoadStatsAlwaysChanged()" id="customSwitch3">
+            <label class="form-check-label" for="customSwitch3">Alle Details automatisch laden</label>
+          </div>
+        </div>
+        <div class="col-12 mt-2">
+          <h4>Sortierung</h4>
+          <select class="form-select" [(ngModel)]="selectedSorting"
+            (ngModelChange)="onSelectedSortingChanged($event)">
+            <option [ngValue]="-1">Standard</option>
+            <option [ngValue]="1">MW &darr;</option>
+            <option [ngValue]="2">MW &uarr;</option>
+            <option [ngValue]="3">MW Änderung &darr;</option>
+            <option [ngValue]="4">MW Änderung &uarr;</option>
+          </select>
+        </div>
+
+      <div class="col-12 mt-2">
+        <h4>Einnahmen Anzahl Tage ({{fridayDate | date:'dd.MM.yyyy'}})</h4>
+        <input type="text" min="0" inputmode="numeric" pattern="[0-9]*" step="1" id="daysToFriday"
+          class="form-control" [ngModel]="dayUntilFriday" (ngModelChange)="onFridayDateChanged($event)">
+      </div>
+
+      </div>
+      <hr />
+      <div class="sticky-top bg-body border-bottom shadow-sm px-2 py-1 mb-2 header-container">
+  <div class="header-responsive-wrapper">
+    
+    <!-- Finanz-KPIs Wrapper -->
+    <div class="kpi-group">
+      
+      <!-- Kontostand (bricht niemals um) -->
+      <div class="kpi-box bg-light">
+        <span class="text-muted small">Konto:</span>
+        <span class="fw-bold fs-6" [style.color]="kickbaseGroup.color">
+          {{ kickbaseGroup.difference }}
+        </span>
+      </div>
+
+      <!-- Mit Einnahmen (bricht niemals um) -->
+      <div class="kpi-box bg-light">
+        <span class="text-muted small">+Einnahmen:</span>
+        <span class="fw-bold fs-6" [style.color]="kickbaseGroup.colorFriday">
+          {{ kickbaseGroup.differenceFriday }}
+        </span>
+      </div>
+
     </div>
-    <hr />
-    <div class="row" *ngIf="currentGift !== null && !withoutApi">
-        <div class="col-12">
-            <label class="mr-2">Geschenk</label>
-            <svg-icon [class.disabled]="!currentGift.isAvailable" (click)="getGift()" class="nav-icon gift-icon"
-                src="assets/card_giftcard-24px.svg">
-            </svg-icon>&nbsp;{{currentGift.value}}
-        </div>
+
+    <!-- Action-Icons & Spieleranzahl -->
+    <div class="controls-group">
+      
+      <!-- Icon Bar -->
+      <div class="d-inline-flex align-items-center bg-light rounded-pill px-1 py-1">
+        <button type="button" class="btn-header-icon" (click)="reload()" title="Aktualisieren">
+          <svg-icon src="assets/refresh-24px.svg"></svg-icon>
+        </button>
+
+        @if (!printMode) {
+          <button type="button" class="btn-header-icon opacity-50" (click)="printMode = true" title="Druckmodus aktivieren">
+            <svg-icon src="assets/print_disabled_black_24dp.svg"></svg-icon>
+          </button>
+        } @else {
+          <button type="button" class="btn-header-icon active" (click)="printMode = false" title="Druckmodus deaktivieren">
+            <svg-icon src="assets/print_black_24dp.svg"></svg-icon>
+          </button>
+        }
+
+        @if (!showPermanentDeletedPlayers) {
+          <button type="button" class="btn-header-icon" (click)="showPermanentDeletedPlayers = true" title="Deaktivierte Spieler einblenden">
+            <svg-icon src="assets/person_add-24px.svg"></svg-icon>
+          </button>
+        } @else {
+          <button type="button" class="btn-header-icon active" (click)="showPermanentDeletedPlayers = false" title="Deaktivierte Spieler ausblenden">
+            <svg-icon src="assets/person_remove-24px.svg"></svg-icon>
+          </button>
+        }
+      </div>
+
+      <!-- Spieler-Anzahl Badge -->
+      <span class="badge bg-primary rounded-pill px-2 py-1 fw-bold fs-6 ms-1" title="Anzahl Spieler">
+        {{ amountPlayers }}
+      </span>
+
     </div>
-    <hr />
-    <div class="row">
-        <div class="col-12" *ngIf="!withoutApi">
-            <label>Liga</label>
-            <select class="form-control" [(ngModel)]="selectedLeague" (ngModelChange)="onSelectedLeagueChanged($event)">
-                <option *ngFor="let league of leagues" [ngValue]="league.id">{{league.name}}</option>
-            </select>
+
+  </div>
+</div>
+      <hr />
+      <h4 class="align-center">Kader: {{kickbaseGroup.team}}</h4>
+      <h6 class="align-center">Minus: {{kickbaseGroup.possibleMinus}}</h6>
+      <h6 class="align-center">Max Angebot: {{kickbaseGroup.possibleOffer}}</h6>
+      <div class="row">
+
+          <div class="col-12 mt-1">
+            <button type="button" class="btn btn-outline-secondary w-100" (click)="onLoadAllDetails(true)">
+              @if (!loadingAllDetailsManual) {
+                <span>Alle Details laden</span>
+              }
+              @if (loadingAllDetailsManual) {
+                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                Lade Details...
+              }
+            </button>
+          </div>
+        <div class="col-12 mt-2">
+          @for (player of kickbaseGroup.players; track player.id) {
+            @if (showPlayer(player)) {
+              <app-player-item [player]="player" [printMode]="printMode"
+                (loadDetails)="onLoadAllDetailsForPlayer(player)"
+                (removePlayer)="onRemovePlayer(player)" (playerChanged)="onPlayerValueChanged(player)">
+              </app-player-item>
+            }
+          }
         </div>
+      </div>
+      <hr />
+      <div class="card border-0 shadow-sm mt-3">
+  <!-- Wichtiger Hinweis als Bootstrap Alert Header -->
+  <div class="card-header bg-warning-subtle text-warning-emphasis border-0 py-2">
+    <div class="d-flex align-items-center gap-2 small fw-semibold">
+      <i class="bi bi-exclamation-triangle-fill fs-6"></i>
+      <span>WICHTIG: Gewinn/Verlust bis Freitag sind nur geschätzt.</span>
     </div>
-    <div class="row mt-2" *ngIf="!withoutApi">
-        <div class="col-12 ">
-            <div class="btn-group special " role="group" aria-label="...">
-                <button (click)="switchDisplay(AppComponent.display_mode_calculator)" type="button"
-                    class="btn btn-light"
-                    [class.active]="displayMode === AppComponent.display_mode_calculator">Rechner</button>
-                <button (click)="switchDisplay(AppComponent.display_mode_market_overview)" type="button"
-                    class="btn btn-light"
-                    [class.active]="displayMode === AppComponent.display_mode_market_overview">Markt</button>
-            </div>
+  </div>
 
+  <div class="card-body p-3">
+
+    <!-- Wichtigste Finanz-KPIs (Hervorgehoben) -->
+    <div class="p-3 rounded-3 mb-3 bg-light">
+      
+      <div class="mb-2 pb-2 border-bottom">
+        <div class="text-muted small">Einnahmen aus Verkäufen</div>
+        <div class="fs-6 fw-bold" [style.color]="kickbaseGroup.color">
+          {{ kickbaseGroup.value }}
         </div>
+      </div>
+
+      <div class="mb-2 pb-2 border-bottom">
+        <div class="text-muted small">Kontostand nach Verkäufen</div>
+        <div class="fs-6 fw-bold" [style.color]="kickbaseGroup.color">
+          {{ kickbaseGroup.difference }}
+        </div>
+      </div>
+
+      <div>
+        <div class="text-muted small">Kontostand (Verkäufe + Einnahmen Fr. + Erfolge)</div>
+        <div class="fs-6 fw-bold" [style.color]="kickbaseGroup.colorFriday">
+          {{ kickbaseGroup.differenceFriday }}
+        </div>
+      </div>
+
     </div>
-    <ng-container *ngIf="loadingData">
-        <div class="d-flex justify-content-center">
-            <div class="spinner-border m-5" role="status">
-                <span class="sr-only">Loading...</span>
-            </div>
+
+    <!-- Details & Metriken als cleane Liste -->
+    <div class="d-flex flex-column gap-2 small text-secondary">
+      
+      <div class="d-flex justify-content-between align-items-center py-1 border-bottom">
+        <span><i class="bi bi-graph-up-arrow text-success me-2"></i>Täglicher Gewinn</span>
+        <span class="fw-semibold text-dark">{{ kickbaseGroup.profit }}</span>
+      </div>
+
+      <div class="d-flex justify-content-between align-items-center py-1 border-bottom">
+        <span><i class="bi bi-graph-down-arrow text-danger me-2"></i>Täglicher Verlust</span>
+        <span class="fw-semibold text-dark">{{ kickbaseGroup.loss }}</span>
+      </div>
+
+      @if (includeMinusMarketValues) {
+        <div class="d-flex justify-content-between align-items-center py-1 border-bottom">
+          <span><i class="bi bi-calendar-event me-2"></i>Einnahmen bis Freitag</span>
+          <span class="fw-semibold text-dark">{{ kickbaseGroup.trendFriday }}</span>
         </div>
-    </ng-container>
-    <ng-container *ngIf="!loadingData">
-        <ng-container *ngIf=" displayMode===AppComponent.display_mode_market_overview">
-            <div class="row">
-                <div class="col-12 mt-4">
-                    <button class="btn btn-outline-secondary btn-block" (click)="onLoadAllDetails(true)">
-                        <span *ngIf="!loadingAllDetailsManual">Alle Details laden</span>
-                        <ng-container *ngIf="loadingAllDetailsManual">
-                            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-                            Lade Details...
-                        </ng-container>
-                    </button>
-                </div>
-                <div class="col-12 mt-2">
-                    <h4>Sortierung</h4>
-                    <select class="form-control" [(ngModel)]="selectedSorting"
-                        (ngModelChange)="onSelectedSortingChanged($event)">
-                        <option [ngValue]="-1">Standard</option>
-                        <option [ngValue]="1">MW &darr;</option>
-                        <option [ngValue]="2">MW &uarr;</option>
-                        <option [ngValue]="3">MW Änderung &darr;</option>
-                        <option [ngValue]="4">MW Änderung &uarr;</option>
-                    </select>
-                </div>
-            </div>
+      } @else {
+        <div class="d-flex justify-content-between align-items-center py-1 border-bottom">
+          <span><i class="bi bi-calendar-event me-2"></i>Einnahmen bis Freitag (ohne Verlust)</span>
+          <span class="fw-semibold text-dark">{{ kickbaseGroup.trendFriday }}</span>
+        </div>
+      }
 
-            <app-market-overview (loadDetails)="onLoadAllDetailsForPlayer($event)" (onReload)="reloadMarket(true)">
-            </app-market-overview>
-        </ng-container>
-        <ng-container *ngIf="displayMode === AppComponent.display_mode_calculator">
-            <div class="row mt-2">
-                <div class="col-12">
-                    <label for="c2">Kontostand</label>
-                    <div class="input-group">
+      <div class="d-flex justify-content-between align-items-center py-1 border-bottom">
+        <span><i class="bi bi-trophy me-2 text-warning"></i>Erfolge</span>
+        <span class="fw-semibold text-dark">{{ kickbaseGroup.success }}</span>
+      </div>
 
-                        <div class="input-group-prepend">
-                            <span class="input-group-text" id="basic-addon1">€</span>
-                        </div>
-                        <ng-container *ngIf="!withoutApi">
-                            <input type="text" [ngModel]="minusValueString" readonly min="0" step="1000"
-                                data-number-to-fixed="2" data-number-stepfactor="100" class="form-control currency"
-                                id="c22" />
-                        </ng-container>
-                        <ng-container *ngIf="withoutApi">
-                            <input type="text" min="0" [ngModel]="minusValueString"
-                                (ngModelChange)="onMinusValueChanged($event)" min="0" step="1000"
-                                data-number-to-fixed="2" data-number-stepfactor="100" class="form-control currency"
-                                id="c22" />
-                        </ng-container>
-                    </div>
+      <div class="d-flex justify-content-between align-items-center pt-1">
+        <span><i class="bi bi-people me-2"></i>Kaderwert</span>
+        <span class="fw-bold text-dark fs-6">{{ kickbaseGroup.team }}</span>
+      </div>
 
-                    <label for="c2">Erwarte Ausgaben/Ausstehende Angebote</label>
-                    <div class="input-group">
-                        <div class="input-group-prepend">
-                            <span class="input-group-text" id="basic-addon1">€</span>
-                        </div>
-                        <input type="text" min="0" inputmode="numeric" pattern="[0-9]*" [ngModel]="extraAmountString"
-                            (ngModelChange)="onExtraAmountChange($event)" min="0" step="1000" data-number-to-fixed="2"
-                            data-number-stepfactor="100" class="form-control currency" id="c2" />
+    </div>
 
-                    </div>
-
-                    <label for="c2">Offset für Angebote</label>
-                    <div class="input-group">
-                        <div class="input-group-prepend">
-                            <span class="input-group-text" id="basic-addon1">%</span>
-                        </div>
-                        <input type="text" min="0" [ngModel]="offerOffset" (ngModelChange)="onOfferOffsetChange($event)"
-                            min="0" step="0.01" class="form-control currency" id="offerOffset" />
-
-                    </div>
-                </div>
-            </div>
-            <hr />
-            <h4>Optionen</h4>
-            <div class="row">
-                <div class="col-12">
-                    <div class="custom-control custom-switch">
-                        <input type="checkbox" class="custom-control-input" [(ngModel)]="includeAdditionalAmount"
-                            (ngModelChange)="onIncludeAdditionalAmountChanged()" id="customSwitch1">
-                        <label class="custom-control-label" for="customSwitch1">Erwarte Ausgaben/Ausstehende Angebote
-                            einbeziehen</label>
-                    </div>
-                </div>
-                <div class="col-12 mt-2">
-                    <div class="custom-control custom-switch">
-                        <input type="checkbox" class="custom-control-input" [(ngModel)]="includeMinusMarketValues"
-                            (ngModelChange)="onIncludeAdditionalAmountChanged()" id="customSwitch2">
-                        <label class="custom-control-label" for="customSwitch2">Negative Marktwertänderung mit
-                            einbeziehen</label>
-                    </div>
-                </div>
-                <div class="col-12 mt-2">
-                    <div class="custom-control custom-switch">
-                        <input type="checkbox" class="custom-control-input" [(ngModel)]="loadStatsAlways"
-                            (ngModelChange)="onLoadStatsAlwaysChanged()" id="customSwitch3">
-                        <label class="custom-control-label" for="customSwitch3">Alle Details automatisch laden</label>
-                    </div>
-                </div>
-                <div class="col-12 mt-2">
-                    <h4>Sortierung</h4>
-                    <select class="form-control" [(ngModel)]="selectedSorting"
-                        (ngModelChange)="onSelectedSortingChanged($event)">
-                        <option [ngValue]="-1">Standard</option>
-                        <option [ngValue]="1">MW &darr;</option>
-                        <option [ngValue]="2">MW &uarr;</option>
-                        <option [ngValue]="3">MW Änderung &darr;</option>
-                        <option [ngValue]="4">MW Änderung &uarr;</option>
-                    </select>
-                </div>
-                <div class="col-12 mt-2" *ngIf="!withoutApi">
-                    <h4>Einnahmen Anzahl Tage ({{fridayDate | date:'dd.MM.yyyy'}})</h4>
-                    <input type="text" min="0" inputmode="numeric" pattern="[0-9]*" step="1" id="example"
-                        class="form-control" [ngModel]="dayUntilFriday" (ngModelChange)="onFridayDateChanged($event)">
-                </div>
-            </div>
-            <hr />
-            <div class="row sticky-top sticky-header">
-                <div class="col-12 col-sm-5 col-lg-2">
-                    <small [style.color]="kickbaseGroup.color">Kontostand (nach Verkauf):</small>
-                </div>
-                <div class="col-12 col-sm-7 col-lg-2">
-                    <strong [style.color]="kickbaseGroup.color">{{kickbaseGroup.difference}}</strong>
-                </div>
-                <div class="col-12 col-sm-5 col-lg-2">
-                    <small [style.color]="kickbaseGroup.color">Mit möglichen Einnahmen:</small>
-                </div>
-                <div class="col-12 col-sm-7 col-lg-2">
-                    <strong [style.color]="kickbaseGroup.colorFriday">{{kickbaseGroup.differenceFriday}}</strong>
-                </div>
-                <div class="col-12 col-sm-12 col-lg-4">
-                    <svg-icon (click)="reload()" class="nav-icon refresh-icon" src="assets/refresh-24px.svg">
-                    </svg-icon>
-                    <svg-icon *ngIf="!printMode" (click)="printMode = true" class="nav-icon deleted-icon"
-                        src="assets/print_disabled_black_24dp.svg" title="Druckmodus aktivieren">
-                    </svg-icon>
-                    <svg-icon *ngIf="printMode" (click)="printMode = false" class="nav-icon deleted-icon active"
-                        src="assets/print_black_24dp.svg" title="Druckmodus deaktivieren">
-                    </svg-icon>
-                    <svg-icon *ngIf="!showPermanentDeletedPlayers" (click)="showPermanentDeletedPlayers = true"
-                        class="nav-icon deleted-icon active" src="assets/person_add-24px.svg"
-                        title="Deaktivierte Spieler einblenden">
-                    </svg-icon>
-                    <svg-icon *ngIf="showPermanentDeletedPlayers" (click)="showPermanentDeletedPlayers = false"
-                        class="nav-icon deleted-icon" src="assets/person_remove-24px.svg"
-                        title="Deaktivierte Spieler ausblenden">
-                    </svg-icon>
-                    <h3 class="nav-icon number_players">{{amountPlayers}}</h3>
-
-                </div>
-
-
-            </div>
-            <div class="row" *ngIf="loadingLigaInsiderStats">
-                <div class="col-12 text-center">
-                    <div>
-                        Marktwerte werden aktualisiert...
-                    </div>
-                    <div class="spinner-border" role="status">
-                        <span class="sr-only">Loading...</span>
-                    </div>
-                </div>
-            </div>
-            <div class="row mt-2" *ngIf="withoutApi && !loadingLigaInsiderStats">
-                <div class="col-12">
-                    <h4 class="align-center">Spieler hinzufügen</h4>
-                    <div class="ng-autocomplete">
-                        <ng-autocomplete #auto [data]="localApiService.typeaheadData" [searchKeyword]="'name'"
-                            (selected)='selectEvent($event)' (inputChanged)='onChangeSearch($event)'
-                            (inputFocused)='onFocused($event)' [itemTemplate]="itemTemplate"
-                            [notFoundTemplate]="notFoundTemplate" [(ngModel)]="newplayername">
-                        </ng-autocomplete>
-
-                        <ng-template #itemTemplate let-item>
-                            <a [innerHTML]="item.name"></a>
-                        </ng-template>
-
-                        <ng-template #notFoundTemplate let-notFound>
-                            <div [innerHTML]="notFound"></div>
-                        </ng-template>
-                    </div>
-                </div>
-            </div>
-            <hr />
-            <h4 class="align-center">Kader: {{kickbaseGroup.team}}</h4>
-            <h6 class="align-center">Minus: {{kickbaseGroup.possibleMinus}}</h6>
-            <h6 class="align-center">Max Angebot: {{kickbaseGroup.possibleOffer}}</h6>
-
-            <div class="row">
-                <div class="col-12 mt-1" *ngIf="!withoutApi">
-                    <button class="btn btn-outline-secondary btn-block" (click)="onLoadAllDetails(true)">
-                        <span *ngIf="!loadingAllDetailsManual">Alle Details laden</span>
-                        <ng-container *ngIf="loadingAllDetailsManual">
-                            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-                            Lade Details...
-                        </ng-container>
-                    </button>
-                </div>
-                <div class="col-12 mt-2">
-                    <ng-container *ngFor="let player of kickbaseGroup.players">
-
-                        <app-player-item *ngIf="showPlayer(player)" [player]="player" [printMode]="printMode"
-                            [withoutApi]="withoutApi" (loadDetails)="onLoadAllDetailsForPlayer(player)"
-                            (removePlayer)="onRemovePlayer(player)" (playerChanged)="onPlayerValueChanged(player)"
-                            (savePlayer)="saveLocalPlayers()">
-                        </app-player-item>
-                    </ng-container>
-                </div>
-            </div>
-            <hr />
-            <div class="row mt-2">
-                <div class="col-12">
-                    <strong>WICHTIG: Gewinn/Verlust bis Freitag sind nur geschätzt und NICHT genau</strong>
-                </div>
-
-                <div class="col-12" [style.color]="kickbaseGroup.color">
-                    Einnahmen aus Verkäufen:<br /> {{kickbaseGroup.value}}
-                    <hr class="mt-1 mb-1" />
-                    Kontostand nach Verkäufen:<br /> {{kickbaseGroup.difference}}
-                    <hr class="mt-1 mb-1" />
-                </div>
-                <div class="col-12" [style.color]="kickbaseGroup.colorFriday">
-                    Kontostand nach Verkäufen + Einnahmen bis Freitag + Erfolge:<br />
-                    {{kickbaseGroup.differenceFriday}}
-                    <hr class="mt-1 mb-1" />
-                </div>
-
-                <div class="col-12">
-                    Täglicher Gewinn:<br /> {{kickbaseGroup.profit}}
-                    <hr class="mt-1 mb-1" />
-                    Täglicher Verlust:<br /> {{kickbaseGroup.loss}}
-                    <hr class="mt-1 mb-1" />
-                    <ng-container *ngIf="includeMinusMarketValues">
-                        Einnahmen bis Freitag:<br /> {{kickbaseGroup.trendFriday}}
-                        <hr class="mt-1 mb-1" />
-                    </ng-container>
-                    <ng-container *ngIf="!includeMinusMarketValues">
-                        Einnahmen bis Freitag (ohne Verlust):<br /> {{kickbaseGroup.trendFriday}}
-                        <hr class="mt-1 mb-1" />
-                    </ng-container>
-                    Erfolge:<br /> {{kickbaseGroup.success}}
-                    <hr class="mt-1 mb-1" />
-                    Kaderwert:<br /> {{kickbaseGroup.team}}
-                    <hr class="mt-1 mb-1" />
-                </div>
-
-            </div>
-        </ng-container>
-    </ng-container>
-</ng-container>
+  </div>
+</div>
+    }
+  }
+}

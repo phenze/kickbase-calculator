@@ -1,19 +1,23 @@
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output, ChangeDetectionStrategy } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { KickbaseGroup } from 'src/app/model/kickbase-group';
 import { KickbasePlayer } from 'src/app/model/kickbase-player';
 import { ApiService } from 'src/app/services/api.service';
+import { AngularSvgIconModule } from 'angular-svg-icon';
 
 @Component({
-  selector: 'app-player-item',
-  templateUrl: './player-item.component.html',
-  styleUrls: ['./player-item.component.scss']
+    selector: 'app-player-item',
+    templateUrl: './player-item.component.html',
+    styleUrls: ['./player-item.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: true,
+    imports: [FormsModule, AngularSvgIconModule]
 })
 export class PlayerItemComponent implements OnInit {
 
-  @Input() player: KickbasePlayer;
-  @Input() withoutApi: boolean;
-  @Input() printMode: boolean;
-  @Input() isMarketOverview: boolean;
+  @Input({ required: true }) player!: KickbasePlayer;
+  @Input({ required: true }) printMode!: boolean;
+  @Input() isMarketOverview = false;
 
 
 
@@ -21,7 +25,6 @@ export class PlayerItemComponent implements OnInit {
   @Output() loadDetails = new EventEmitter();
 
   @Output() playerChanged = new EventEmitter();
-  @Output() savePlayer = new EventEmitter();
   constructor(public apiService: ApiService) { }
 
   ngOnInit(): void {
@@ -35,30 +38,14 @@ export class PlayerItemComponent implements OnInit {
     this.removePlayer.emit();
   }
 
-  errorHandler(event) {
+  errorHandler(event: Event) {
     console.debug(event);
-    event.target.src = "https://cdn.browshot.com/static/images/not-found.png";
-  }
-
-  onEditPlayerValue(player: KickbasePlayer, event: MouseEvent) {
-    player.isInEditMode = true;
-    event.stopImmediatePropagation();
-    event.preventDefault();
-  }
-
-  onEditPlayerValueDone(player: KickbasePlayer, event: MouseEvent = null) {
-    if (event !== null && event !== undefined) {
-      event.stopImmediatePropagation();
-      event.preventDefault();
+    const target = event.target as HTMLImageElement | null;
+    if (target !== null) {
+      target.src = "https://cdn.browshot.com/static/images/not-found.png";
     }
-    player.isInEditMode = false;
-    this.savePlayer.emit();
-    // this.saveLocalPlayers();
   }
 
-  onPlayerValueChanged(event) {
-    this.playerChanged.emit();
-  }
 
   onSetPlayerPermanentDeleted(event: MouseEvent, player: KickbasePlayer, deleted: boolean) {
     event.stopImmediatePropagation();

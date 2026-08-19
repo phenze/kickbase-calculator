@@ -4,7 +4,8 @@ import { Pipe, PipeTransform } from '@angular/core';
 const PADDING = "000000";
 
 @Pipe({
-	name: 'myCurrency'
+    name: 'myCurrency',
+    standalone: true
 })
 export class MyCurrencyPipe implements PipeTransform {
 
