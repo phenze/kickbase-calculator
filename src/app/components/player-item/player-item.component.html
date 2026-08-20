@@ -74,7 +74,7 @@
           @if (isMarketOverview) {
             @if (player.price !== 0) {
               <div class="mb-1">
-                <span class="text-muted small">Gebot: </span>
+                <span class="text-muted small">Preis: </span>
                 <strong class="text-dark">{{ player.priceString }}</strong>
                 <span class="small text-muted ms-1">(+{{ player.priceMarketValueDifferString }})</span>
               </div>
@@ -176,29 +176,50 @@
         </div>
 
         <!-- Punkte & Nächste Gegner -->
-        <div class="col-12">
-          <hr class="my-1 text-muted opacity-25" />
-        </div>
+<div class="col-12">
+  <hr class="my-1 text-muted opacity-25" />
+</div>
 
-        <div class="col-6 col-sm-6 small text-nowrap">
-          <span class="text-muted">Punkte:</span> 
-          <span class="fw-bold ms-1">{{ player.stats.points }}</span>
-        </div>
+<div class="col-6 col-sm-6 small text-nowrap">
+  <span class="text-muted">Punkte:</span> 
+  <span class="fw-bold ms-1">{{ player.stats.points }}</span>
+</div>
 
-        <div class="col-6 col-sm-6 small text-nowrap">
-          <span class="text-muted">Schnitt:</span> 
-          <span class="fw-bold ms-1">{{ player.stats.averagePoints }}</span>
-        </div>
+<div class="col-6 col-sm-6 small text-nowrap">
+  <span class="text-muted">Schnitt:</span> 
+  <span class="fw-bold ms-1">{{ player.stats.averagePoints }}</span>
+</div>
 
-        <div class="col-12 d-flex align-items-center gap-1 small mt-1 flex-wrap">
-          <span class="text-muted me-1 text-nowrap">Nächste Gegner:</span>
-          @for (nm of player.stats.nextThreeOpponents; track $index) {
-            <div class="d-inline-flex align-items-center me-2 text-nowrap">
-              <img [src]="nm.imageUrl" class="team-picture me-1" (error)="errorHandler($event)">
-              <span class="fw-semibold ms-1">{{ nm.isHomeGame ? '(H)' : '(A)' }}</span>
-            </div>
-          }
-        </div>
+<!-- Nächste / Vergangene Spiele (Mobil-optimiert mit Flex-Wrap) -->
+<div class="col-12 mt-2">
+  <span class="text-muted small fw-bold text-uppercase d-block mb-1">Spiele / Gegner:</span>
+  
+  <div class="d-flex flex-wrap gap-2 align-items-center">
+    @for (match of player.stats.nextThreeOpponents; track $index) {
+      <div class="d-inline-flex align-items-center gap-1 p-1 px-2 rounded bg-light border shadow-sm small text-nowrap">
+        
+        <!-- Gegner Logo -->
+        <img [src]="match.imageUrl" class="team-picture" (error)="errorHandler($event)" style="width: 20px; height: 20px; object-fit: contain;">
+        
+        <!-- Heim / Auswärts -->
+        <span class="fw-semibold text-muted">{{ match.isHomeGame ? '(H)' : '(A)' }}</span>
+
+        <!-- Fall 1: Spiel hat stattgefunden -> Ergebnis anzeigen -->
+        @if (match.isFinished) {
+          <span class="fw-bold text-dark ms-1">{{ match.resultString }}</span>
+        } 
+        <!-- Fall 2: Spiel in der Zukunft -> Datum anzeigen -->
+        @else {
+          <span class="fw-bold text-primary ms-1">{{ match.dateString }}</span>
+        }
+
+        <!-- Spieltags-Bezeichnung (z. B. Spieltag 1) -->
+        <span class="text-muted extra-small ms-1">({{ match.dayLabel }})</span>
+
+      </div>
+    }
+  </div>
+</div>
       }
 
     </div>

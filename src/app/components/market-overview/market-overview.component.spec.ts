@@ -145,18 +145,37 @@ describe('MarketOverviewComponent', () => {
   });
 
   it('should filter only user-offered players with manual prices when onlyManualPrices is true', () => {
-    const playerSystem = new KickbasePlayer({ i: '1', n: 'Weiser', prc: 5000000, mv: 5000000 }, '123');
-    const playerUserManual = new KickbasePlayer({ i: '2', n: 'Grifo', prc: 16500000, mv: 12316047, u: { n: 'harti' } }, '123');
+  // Mitchell Weiser (System-Angebot, prc == mv)
+  const playerSystem = new KickbasePlayer({
+    i: "43",
+    fn: "Mitchell",
+    n: "Weiser",
+    mv: 4673252,
+    prc: 4673252
+  }, '123');
 
-    component.sortedPlayers = [playerSystem, playerUserManual];
-    component.onlyKickbasePlayers = false;
-    component.onlyManualPrices = true;
+  // Vincenzo Grifo (User-Angebot von 'harti', prc > mv)
+  const playerUserManual = new KickbasePlayer({
+    i: "118",
+    fn: "Vincenzo",
+    n: "Grifo",
+    mv: 12316047,
+    prc: 16500000,
+    u: {
+      i: "1919688",
+      n: "harti"
+    }
+  }, '123');
 
-    component.ngOnChanges();
+  component.sortedPlayers = [playerSystem, playerUserManual];
+  component.onlyKickbasePlayers = false;
+  component.onlyManualPrices = true;
 
-    expect(component.playersToShow.length).toBe(1);
-    expect(component.playersToShow[0].name).toBe('Grifo');
-  });
+  component.ngOnChanges();
+
+  expect(component.playersToShow.length).toBe(1);
+  expect(component.playersToShow[0].name).toBe('Grifo');
+});
   });
 
   describe('Outputs / EventEmitters', () => {

@@ -68,10 +68,11 @@ export class KickbasePlayer {
         this.name = json["n"]
       }
 
-      if (json['uoid'] !== "0") {
-        this.price = json['uop'];
-      } else {
-        this.price = 0;
+      this.price = json['prc'] ?? 0;
+
+      // Nur wenn uoid/uop explizit im Payload übergeben werden (z. B. bei eigenen Angeboten)
+      if (json.hasOwnProperty('uoid') && json['uoid'] !== "0") {
+        this.price = json['uop'] ?? this.price;
       }
 
       if (json.hasOwnProperty("u") && json["u"] != null && json["u"]["n"]) {

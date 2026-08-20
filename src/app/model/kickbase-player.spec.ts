@@ -266,5 +266,8 @@ describe('KickbasePlayer', () => {
 
     expect(copiedPlayer.username).toBe('harti');
   });
+
+  
   });
+
 });

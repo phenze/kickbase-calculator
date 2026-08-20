@@ -1,7 +1,17 @@
 
 
 import numeral from 'numeral';
-import { KickbasePlayerNextMatch } from './kickbase-player-next-match';
+
+export interface NextOpponent {
+  imageUrl: string;
+  isHomeGame: boolean;
+  dayLabel: string;      // z. B. "Spieltag 1"
+  dateString?: string;    // z. B. "30.08." oder "30.08. 17:30"
+  resultString?: string;  // z. B. "3:3" oder "0:1"
+  isFinished: boolean;    // true, wenn Ergebnis feststeht
+} 
+
+
 export class KickbasePlayerStats {
 
   // api fields
@@ -28,7 +38,7 @@ export class KickbasePlayerStats {
   public realMarketValueChangeValuePrecent = '';
   public buyPriceValue = '';
 
-  public nextThreeOpponents!: KickbasePlayerNextMatch[];
+  public nextThreeOpponents!: NextOpponent[];
 
 
   constructor(json: any) {
@@ -42,15 +52,32 @@ export class KickbasePlayerStats {
       this.realMarketValueChange = json['tfhmvt'];
 
       this.nextThreeOpponents = new Array();
-      const nextMatches = json["mdsum"];
-      if (nextMatches !== undefined) {
-        let index = 0;
-        for (const nm of nextMatches) {
-          if (index >= 0) {
-            this.nextThreeOpponents.push(new KickbasePlayerNextMatch(nm, this.tid));
+      
+      if (json['mdsum'] && Array.isArray(json['mdsum'])) {
+        const playerTeamId = String(json['tid']); // Team-ID des Spielers
+
+        this.nextThreeOpponents = json['mdsum'].map((match: any) => {
+          const isHome = String(match.t1) === playerTeamId;
+          const opponentImgId = isHome ? match.t2 : match.t1;
+
+          // Spiel abgeschlossen? (mdst === 2 bedeutet i.d.R. beendet / t1g & t2g vorhanden)
+          const isFinished = match.mdst === 2 || (match.t1g !== undefined && match.t1g !== 0) || (match.t2g !== undefined && match.t2g !== 0);
+
+          let dateStr = '';
+          if (match.md) {
+            const matchDate = new Date(match.md);
+            dateStr = matchDate.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' });
           }
-          index++
-        }
+          
+          return {
+            imageUrl: 'https://kickbase.b-cdn.net/pool/teams/' + opponentImgId + '.png',
+            isHomeGame: isHome,
+            dayLabel: match.mdln || `Spieltag ${match.day}`,
+            resultString: `${match.t1g}:${match.t2g}`,
+            dateString: dateStr,
+            isFinished: isFinished
+          } as NextOpponent;
+        });
       }
     }
   }

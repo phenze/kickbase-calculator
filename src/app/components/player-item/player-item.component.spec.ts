@@ -43,6 +43,49 @@ describe('PlayerItemComponent', () => {
     expect(component).toBeTruthy();
   });
 
+  describe('matches', () => {
+    it('should render result for finished matches and date for upcoming matches', () => {
+    component.player = {
+      name: 'Test Player',
+      stats: {
+        points: 500,
+        averagePoints: 50,
+        nextThreeOpponents: [
+          {
+            imageUrl: 'assets/team1.svg',
+            isHomeGame: true,
+            dayLabel: 'Spieltag 1',
+            dateString: '30.08.',
+            resultString: '0:0',
+            isFinished: false // Zukünftiges Spiel
+          },
+          {
+            imageUrl: 'assets/team2.svg',
+            isHomeGame: false,
+            dayLabel: 'Spieltag 32',
+            dateString: '02.05.',
+            resultString: '3:3',
+            isFinished: true // Vergangenes Spiel
+          }
+        ]
+      }
+    } as any;
+
+    fixture.detectChanges();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+    const cardText = compiled.textContent || '';
+
+    // Für das zukünftige Spiel soll das Datum rendern
+    expect(cardText).toContain('30.08.');
+    // Für das vergangene Spiel soll das Ergebnis rendern
+    expect(cardText).toContain('3:3');
+    // Beide Spieltage sollen gerendert werden
+    expect(cardText).toContain('Spieltag 1');
+    expect(cardText).toContain('Spieltag 32');
+  });
+  });
+
   describe('Outputs / EventEmitters', () => {
     it('sollte loadDetails emitten, wenn onLoadAllDetailsForPlayer aufgerufen wird', async () => {
       spyOn(component.loadDetails, 'emit');
