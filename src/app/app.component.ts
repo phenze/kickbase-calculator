@@ -622,11 +622,28 @@ export class AppComponent implements OnInit, AfterViewInit {
 
     if (this.selectedSorting === this.sorting_default) {
       playersToSort.sort((a, b) => {
-        if (a.expiry === b.expiry) {
+        const aIsUserPlayer = a.username.length > 0;
+        const bIsUserPlayer = b.username.length > 0;
+
+        // 1. Spieler von Mitspielern nach hinten stellen
+        if (aIsUserPlayer && !bIsUserPlayer) {
+          return 1; // 'a' kommt nach 'b'
+        }
+        if (!aIsUserPlayer && bIsUserPlayer) {
+          return -1; // 'a' kommt vor 'b'
+        }
+
+        // Falls Mitspieler-Spieler zuerst kommen sollen, kehre die Returns oben um (-1 statt 1 / 1 statt -1)
+
+        // 2. Innerhalb derselben Gruppe nach Ablaufzeit (expiry) aufsteigend sortieren
+        const aExpiry = a.expiry ?? Number.MAX_SAFE_INTEGER;
+        const bExpiry = b.expiry ?? Number.MAX_SAFE_INTEGER;
+
+        if (aExpiry === bExpiry) {
           return 0;
         }
 
-        return a.expiry > b.expiry ? 1 : -1;
+        return aExpiry > bExpiry ? 1 : -1;
       });
     }
 

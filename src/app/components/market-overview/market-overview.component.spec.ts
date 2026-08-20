@@ -128,6 +128,35 @@ describe('MarketOverviewComponent', () => {
 
       expect(component.playersToShow.length).toBe(0);
     });
+
+    it('should filter out user-offered players when onlyKickbasePlayers is true', () => {
+    const playerSystem = new KickbasePlayer({ i: '1', n: 'Weiser', exs: 2000 }, '123');
+    const playerUser = new KickbasePlayer({ i: '2', n: 'Grifo', u: { n: 'harti' } }, '123');
+
+    component.sortedPlayers = [playerSystem, playerUser];
+    component.onlyKickbasePlayers = true;
+    component.onlyManualPrices = false;
+
+    // Filter ausführen via Lifecycle Hook
+    component.ngOnChanges();
+
+    expect(component.playersToShow.length).toBe(1);
+    expect(component.playersToShow[0].name).toBe('Weiser');
+  });
+
+  it('should filter only user-offered players with manual prices when onlyManualPrices is true', () => {
+    const playerSystem = new KickbasePlayer({ i: '1', n: 'Weiser', prc: 5000000, mv: 5000000 }, '123');
+    const playerUserManual = new KickbasePlayer({ i: '2', n: 'Grifo', prc: 16500000, mv: 12316047, u: { n: 'harti' } }, '123');
+
+    component.sortedPlayers = [playerSystem, playerUserManual];
+    component.onlyKickbasePlayers = false;
+    component.onlyManualPrices = true;
+
+    component.ngOnChanges();
+
+    expect(component.playersToShow.length).toBe(1);
+    expect(component.playersToShow[0].name).toBe('Grifo');
+  });
   });
 
   describe('Outputs / EventEmitters', () => {

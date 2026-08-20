@@ -73,6 +73,12 @@ export class KickbasePlayer {
       } else {
         this.price = 0;
       }
+
+      if (json.hasOwnProperty("u") && json["u"] != null && json["u"]["n"]) {
+        this.username = json["u"]["n"];
+      } else {
+        this.username = '';
+      }
       if (json.hasOwnProperty('ofs')) {
         const offers = json["ofs"] as unknown[];
         let lastOfferPrice = 0;
@@ -291,6 +297,7 @@ export class KickbasePlayer {
     retVal.expiry = this.expiry;
     retVal.marketValue = this.marketValue;
     retVal.expiryDate = this.expiryDate;
+    retVal.username = this.username;
 
     retVal.stats = this.stats;
 

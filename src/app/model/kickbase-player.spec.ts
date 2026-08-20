@@ -221,4 +221,50 @@ describe('KickbasePlayer', () => {
       });
     });
   });
+
+  describe('Username Handling', () => {
+    const currentUserId = '12345';
+    it('should set username correctly when player is offered by a user', () => {
+    const rawPayload = {
+      i: '118',
+      n: 'Grifo',
+      mv: 12316047,
+      prc: 16500000,
+      u: {
+        i: '1919688',
+        n: 'harti'
+      }
+    };
+
+    const player = new KickbasePlayer(rawPayload, currentUserId);
+
+    expect(player.username).toBe('harti');
+  });
+
+  it('should set empty username when player is offered by Kickbase system', () => {
+    const rawPayload = {
+      i: '43',
+      n: 'Weiser',
+      mv: 4673252,
+      exs: 23317
+    };
+
+    const player = new KickbasePlayer(rawPayload, currentUserId);
+
+    expect(player.username).toBe('');
+  });
+
+  it('should copy username correctly in copy() method', () => {
+    const rawPayload = {
+      i: '118',
+      n: 'Grifo',
+      u: { n: 'harti' }
+    };
+
+    const player = new KickbasePlayer(rawPayload, currentUserId);
+    const copiedPlayer = player.copy(currentUserId);
+
+    expect(copiedPlayer.username).toBe('harti');
+  });
+  });
 });

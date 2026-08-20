@@ -233,6 +233,31 @@ describe('AppComponent', () => {
       component.kickbaseGroup.players = [p1, p2];
     });
 
+    it('should sort Kickbase players by expiry and move user-offered players to the end', () => {
+      component.displayMode = AppComponent.display_mode_market_overview;
+      component.selectedSorting = component.sorting_default;
+
+      // Test-Spieler-Setup:
+      // 1. Kickbase-Spieler (läuft spät ab)
+      const playerKbLate = new KickbasePlayer({ i: '1', n: 'Müller', exs: 10000 }, '123');
+      // 2. Kickbase-Spieler (läuft früh ab)
+      const playerKbEarly = new KickbasePlayer({ i: '2', n: 'Goretzka', exs: 1000 }, '123');
+      // 3. User-Spieler (kein exs, von Mitspieler angeboten)
+      const playerUser = new KickbasePlayer({ i: '3', n: 'Grifo', u: { n: 'harti' } }, '123');
+
+      // Unsortierte Ausgangslage: User-Spieler zuerst, dann später KB-Spieler, dann früher KB-Spieler
+      component.currentMarket = {
+        players: [playerUser, playerKbLate, playerKbEarly]
+      } as any;
+
+      component.sortCurrentPlayers();
+
+      const result = component.marketOverviewPlayers.map(p => p.name);
+
+      // Erwartete Reihenfolge: Goretzka (1000s), Müller (10000s), Grifo (User)
+      expect(result).toEqual(['Goretzka', 'Müller', 'Grifo']);
+    });
+
     it('sollte Spieler nach Marktwert aufsteigend sortieren', () => {
       component.selectedSorting = component.sorting_mw_asc;
       component.sortCurrentPlayers();
