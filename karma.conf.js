@@ -30,7 +30,36 @@ module.exports = function (config) {
     colors: true,
     logLevel: config.LOG_INFO,
     autoWatch: true,
-    browsers: ['ChromeHeadless'],
+    // Browser-Konsole (console.error, uncaught exceptions, etc.) ins
+    // Terminal spiegeln - Standardmaessig zeigt Karma das nicht immer
+    // vollstaendig an, obwohl genau da der eigentliche Fehler steckt,
+    // wenn der Browser sich verbindet aber keine Testresultate meldet.
+    browserConsoleLogOptions: {
+      level: 'debug',
+      terminal: true
+    },
+    // Grosszuegigere Timeouts, damit wir sehen ob es wirklich haengt
+    // oder nur langsam ist (Standard: 10s Capture, 10s NoActivity).
+    captureTimeout: 60000,
+    browserDisconnectTimeout: 10000,
+    browserDisconnectTolerance: 1,
+    browserNoActivityTimeout: 60000,
+    customLaunchers: {
+      // Standard ChromeHeadless bleibt in Containern/CI/Root-Umgebungen oft
+      // beim Start haengen, weil der Chrome-Sandbox nicht funktioniert.
+      // Dieser Launcher deaktiviert den Sandbox und ein paar weitere
+      // Stolperfallen (kleiner /dev/shm in Docker, GPU nicht vorhanden).
+      ChromeHeadlessCI: {
+        base: 'ChromeHeadless',
+        flags: [
+          '--no-sandbox',
+          '--disable-gpu',
+          '--disable-dev-shm-usage',
+          '--disable-extensions'
+        ]
+      }
+    },
+    browsers: ['ChromeHeadlessCI'],
     singleRun: false,
     restartOnFileChange: true
   });

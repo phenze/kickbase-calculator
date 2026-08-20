@@ -180,22 +180,6 @@ export class AppComponent implements OnInit, AfterViewInit {
     donateButton.render('#donate-button')
   }
 
-
-
-  // private updateMarketOverview(): void {
-  //   console.log('updateMarketOverview', this.marketOverviewComponent);
-  //   if (this.marketOverviewComponent === undefined) {
-  //     return;
-  //
-  //   }
-  //
-  //   this.marketOverviewComponent.selectedLeague = this.selectedLeague;
-  //   this.marketOverviewComponent.setCurrentMarket(this.currentMarket);
-  //
-  //   this.cdRef.detectChanges();
-  // }
-
-
   reloadMarket = async (fullRefresh: boolean): Promise<void> => {
     if (this.selectedLeague === null) {
       return;
