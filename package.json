@@ -9,7 +9,7 @@
     "build": "ng build",
     "build:prod": "ng build --configuration production",
     "build:prod-update": "ng build --configuration production-update",
-    "test": "ng test",
+    "test": "ng test --watch=false --code-coverage",
     "test:ci": "ng test --watch=false --browsers=ChromeHeadless"
   },
   "dependencies": {

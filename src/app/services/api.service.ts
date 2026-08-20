@@ -317,7 +317,7 @@ export class ApiService {
     const key = 'permantDeletedPlayer_' + leagueId.toString();
     const permantDeletedPlayer = localStorage.getItem(key);
     if ((permantDeletedPlayer === null || permantDeletedPlayer === undefined) && deleted) {
-      localStorage.setItem(key, JSON.stringify([playerId]))
+      localStorage.setItem(key, JSON.stringify([String(playerId)]))
     } else {
       const parsedPlayers = JSON.parse(permantDeletedPlayer ?? '[]') as unknown;
       const tmpArray = Array.isArray(parsedPlayers) ? parsedPlayers.map(player => String(player)) : [];

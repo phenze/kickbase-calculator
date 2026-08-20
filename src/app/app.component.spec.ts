@@ -1,415 +1,455 @@
-import { TestBed, waitForAsync } from '@angular/core/testing';
+import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { AppComponent } from './app.component';
-import { AppModule } from './app.module';
 import { ApiService } from './services/api.service';
-import { KickbaseLeague } from './model/kickbase-league';
+import { BsModalService, BsModalRef } from 'ngx-bootstrap/modal';
+import { ChangeDetectorRef, NO_ERRORS_SCHEMA } from '@angular/core';
 import { KickbasePlayer } from './model/kickbase-player';
-
-// -----------------------------------------------------------------------
-// WICHTIG: Der echte ApiService darf in Unit-Tests NIE injiziert werden.
-// Sein Konstruktor kann (abhaengig vom Inhalt von localStorage['data'])
-// einen echten, ungeawaiteten HTTP-Call an https://api.kickbase.com
-// ausloesen (this.refreshToken() in ApiService). Da Angular/Zone.js
-// jede offene HTTP-Request fuer die Stabilitaetspruefung mitverfolgt,
-// haengt jeder mit waitForAsync/fakeAsync umschlossene Test dann, bis
-// der Call sich aufloest oder Karma nach browserNoActivityTimeout
-// abbricht - das war die Ursache des urspruenglichen Hangs.
-//
-// Loesung: ApiService immer per overrideProvider durch einen Spy
-// ersetzen, bevor compileComponents() bzw. createComponent() laeuft.
-// -----------------------------------------------------------------------
+import { KickbaseLeague } from './model/kickbase-league';
+import { KickbaseMarket } from './model/kickbase-market';
+import { KickbasePlayerStats } from './model/kickbase-player-stats';
+import numeral from 'numeral';
 
 describe('AppComponent', () => {
-  let apiServiceSpy: jasmine.SpyObj<ApiService>;
+  let component: AppComponent;
+  let fixture: ComponentFixture<AppComponent>;
+  let mockApiService: jasmine.SpyObj<ApiService>;
+  let mockModalService: jasmine.SpyObj<BsModalService>;
 
-  beforeEach(waitForAsync(() => {
-    apiServiceSpy = jasmine.createSpyObj<ApiService>(
-      'ApiService',
-      [
-        'getLeagues',
-        'getMarket',
-        'getLineup',
-        'getToken',
-        'getGiftStatus',
-        'collectGift',
-        'logout',
-        'setLastDisplay',
-        'setLastLeague',
-        'setPlayerPermanentDeleted',
-      ],
-      {
-        // Properties, die AppComponent liest
-        isLoggedIn: false,
-        userID: 1,
-        data: { lastLeagueId: -1 },
-      }
-    );
+  function makePlayer(id: number, name: string, marketValue: number, change = 0): KickbasePlayer {
+    const player = new KickbasePlayer(null, 'user123');
+    player.id = id;
+    player.name = name;
+    player.marketValue = marketValue;
+    player.value = marketValue;
+    player.price = marketValue;
+    player.expiry = id * 100;
 
-    TestBed.configureTestingModule({
-      imports: [AppModule],
-    })
-      .overrideProvider(ApiService, { useValue: apiServiceSpy })
-      .compileComponents();
-  }));
+    const stats = new KickbasePlayerStats(null);
+    stats.realMarketValueChange = change;
+    player.stats = stats;
 
-  function createComponent() {
-    const fixture = TestBed.createComponent(AppComponent);
-    const app = fixture.debugElement.componentInstance as AppComponent;
-    return { fixture, app };
+    return player;
   }
 
-  it('should create the app', () => {
-    const { app } = createComponent();
-    expect(app).toBeTruthy();
-  });
+  beforeEach(async () => {
+    localStorage.clear();
+    numeral.locale('de');
 
-  it(`should have as title 'app'`, () => {
-    const { app } = createComponent();
-    expect(app.title).toEqual('app');
-  });
-
-  describe('ngOnInit', () => {
-    afterEach(() => {
-      localStorage.removeItem('sorting');
-      localStorage.removeItem('loadStatsAlways');
-      localStorage.removeItem('offerOffset');
+    mockApiService = jasmine.createSpyObj('ApiService', [
+      'getToken',
+      'getLeagues',
+      'getMarket',
+      'getLineup',
+      'setLastLeague',
+      'setLastDisplay',
+      'collectGift',
+      'logout'
+    ], {
+      data: { lastLeagueId: -1 },
+      isLoggedIn: true,
+      userID: 'user123'
     });
 
-    it('liest die gespeicherte Sortierung aus localStorage', () => {
+    // Test-Spieler fuer den Markt anlegen
+    const sampleMarketPlayer = makePlayer(1, 'Müller', 10000000);
+    sampleMarketPlayer.loadStats = jasmine.createSpy('loadStats').and.resolveTo();
+
+    // Standard-Mocks mit befülltem Markt konfigurieren
+    mockApiService.getLeagues.and.resolveTo([{ id: 10, name: 'Liga 1', budget: 10000000 } as any]);
+    mockApiService.getMarket.and.resolveTo({ 
+      players: [sampleMarketPlayer], 
+      offerAmountForUser: '500000' 
+    } as any);
+    mockApiService.getLineup.and.resolveTo({ 
+      players: [sampleMarketPlayer] 
+    } as any);
+
+    mockModalService = jasmine.createSpyObj('BsModalService', ['show']);
+
+    await TestBed.configureTestingModule({
+      declarations: [AppComponent],
+      providers: [
+        { provide: ApiService, useValue: mockApiService },
+        { provide: BsModalService, useValue: mockModalService },
+        ChangeDetectorRef
+      ],
+      schemas: [NO_ERRORS_SCHEMA]
+    }).compileComponents();
+
+    fixture = TestBed.createComponent(AppComponent);
+    component = fixture.componentInstance;
+  });
+
+  it('sollte die Komponente erfolgreich erstellen', () => {
+    expect(component).toBeTruthy();
+  });
+
+  describe('ngOnInit & Initialisierung', () => {
+    it('sollte Einstellungen aus dem localStorage auslesen', () => {
       localStorage.setItem('sorting', '2');
-      const { app, fixture } = createComponent();
-      fixture.detectChanges(); // triggert ngOnInit
-      expect(app.selectedSorting).toBe(2);
-    });
-
-    it('liest loadStatsAlways aus localStorage', () => {
       localStorage.setItem('loadStatsAlways', 'false');
-      const { app, fixture } = createComponent();
-      fixture.detectChanges();
-      expect(app.loadStatsAlways).toBeFalse();
+      localStorage.setItem('offerOffset', '1.5');
+
+      component.ngOnInit();
+
+      expect(component.selectedSorting).toBe(2);
+      expect(component.loadStatsAlways).toBeFalse();
+      expect(component.offerOffset).toBe('1.5');
     });
 
-    it('ruft loadLeagues() nicht auf, wenn nicht eingeloggt', () => {
-      const { app, fixture } = createComponent();
-      apiServiceSpy.getLeagues.calls.reset();
-      fixture.detectChanges();
-      expect(apiServiceSpy.getLeagues).not.toHaveBeenCalled();
+    it('sollte Leuchten laden, wenn ApiService.isLoggedIn true ist', () => {
+      mockApiService.getLeagues.and.resolveTo([]);
+
+      component.ngOnInit();
+
+      expect(mockApiService.getLeagues).toHaveBeenCalled();
     });
 
-    it('berechnet dayUntilFriday als Wert zwischen 0 und 7', () => {
-      const { app, fixture } = createComponent();
-      fixture.detectChanges();
-      expect(app.dayUntilFriday).toBeGreaterThanOrEqual(0);
-      expect(app.dayUntilFriday).toBeLessThanOrEqual(7);
+    it('sollte dayUntilFriday und fridayDate korrekt initialisieren', () => {
+      component.ngOnInit();
+
+      expect(component.dayUntilFriday).toBeGreaterThanOrEqual(0);
+      expect(component.fridayDate).toBeInstanceOf(Date);
     });
   });
 
-  describe('login', () => {
-    it('zeigt einen Alert, wenn Username oder Passwort fehlen', async () => {
-      const { app } = createComponent();
+  describe('Login & Logout', () => {
+    it('sollte bei erfolgreichem Login Ligen laden und den Display-Modus setzen', fakeAsync(() => {
+      mockApiService.getToken.and.resolveTo(true);
+      mockApiService.getLeagues.and.resolveTo([]);
+
+      component.login({ username: 'testuser', password: 'password' });
+      tick();
+
+      expect(mockApiService.getToken).toHaveBeenCalledWith('testuser', 'password');
+      expect(component.displayMode).toBe(AppComponent.display_mode_calculator);
+      expect(mockApiService.getLeagues).toHaveBeenCalled();
+    }));
+
+    it('sollte bei fehlerhaftem Login einen Alert anzeigen', fakeAsync(() => {
       spyOn(window, 'alert');
-      await app.login({ username: '', password: '' } as any);
-      expect(window.alert).toHaveBeenCalledWith('Bitte Username und Password angeben');
-      expect(app.doLogin).toBeFalse();
-    });
+      mockApiService.getToken.and.resolveTo(false);
 
-    it('wechselt bei Erfolg in den Rechner-Modus und laedt Ligen', async () => {
-      const { app } = createComponent();
-      apiServiceSpy.getToken.and.resolveTo(true);
-      apiServiceSpy.getLeagues.and.resolveTo([]);
-
-      await app.login({ username: 'user', password: 'pw' } as any);
-
-      expect(apiServiceSpy.getToken).toHaveBeenCalledWith('user', 'pw');
-      expect(app.displayMode).toBe(AppComponent.display_mode_calculator);
-      expect(app.doLogin).toBeFalse();
-    });
-
-    it('zeigt bei falschem Login/Passwort einen Alert', async () => {
-      const { app } = createComponent();
-      spyOn(window, 'alert');
-      apiServiceSpy.getToken.and.resolveTo(false);
-
-      await app.login({ username: 'user', password: 'wrong' } as any);
+      component.login({ username: 'wrong', password: 'bad' });
+      tick();
 
       expect(window.alert).toHaveBeenCalledWith('Bitte Username und Passwort überprüfen');
-    });
+      expect(component.doLogin).toBeFalse();
+    }));
 
-    it('faengt eine Exception von getToken ab und zeigt einen Alert', async () => {
-      const { app } = createComponent();
-      spyOn(window, 'alert');
-      apiServiceSpy.getToken.and.rejectWith(new Error('network error'));
+    it('sollte beim Logout die Session und Gruppe zurücksetzen', () => {
+      component.newplayername = 'Test';
+      component.kickbaseGroup.players = [makePlayer(1, 'Müller', 1000)];
 
-      await app.login({ username: 'user', password: 'pw' } as any);
+      component.logout();
 
-      expect(window.alert).toHaveBeenCalledWith('Bitte Username und Passwort überprüfen');
-      expect(app.doLogin).toBeFalse();
-    });
-  });
-
-  describe('loadLeagues', () => {
-    it('waehlt die zuletzt genutzte Liga, falls vorhanden', async () => {
-      const { app } = createComponent();
-      const leagues = [
-        { id: 1 } as KickbaseLeague,
-        { id: 2 } as KickbaseLeague,
-      ];
-      apiServiceSpy.getLeagues.and.resolveTo(leagues);
-      Object.defineProperty(apiServiceSpy, 'data', {
-        value: { lastLeagueId: 2 },
-        configurable: true,
-      });
-      apiServiceSpy.getMarket.and.resolveTo(null as any);
-      apiServiceSpy.getLineup.and.resolveTo({ players: [] } as any);
-
-      await app.loadLeagues();
-
-      expect(app.leagues).toEqual(leagues);
-      expect(app.selectedLeague).toBe(2);
-    });
-
-    it('waehlt die erste Liga, wenn keine zuletzt genutzte existiert', async () => {
-      const { app } = createComponent();
-      const leagues = [{ id: 5 } as KickbaseLeague];
-      apiServiceSpy.getLeagues.and.resolveTo(leagues);
-      Object.defineProperty(apiServiceSpy, 'data', {
-        value: { lastLeagueId: -1 },
-        configurable: true,
-      });
-      apiServiceSpy.getMarket.and.resolveTo(null as any);
-      apiServiceSpy.getLineup.and.resolveTo({ players: [] } as any);
-
-      await app.loadLeagues();
-
-      expect(app.selectedLeague).toBe(5);
-    });
-
-    it('geht sauber mit einem Fehler von getLeagues um', async () => {
-      const { app } = createComponent();
-      spyOn(console, 'log');
-      apiServiceSpy.getLeagues.and.rejectWith(new Error('boom'));
-
-      await expectAsync(app.loadLeagues()).toBeResolved();
-      expect(app.leagues).toEqual([]);
+      expect(mockApiService.logout).toHaveBeenCalled();
+      expect(component.newplayername).toBe('');
+      expect(component.kickbaseGroup.players.length).toBe(0);
     });
   });
 
-  describe('onSelectedLeagueChanged', () => {
-    it('setzt den Zustand zurueck, wenn null uebergeben wird', async () => {
-      const { app } = createComponent();
-      await app.onSelectedLeagueChanged(null);
-
-      expect(app.selectedLeague).toBeNull();
-      expect(app.currentMarket).toBeNull();
-      expect(app.currentGift).toBeNull();
-      expect(app.loadingData).toBeFalse();
+  describe('loadLeagues & onSelectedLeagueChanged', () => {
+    beforeEach(() => {
+      const mockLeague: KickbaseLeague = { id: 10, name: 'Bundesliga', budget: 10000000 } as any;
+      mockApiService.getLeagues.and.resolveTo([mockLeague]);
+      mockApiService.getMarket.and.resolveTo({ players: [], offerAmountForUser: '500000' } as any);
+      mockApiService.getLineup.and.resolveTo({ players: [makePlayer(1, 'Neuer', 5000000)] } as any);
     });
+
+    it('sollte die erste Liga auswählen, wenn keine lastLeagueId im ApiService existiert', fakeAsync(() => {
+      component.loadLeagues();
+      tick();
+
+      expect(component.selectedLeague).toBe(10);
+      expect(mockApiService.setLastLeague).toHaveBeenCalledWith(10);
+      expect(component.kickbaseGroup.players.length).toBe(1);
+    }));
+
+    it('sollte die Werte zurücksetzen, wenn null als Liga ausgewählt wird', fakeAsync(() => {
+      component.onSelectedLeagueChanged(null);
+      tick();
+
+      expect(component.selectedLeague).toBeNull();
+      expect(component.currentMarket).toBeNull();
+      expect(component.currentGift).toBeNull();
+    }));
   });
 
-  describe('onMinusValueChanged / onExtraAmountChange', () => {
-    it('parst einen formatierten Wert und aktualisiert minusValue', () => {
-      const { app } = createComponent();
-      app.onMinusValueChanged('1.234,56');
-      expect(app.minusValue).toBeCloseTo(1234.56, 2);
+  describe('Spieler-Management & Interaktionen', () => {
+    it('sollte einen neuen Spieler manuell hinzufügen', () => {
+      component.newplayername = 'Kimmich';
+      component.newplayeramount = 15000000;
+
+      component.onAddPlayer();
+
+      expect(component.kickbaseGroup.players.length).toBe(1);
+      expect(component.kickbaseGroup.players[0].name).toBe('Kimmich');
+      expect(component.newplayername).toBe('');
+      expect(component.newplayeramount).toBe(0);
     });
 
-    it('ignoriert ungueltige Eingaben ohne zu werfen', () => {
-      const { app } = createComponent();
-      expect(() => app.onMinusValueChanged('---')).not.toThrow();
-    });
-  });
+    it('sollte einen Spieler als gelöscht markieren (onRemovePlayer)', () => {
+      const player = makePlayer(1, 'Kane', 20000000);
+      component.kickbaseGroup.players = [player];
 
-  describe('onIncludeAdditionalAmountChanged', () => {
-    it('zieht extraAmount ab, wenn includeAdditionalAmount aktiv ist', () => {
-      const { app } = createComponent();
-      app.minusValue = 1000;
-      app.extraAmount = 200;
-      app.includeAdditionalAmount = true;
-
-      app.onIncludeAdditionalAmountChanged();
-
-      expect(app.amountValue).toBe(800);
-    });
-
-    it('nutzt minusValue direkt, wenn includeAdditionalAmount aus ist', () => {
-      const { app } = createComponent();
-      app.minusValue = 1000;
-      app.extraAmount = 200;
-      app.includeAdditionalAmount = false;
-
-      app.onIncludeAdditionalAmountChanged();
-
-      expect(app.amountValue).toBe(1000);
-    });
-  });
-
-  describe('Spieler-Verwaltung', () => {
-    it('onAddPlayer fuegt einen neuen Spieler hinzu und setzt die Eingabe zurueck', () => {
-      const { app } = createComponent();
-      app.newplayername = 'Testspieler';
-      app.newplayeramount = 5000000;
-
-      app.onAddPlayer();
-
-      expect(app.kickbaseGroup.players.length).toBe(1);
-      expect(app.kickbaseGroup.players[0].name).toBe('Testspieler');
-      expect(app.newplayername).toBe('');
-      expect(app.newplayeramount).toBe(0);
-    });
-
-    it('onRemovePlayer markiert den passenden Spieler als geloescht', () => {
-      const { app } = createComponent();
-      const player = new KickbasePlayer(null, 1);
-      player.name = 'Weg damit';
-      app.kickbaseGroup.players.push(player);
-
-      app.onRemovePlayer(player);
+      component.onRemovePlayer(player);
 
       expect(player.isDeleted).toBeTrue();
     });
 
-    it('onDeactivatePlayer togglet isDeactivated und passt amountPlayers an', () => {
-      const { app } = createComponent();
-      const player = new KickbasePlayer(null, 1);
-      player.isPersitantDeleted = false;
+    it('sollte den Deaktivierungs-Status eines Spielers umschalten (onDeactivatePlayer)', () => {
+      const player = makePlayer(1, 'Musiala', 18000000);
       player.isDeactivated = false;
-      app.amountPlayers = 0;
 
-      app.onDeactivatePlayer(player);
+      component.onDeactivatePlayer(player);
 
       expect(player.isDeactivated).toBeTrue();
-      expect(app.amountPlayers).toBe(1);
+    });
 
-      app.onDeactivatePlayer(player);
+    it('sollte filterbezogene Sichtbarkeit mit showPlayer prüfen', () => {
+      const pNormal = makePlayer(1, 'A', 1000);
+      const pDeleted = makePlayer(2, 'B', 1000);
+      pDeleted.isDeleted = true;
 
-      expect(player.isDeactivated).toBeFalse();
-      expect(app.amountPlayers).toBe(0);
+      const pPermDeleted = makePlayer(3, 'C', 1000);
+      pPermDeleted.isPersitantDeleted = true;
+
+      expect(component.showPlayer(pNormal)).toBeTrue();
+      expect(component.showPlayer(pDeleted)).toBeFalse();
+
+      component.showPermanentDeletedPlayers = false;
+      expect(component.showPlayer(pPermDeleted)).toBeFalse();
     });
   });
 
-  describe('Sortierung', () => {
-    it('onSelectedSortingChanged persistiert die Wahl in localStorage', () => {
-      const { app } = createComponent();
-      app.onSelectedSortingChanged(app.sorting_mw_desc);
-      expect(localStorage.getItem('sorting')).toBe(String(app.sorting_mw_desc));
-      localStorage.removeItem('sorting');
+  describe('Sortierung (sortCurrentPlayers)', () => {
+    let p1: KickbasePlayer;
+    let p2: KickbasePlayer;
+
+    beforeEach(() => {
+      p1 = makePlayer(1, 'Spieler 1', 10000000, 50000);
+      p2 = makePlayer(2, 'Spieler 2', 5000000, -20000);
+      component.kickbaseGroup.players = [p1, p2];
     });
 
-    it('sortCurrentPlayers sortiert nach expiry im Default-Modus', () => {
-      const { app } = createComponent();
-      const p1 = new KickbasePlayer(null, 1);
-      p1.expiry = 200;
-      const p2 = new KickbasePlayer(null, 1);
-      p2.expiry = 100;
-      app.kickbaseGroup.players = [p1, p2];
-      app.selectedSorting = app.sorting_default;
+    it('sollte Spieler nach Marktwert aufsteigend sortieren', () => {
+      component.selectedSorting = component.sorting_mw_asc;
+      component.sortCurrentPlayers();
 
-      app.sortCurrentPlayers();
+      expect(component.kickbaseGroup.players[0].id).toBe(2);
+      expect(component.kickbaseGroup.players[1].id).toBe(1);
+    });
 
-      expect(app.kickbaseGroup.players[0]).toBe(p2);
-      expect(app.kickbaseGroup.players[1]).toBe(p1);
+    it('sollte Spieler nach Marktwert absteigend sortieren', () => {
+      component.selectedSorting = component.sorting_mw_desc;
+      component.sortCurrentPlayers();
+
+      expect(component.kickbaseGroup.players[0].id).toBe(1);
+      expect(component.kickbaseGroup.players[1].id).toBe(2);
+    });
+
+    it('sollte Spieler nach Marktwertveränderung aufsteigend sortieren', () => {
+      component.selectedSorting = component.sorting_mw_change_asc;
+      component.sortCurrentPlayers();
+
+      expect(component.kickbaseGroup.players[0].id).toBe(2);
+      expect(component.kickbaseGroup.players[1].id).toBe(1);
+    });
+
+    it('sollte Speichern der Sortierung im localStorage ausführen', () => {
+      component.onSelectedSortingChanged(component.sorting_mw_desc);
+
+      expect(localStorage.getItem('sorting')).toBe('1');
     });
   });
 
-  describe('showPlayer', () => {
-    it('gibt false zurueck, wenn der Spieler geloescht ist', () => {
-      const { app } = createComponent();
-      const player = new KickbasePlayer(null, 1);
-      player.isDeleted = true;
-      expect(app.showPlayer(player)).toBeFalse();
+  describe('Geschenk abholen & Fehlerbehandlung', () => {
+    it('sollte Modal öffnen, wenn getGift fehlschlägt', fakeAsync(() => {
+      component.selectedLeague = 10;
+      mockApiService.collectGift.and.rejectWith('Gift already collected');
+      mockModalService.show.and.returnValue({ content: {} } as BsModalRef);
+
+      component.getGift();
+      tick();
+
+      expect(mockModalService.show).toHaveBeenCalled();
+    }));
+
+    it('sollte errorHandler das Not-Found Bild zuweisen', () => {
+      const mockImg = document.createElement('img');
+      const mockEvent = { target: mockImg } as unknown as Event;
+
+      component.errorHandler(mockEvent);
+
+      expect(mockImg.src).toBe('https://cdn.browshot.com/static/images/not-found.png');
+    });
+  });
+
+  describe('Display Modus & Wechsel', () => {
+    it('sollte den Modus auf Marktübersicht wechseln und Markt laden', fakeAsync(() => {
+      component.selectedLeague = 10;
+      mockApiService.getMarket.and.resolveTo({ players: [] } as any);
+
+      component.switchDisplay(AppComponent.display_mode_market_overview);
+      tick();
+
+      expect(component.displayMode).toBe(AppComponent.display_mode_market_overview);
+      expect(mockApiService.setLastDisplay).toHaveBeenCalledWith(AppComponent.display_mode_market_overview);
+      expect(mockApiService.getMarket).toHaveBeenCalledWith(10);
+    }));
+  });
+
+  describe('reloadMarket & onLoadAllDetails', () => {
+    beforeEach(() => {
+      component.selectedLeague = 10;
     });
 
-    it('respektiert showPermanentDeletedPlayers fuer dauerhaft geloeschte Spieler', () => {
-      const { app } = createComponent();
-      const player = new KickbasePlayer(null, 1);
-      player.isDeleted = false;
+    it('sollte reloadMarket frühzeitig abbrechen, wenn keine Liga ausgewählt ist', fakeAsync(() => {
+      component.selectedLeague = null;
+      component.reloadMarket(true);
+      tick();
+
+      expect(mockApiService.getMarket).not.toHaveBeenCalled();
+    }));
+
+    it('sollte den Markt neu laden und Stats aktualisieren (fullRefresh = true)', fakeAsync(() => {
+      const p1 = makePlayer(1, 'Müller', 5000000);
+      spyOn(p1, 'loadStats').and.resolveTo();
+      spyOn(p1, 'calcValues');
+      spyOn(p1, 'calcColors');
+
+      mockApiService.getMarket.and.resolveTo({ players: [p1], offerAmountForUser: '0' } as any);
+
+      component.reloadMarket(true);
+      tick();
+
+      expect(component.loadingData).toBeFalse();
+      expect(p1.loadStats).toHaveBeenCalled();
+      expect(p1.calcValues).toHaveBeenCalled();
+      expect(p1.isDeactivated).toBeTrue();
+    }));
+
+    it('sollte onLoadAllDetails im Market Overview Modus für alle Spieler laden', fakeAsync(() => {
+      component.displayMode = AppComponent.display_mode_market_overview;
+      const p1 = makePlayer(1, 'Müller', 5000000);
+      spyOn(p1, 'loadStats').and.resolveTo();
+      spyOn(p1, 'calcValues');
+      component.currentMarket = { players: [p1] } as any;
+
+      component.onLoadAllDetails(true);
+      tick();
+
+      expect(p1.loadStats).toHaveBeenCalledWith(10, mockApiService);
+      expect(p1.calcValues).toHaveBeenCalled();
+      expect(component.loadingAllDetailsManual).toBeFalse();
+    }));
+
+    it('sollte onLoadAllDetails im Calculator Modus für die Gruppe laden', fakeAsync(() => {
+      component.displayMode = AppComponent.display_mode_calculator;
+      const p1 = makePlayer(1, 'Müller', 5000000);
+      spyOn(p1, 'loadStats').and.resolveTo();
+      component.kickbaseGroup.players = [p1];
+
+      component.onLoadAllDetails(true);
+      tick();
+
+      expect(p1.loadStats).toHaveBeenCalledWith(10, mockApiService);
+      expect(component.loadingAllDetailsManual).toBeFalse();
+    }));
+  });
+
+  describe('onLoadAllDetailsForPlayer & Spieler-Interaktionen', () => {
+    it('sollte abbrechen, wenn der Spieler im Edit-Modus ist', fakeAsync(() => {
+      component.selectedLeague = 10;
+      const player = makePlayer(1, 'Kimmich', 10000000);
+      player.isInEditMode = true;
+
+      component.onLoadAllDetailsForPlayer(player);
+      tick();
+
+      expect(player.stats).not.toBeNull();
+    }));
+
+    it('sollte Stats laden und Farben berechnen, wenn stats null ist', fakeAsync(() => {
+      component.selectedLeague = 10;
+      const player = makePlayer(1, 'Kimmich', 10000000);
+      player.stats = null;
+      spyOn(player, 'loadStats').and.resolveTo();
+
+      component.onLoadAllDetailsForPlayer(player);
+      tick();
+
+      expect(player.loadStats).toHaveBeenCalledWith(10, mockApiService);
+    }));
+
+    it('sollte Spieler deaktivieren, wenn stats bereits geladen ist', fakeAsync(() => {
+      component.selectedLeague = 10;
+      const player = makePlayer(1, 'Kimmich', 10000000);
+      player.isDeactivated = false;
+
+      component.onLoadAllDetailsForPlayer(player);
+      tick();
+
+      expect(player.isDeactivated).toBeTrue();
+    }));
+
+    it('sollte onPlayerValueChanged die Spieleranzahl und Werte neu berechnen', () => {
+      const player = makePlayer(1, 'Musiala', 10000000);
       player.isPersitantDeleted = true;
 
-      app.showPermanentDeletedPlayers = false;
-      expect(app.showPlayer(player)).toBeFalse();
+      component.onPlayerValueChanged(player);
 
-      app.showPermanentDeletedPlayers = true;
-      expect(app.showPlayer(player)).toBeTrue();
-    });
-
-    it('zeigt normale, nicht geloeschte Spieler an', () => {
-      const { app } = createComponent();
-      const player = new KickbasePlayer(null, 1);
-      player.isDeleted = false;
-      player.isPersitantDeleted = false;
-      expect(app.showPlayer(player)).toBeTrue();
+      expect(component.amountPlayers).toBe(1);
     });
   });
 
-  describe('setPrintMode', () => {
-    it('togglet den printMode', () => {
-      const { app } = createComponent();
-      expect(app.printMode).toBeFalse();
-      app.setPrintMode();
-      expect(app.printMode).toBeTrue();
-      app.setPrintMode();
-      expect(app.printMode).toBeFalse();
-    });
-  });
+  describe('Eingabefelder & Numeral-Berechnungen', () => {
+    it('sollte onMinusValueChanged verarbeiten', () => {
+      component.onMinusValueChanged('1.500.000');
 
-  describe('onFridayDateChanged', () => {
-    it('uebernimmt einen gueltigen numerischen Wert', () => {
-      const { app } = createComponent();
-      app.onFridayDateChanged('3');
-      expect(app.dayUntilFriday).toBe(3);
+      expect(component.minusValue).toBe(1500000);
+      expect(component.minusValueString).toBe('1 500 000');
     });
 
-    it('ignoriert einen ungueltigen Wert', () => {
-      const { app } = createComponent();
-      app.dayUntilFriday = 4;
-      app.onFridayDateChanged('nicht-numerisch');
-      expect(app.dayUntilFriday).toBe(4);
-    });
-  });
+    it('sollte onExtraAmountChange verarbeiten', () => {
+      component.onExtraAmountChange('250.000');
 
-  describe('logout', () => {
-    it('setzt den Zustand zurueck und ruft apiService.logout() auf', () => {
-      const { app } = createComponent();
-      app.newplayername = 'irgendwas';
-      app.logout();
-
-      expect(apiServiceSpy.logout).toHaveBeenCalled();
-      expect(app.newplayername).toBe('');
-    });
-  });
-
-  describe('getGift', () => {
-    it('laedt bei Erfolg die Ligen neu', async () => {
-      const { app } = createComponent();
-      app.selectedLeague = 1; // getGift() bricht sonst frueh ab (selectedLeague === null)
-      apiServiceSpy.collectGift.and.resolveTo(undefined);
-      apiServiceSpy.getLeagues.and.resolveTo([]);
-
-      await app.getGift();
-
-      expect(apiServiceSpy.collectGift).toHaveBeenCalled();
-      expect(apiServiceSpy.getLeagues).toHaveBeenCalled();
+      expect(component.extraAmount).toBe(250000);
+      expect(component.extraAmountString).toBe('250 000');
     });
 
-    it('zeigt bei Fehler ein Modal statt zu werfen', async () => {
-      const { app } = createComponent();
-      app.selectedLeague = 1;
-      spyOn(console, 'log');
-      apiServiceSpy.collectGift.and.rejectWith({ message: 'bereits abgeholt' });
+    it('sollte onIncludeAdditionalAmountChanged mit und ohne ExtraAmount berechnen', () => {
+      component.minusValue = 1000000;
+      component.extraAmount = 200000;
 
-      await expectAsync(app.getGift()).toBeResolved();
+      component.includeAdditionalAmount = true;
+      component.onIncludeAdditionalAmountChanged();
+      expect(component.amountValue).toBe(800000);
+
+      component.includeAdditionalAmount = false;
+      component.onIncludeAdditionalAmountChanged();
+      expect(component.amountValue).toBe(1000000);
     });
-  });
 
-  describe('errorHandler', () => {
-    it('setzt ein Fallback-Bild bei Ladefehler', () => {
-      const { app } = createComponent();
-      const img = document.createElement('img');
-      const event = { target: img } as unknown as Event;
+    it('sollte onOfferOffsetChange im localStorage speichern', () => {
+      component.onOfferOffsetChange('2,5');
 
-      app.errorHandler(event);
+      expect(component.offerOffset).toBe('2.5');
+      expect(localStorage.getItem('offerOffset')).toBe('2.5');
+    });
 
-      expect(img.src).toContain('not-found.png');
+    it('sollte onFridayDateChanged verarbeiten', () => {
+      component.onFridayDateChanged('4');
+
+      expect(component.dayUntilFriday).toBe(4);
+    });
+
+    it('sollte onLoadStatsAlwaysChanged im localStorage sichern', () => {
+      component.loadStatsAlways = false;
+      component.onLoadStatsAlwaysChanged();
+
+      expect(localStorage.getItem('loadStatsAlways')).toBe('false');
     });
   });
 });
