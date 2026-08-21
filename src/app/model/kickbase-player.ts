@@ -68,10 +68,17 @@ export class KickbasePlayer {
         this.name = json["n"]
       }
 
-      if (json['uoid'] !== "0") {
-        this.price = json['uop'];
+      this.price = json['prc'] ?? 0;
+
+      // Nur wenn uoid/uop explizit im Payload übergeben werden (z. B. bei eigenen Angeboten)
+      if (json.hasOwnProperty('uoid') && json['uoid'] !== "0") {
+        this.price = json['uop'] ?? this.price;
+      }
+
+      if (json.hasOwnProperty("u") && json["u"] != null && json["u"]["n"]) {
+        this.username = json["u"]["n"];
       } else {
-        this.price = 0;
+        this.username = '';
       }
       if (json.hasOwnProperty('ofs')) {
         const offers = json["ofs"] as unknown[];
@@ -291,6 +298,7 @@ export class KickbasePlayer {
     retVal.expiry = this.expiry;
     retVal.marketValue = this.marketValue;
     retVal.expiryDate = this.expiryDate;
+    retVal.username = this.username;
 
     retVal.stats = this.stats;
 

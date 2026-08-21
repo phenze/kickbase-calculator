@@ -18,6 +18,7 @@ export class PlayerItemComponent implements OnInit {
   @Input({ required: true }) player!: KickbasePlayer;
   @Input({ required: true }) printMode!: boolean;
   @Input() isMarketOverview = false;
+  @Input() achievementsDisabled = false;
 
 
 

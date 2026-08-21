@@ -1,14 +1,15 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  EventEmitter, Input,
-  OnInit,
-  Output
+  EventEmitter,
+  Input,
+  OnChanges,
+  Output,
+  inject
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { AngularSvgIconModule } from 'angular-svg-icon';
 
-import { KickbaseMarket } from 'src/app/model/kickbase-market';
 import { KickbasePlayer } from 'src/app/model/kickbase-player';
 import { ApiService } from 'src/app/services/api.service';
 
@@ -18,7 +19,7 @@ import { PlayerItemComponent } from '../player-item/player-item.component';
   selector: 'app-market-overview',
   templateUrl: './market-overview.component.html',
   styleUrls: ['./market-overview.component.scss'],
-  changeDetection: ChangeDetectionStrategy.Eager,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [
     FormsModule,
@@ -26,11 +27,12 @@ import { PlayerItemComponent } from '../player-item/player-item.component';
     PlayerItemComponent
   ]
 })
-export class MarketOverviewComponent implements OnInit {
+export class MarketOverviewComponent implements OnChanges {
+  public apiService = inject(ApiService);
 
   public playersToShow: KickbasePlayer[] = [];
-  public onlyManualPrices = false;
-  public onlyKickbasePlayers = false;
+  public onlyManualPrices = localStorage.getItem('onlyManualPrices') === 'true';
+  public onlyKickbasePlayers = localStorage.getItem('onlyKickbasePlayers') === 'true';
 
   @Input() sortedPlayers: KickbasePlayer[] = [];
   @Input() selectedLeague: number | null = null;
@@ -38,47 +40,23 @@ export class MarketOverviewComponent implements OnInit {
   @Output() loadDetails = new EventEmitter<KickbasePlayer>();
   @Output() onReload = new EventEmitter<void>();
 
-  constructor(public apiService: ApiService) {}
-
   ngOnChanges(): void {
-    this.filterPlayersToShow();
-  }
-
-  ngOnInit(): void {
-    const onlyKickbasePlayers = localStorage.getItem(
-        'onlyKickbasePlayers'
-    );
-
-    if (onlyKickbasePlayers !== null) {
-      this.onlyKickbasePlayers = onlyKickbasePlayers === 'true';
-    }
-
-    const onlyManualPrices = localStorage.getItem(
-        'onlyManualPrices'
-    );
-
-    if (onlyManualPrices !== null) {
-      this.onlyManualPrices = onlyManualPrices === 'true';
-    }
-
     this.filterPlayersToShow();
   }
 
   onOnlyManualPricesChanges(): void {
     localStorage.setItem(
-        'onlyManualPrices',
-        this.onlyManualPrices.toString()
+      'onlyManualPrices',
+      this.onlyManualPrices.toString()
     );
-
     this.filterPlayersToShow();
   }
 
   onOnlyKickbasePlayersChanged(): void {
     localStorage.setItem(
-        'onlyKickbasePlayers',
-        this.onlyKickbasePlayers.toString()
+      'onlyKickbasePlayers',
+      this.onlyKickbasePlayers.toString()
     );
-
     this.filterPlayersToShow();
   }
 
@@ -94,7 +72,8 @@ export class MarketOverviewComponent implements OnInit {
     let filteredPlayers = [...this.sortedPlayers];
 
     if (this.onlyManualPrices) {
-      filteredPlayers = filteredPlayers.filter(player =>
+      filteredPlayers = filteredPlayers.filter(
+        player =>
           player.price % 100 === 0 &&
           player.price !== 500000 &&
           player.price !== player.marketValue &&
@@ -104,7 +83,7 @@ export class MarketOverviewComponent implements OnInit {
 
     if (this.onlyKickbasePlayers) {
       filteredPlayers = filteredPlayers.filter(
-          player => player.username === ''
+        player => player.username === ''
       );
     }
 

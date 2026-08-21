@@ -14,6 +14,7 @@ export class KickbaseMarket {
 
         this.players = new Array();
         this.offerAmountForUser = 0;
+
         Object.assign(this, json);
         if (json != null) {
             if (json.hasOwnProperty("it")) {

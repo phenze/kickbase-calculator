@@ -73,6 +73,7 @@ export class AppComponent implements OnInit, AfterViewInit {
   public currentMarket: KickbaseMarket | null = null;
   public currentGift: KickbaseGift | null = null;
   public selectedLeague: number | null = null;
+  public achievementsDisabled = false;
 
 
   public readonly sorting_default = -1;
@@ -179,22 +180,6 @@ export class AppComponent implements OnInit, AfterViewInit {
     });
     donateButton.render('#donate-button')
   }
-
-
-
-  // private updateMarketOverview(): void {
-  //   console.log('updateMarketOverview', this.marketOverviewComponent);
-  //   if (this.marketOverviewComponent === undefined) {
-  //     return;
-  //
-  //   }
-  //
-  //   this.marketOverviewComponent.selectedLeague = this.selectedLeague;
-  //   this.marketOverviewComponent.setCurrentMarket(this.currentMarket);
-  //
-  //   this.cdRef.detectChanges();
-  // }
-
 
   reloadMarket = async (fullRefresh: boolean): Promise<void> => {
     if (this.selectedLeague === null) {
@@ -309,6 +294,8 @@ export class AppComponent implements OnInit, AfterViewInit {
       if (league === undefined) {
         return;
       }
+
+      this.achievementsDisabled = league.amd ?? false;
 
       const lineUp = await this.apiService.getLineup(newValue);
 
@@ -438,7 +425,12 @@ export class AppComponent implements OnInit, AfterViewInit {
     } else {
       this.amountPlayers--
     }
-    this.kickbaseGroup.calcValues(this.amountValue, this.includeMinusMarketValues, this.dayUntilFriday);
+    this.kickbaseGroup.calcValues(
+      this.amountValue,
+      this.includeMinusMarketValues,
+      this.dayUntilFriday,
+      this.achievementsDisabled
+    );
   }
 
 
@@ -534,7 +526,11 @@ export class AppComponent implements OnInit, AfterViewInit {
   }
 
   refreshGroups() {
-    this.kickbaseGroup.calcValues(this.amountValue, this.includeMinusMarketValues, this.dayUntilFriday);
+    this.kickbaseGroup.calcValues(
+      this.amountValue,
+      this.includeMinusMarketValues,
+      this.dayUntilFriday,
+      this.achievementsDisabled);
     this.sortCurrentPlayers();
   }
 
@@ -638,11 +634,28 @@ export class AppComponent implements OnInit, AfterViewInit {
 
     if (this.selectedSorting === this.sorting_default) {
       playersToSort.sort((a, b) => {
-        if (a.expiry === b.expiry) {
+        const aIsUserPlayer = a.username.length > 0;
+        const bIsUserPlayer = b.username.length > 0;
+
+        // 1. Spieler von Mitspielern nach hinten stellen
+        if (aIsUserPlayer && !bIsUserPlayer) {
+          return 1; // 'a' kommt nach 'b'
+        }
+        if (!aIsUserPlayer && bIsUserPlayer) {
+          return -1; // 'a' kommt vor 'b'
+        }
+
+        // Falls Mitspieler-Spieler zuerst kommen sollen, kehre die Returns oben um (-1 statt 1 / 1 statt -1)
+
+        // 2. Innerhalb derselben Gruppe nach Ablaufzeit (expiry) aufsteigend sortieren
+        const aExpiry = a.expiry ?? Number.MAX_SAFE_INTEGER;
+        const bExpiry = b.expiry ?? Number.MAX_SAFE_INTEGER;
+
+        if (aExpiry === bExpiry) {
           return 0;
         }
 
-        return a.expiry > b.expiry ? 1 : -1;
+        return aExpiry > bExpiry ? 1 : -1;
       });
     }
 

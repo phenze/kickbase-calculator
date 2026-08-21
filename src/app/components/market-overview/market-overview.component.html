@@ -23,7 +23,7 @@
 <div class="row">
   <div class="col-12">
     @for (player of playersToShow; track player.id) {
-      <app-player-item [player]="player" [printMode]="false" [isMarketOverview]="true"
+      <app-player-item [player]="player" [printMode]="false" [isMarketOverview]="true" [achievementsDisabled]="true"
         (loadDetails)="onLoadAllDetailsForPlayer(player)">
       </app-player-item>
     }

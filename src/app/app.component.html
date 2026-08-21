@@ -171,6 +171,20 @@
             <label class="form-check-label" for="customSwitch3">Alle Details automatisch laden</label>
           </div>
         </div>
+
+        <!-- NEU: Anzeige / Hinweis für Erfolge-Option -->
+        <div class="col-12 mt-2">
+          <div class="form-check form-switch">
+            <input type="checkbox" class="form-check-input" role="switch" [checked]="!achievementsDisabled" [disabled]="achievementsDisabled" id="customSwitch4">
+            <label class="form-check-label" for="customSwitch4">
+              Erfolge einbeziehen
+              @if (achievementsDisabled) {
+                <span class="badge bg-secondary ms-1">In dieser Liga deaktiviert</span>
+              }
+            </label>
+          </div>
+        </div>
+
         <div class="col-12 mt-2">
           <h4>Sortierung</h4>
           <select class="form-select" [(ngModel)]="selectedSorting"
@@ -274,7 +288,7 @@
         <div class="col-12 mt-2">
           @for (player of kickbaseGroup.players; track player.id) {
             @if (showPlayer(player)) {
-              <app-player-item [player]="player" [printMode]="printMode"
+              <app-player-item [player]="player" [printMode]="printMode" [achievementsDisabled]="achievementsDisabled"
                 (loadDetails)="onLoadAllDetailsForPlayer(player)"
                 (removePlayer)="onRemovePlayer(player)" (playerChanged)="onPlayerValueChanged(player)">
               </app-player-item>
@@ -345,9 +359,17 @@
         </div>
       }
 
-      <div class="d-flex justify-content-between align-items-center py-1 border-bottom">
-        <span><i class="bi bi-trophy me-2 text-warning"></i>Erfolge</span>
-        <span class="fw-semibold text-dark">{{ kickbaseGroup.success }}</span>
+      <!-- ANPASSUNG: Erfolge-Zeile mit Deaktiviert-Hinweis -->
+      <div class="d-flex justify-content-between align-items-center py-1 border-bottom" [class.opacity-50]="achievementsDisabled">
+        <span>
+          <i class="bi bi-trophy me-2" [class.text-warning]="!achievementsDisabled" [class.text-muted]="achievementsDisabled"></i>
+          Erfolge
+        </span>
+        @if (achievementsDisabled) {
+          <span class="badge bg-secondary">Deaktiviert</span>
+        } @else {
+          <span class="fw-semibold text-dark">{{ kickbaseGroup.success }}</span>
+        }
       </div>
 
       <div class="d-flex justify-content-between align-items-center pt-1">

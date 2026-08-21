@@ -1,56 +1,66 @@
 <div class="card mb-2 shadow-sm border-0 overflow-hidden" [style.background-color]="player.color" (click)="onLoadAllDetailsForPlayer()">
   
-  <!-- Card Header: Hintergrund durch Transparenz leicht abgedunkelt -->
-  <div class="card-header bg-black bg-opacity-10 d-flex align-items-center justify-content-between p-2 border-bottom">
+  <!-- Card Header: Mobile-optimiert mit Umbruch (flex-wrap) -->
+  <div class="card-header bg-black bg-opacity-10 d-flex flex-wrap align-items-center justify-content-between p-2 gap-2 border-bottom">
     
     <!-- Links: Spielerbild, Name, Verletzungs-Icon -->
-    <div class="d-flex align-items-center gap-2">
-      <img [src]="player.imageUrl" class="profile-picture rounded-circle border shadow-sm" [alt]="player.name"
+    <div class="d-flex align-items-center gap-2 min-w-0">
+      <img [src]="player.imageUrl" class="profile-picture rounded-circle border shadow-sm flex-shrink-0" [alt]="player.name"
         (error)="errorHandler($event)" (click)="onRemovePlayer()">
 
-      <div class="d-flex align-items-center gap-1">
-        <strong class="fs-6 text-dark lh-1">{{ player.name }}</strong>
+      <div class="d-flex align-items-center gap-1 text-truncate">
+        <strong class="fs-6 text-dark lh-1 text-truncate">{{ player.name }}</strong>
         
         @if (player.status === 1) {
-          <span class="icon-btn ms-1" title="Verletzt">
+          <span class="icon-btn ms-1 flex-shrink-0" title="Verletzt">
             <svg-icon class="player-icon" src="assets/health_injured.svg" style="color: #e5311c;"></svg-icon>
           </span>
         } @else if (player.status === 2) {
-          <span class="icon-btn ms-1" title="Angeschlagen">
+          <span class="icon-btn ms-1 flex-shrink-0" title="Angeschlagen">
             <svg-icon class="player-icon" src="assets/health_stricken.svg" style="color: #d8a47d;"></svg-icon>
           </span>
         }
       </div>
     </div>
 
-    <!-- Rechts: Action-Icons mit eigenem Button-Hintergrund -->
-    @if (!isMarketOverview) {
-      <div class="d-flex align-items-center gap-1">
-        
-        <!-- Status Checkbox -->
-        <span class="icon-btn">
-          @if (!player.isDeactivated) {
-            <svg-icon class="player-icon text-success" src="assets/check_box-24px.svg"></svg-icon>
-          } @else {
-            <svg-icon class="player-icon text-muted" src="assets/check_box_outline_blank-24px.svg"></svg-icon>
-          }
+    <!-- Rechts: Ablaufdatum Badge + Action-Icons -->
+    <div class="d-flex align-items-center gap-1 ms-auto flex-wrap justify-content-end">
+      
+      <!-- Ablaufdatum Badge (sofort sichtbar, auch ohne geladene Details; bricht auf Handy sauber um) -->
+      @if (isMarketOverview && player.expiryDate) {
+        <span [style.color]="player.expiryColor" 
+              class="fw-bold small px-2 py-0.5 rounded bg-white bg-opacity-60 text-nowrap shadow-sm">
+          {{ player.expiryDate }}
         </span>
+      }
 
-        <!-- Permanent Hinzufügen / Entfernen Button -->
-        @if (player.isPersitantDeleted) {
-          <button type="button" class="icon-btn border-0" 
-            (click)="onSetPlayerPermanentDeleted($event, player, false)" title="Spieler wieder aktivieren">
-            <svg-icon src="assets/person_remove-24px.svg" class="player-icon icon-permanent text-danger"></svg-icon>
-          </button>
-        } @else {
-          <button type="button" class="icon-btn border-0" 
-            (click)="onSetPlayerPermanentDeleted($event, player, true)" title="Spieler dauerhaft deaktivieren">
-            <svg-icon src="assets/person_add-24px.svg" class="player-icon icon-permanent text-secondary"></svg-icon>
-          </button>
-        }
+      <!-- Action-Icons (falls nicht Marktübersicht) -->
+      @if (!isMarketOverview) {
+        <div class="d-flex align-items-center gap-1 ms-1">
+          <!-- Status Checkbox -->
+          <span class="icon-btn">
+            @if (!player.isDeactivated) {
+              <svg-icon class="player-icon text-success" src="assets/check_box-24px.svg"></svg-icon>
+            } @else {
+              <svg-icon class="player-icon text-muted" src="assets/check_box_outline_blank-24px.svg"></svg-icon>
+            }
+          </span>
 
-      </div>
-    }
+          <!-- Permanent Hinzufügen / Entfernen Button -->
+          @if (player.isPersitantDeleted) {
+            <button type="button" class="icon-btn border-0" 
+              (click)="onSetPlayerPermanentDeleted($event, player, false)" title="Spieler wieder aktivieren">
+              <svg-icon src="assets/person_remove-24px.svg" class="player-icon icon-permanent text-danger"></svg-icon>
+            </button>
+          } @else {
+            <button type="button" class="icon-btn border-0" 
+              (click)="onSetPlayerPermanentDeleted($event, player, true)" title="Spieler dauerhaft deaktivieren">
+              <svg-icon src="assets/person_add-24px.svg" class="player-icon icon-permanent text-secondary"></svg-icon>
+            </button>
+          }
+        </div>
+      }
+    </div>
   </div>
   
 
@@ -58,13 +68,13 @@
   <div class="card-body p-2">
     <div class="row g-2">
       
-      <!-- Marktwert / Preis-Sektion -->
+      <!-- Marktwert / Preis / Verkäufer-Sektion -->
       <div class="col-12 col-sm-6">
         <div class="p-2 bg-light rounded h-100">
           @if (isMarketOverview) {
             @if (player.price !== 0) {
               <div class="mb-1">
-                <span class="text-muted small">Gebot: </span>
+                <span class="text-muted small">Preis: </span>
                 <strong class="text-dark">{{ player.priceString }}</strong>
                 <span class="small text-muted ms-1">(+{{ player.priceMarketValueDifferString }})</span>
               </div>
@@ -95,15 +105,12 @@
         </div>
       </div>
 
-      <!-- Transfermarkt-Details (Ablauf & Änderung) -->
+      <!-- Transfermarkt-Details: MW Änderung (nur bei Marktübersicht & wenn Details geladen sind) -->
       @if (isMarketOverview && player.stats !== null) {
         <div class="col-12 col-sm-6">
           <div class="p-2 bg-light rounded h-100 d-flex flex-column justify-content-center">
-            <div [style.color]="player.colorMarketValue" class="fw-semibold mb-1">
+            <div [style.color]="player.colorMarketValue" class="fw-semibold">
               MW Änderung: {{ player.stats.realMarketValueChangeValue }}
-            </div>
-            <div [style.color]="player.expiryColor" class="fw-bold small">
-              Ablauf Datum: {{ player.expiryDate }}
             </div>
           </div>
         </div>
@@ -111,39 +118,44 @@
 
       <!-- Angebot-Anzeige -->
       @if (player.hasOfferFromAny && !printMode && !isMarketOverview) {
-        <div class="col-12 col-sm-6">
-          <div class="p-2 bg-light rounded h-100 d-flex align-items-center" [style.color]="player.colorOfferValue">
+        <div class="col-12">
+          <div class="p-2 bg-light rounded d-flex align-items-center" [style.color]="player.colorOfferValue">
             <strong>Angebot: {{ player.valueString }}&nbsp;({{ player.valuePercentString }})</strong>
           </div>
         </div>
       }
 
-      <!-- Finanz-Metriken (Kaufpreis, Gewinn/Verlust) -->
+      <!-- Finanz-Metriken & Details (Kaufpreis, Gewinn/Verlust etc.) -->
       @if (player.stats !== null && !printMode) {
         @if (!isMarketOverview) {
           <div class="col-12">
             <hr class="my-1 text-muted opacity-25" />
           </div>
 
-          <div class="col-12 col-sm-6 small">
+          <div class="col-6 col-sm-6 small text-nowrap">
             <span class="text-muted">Gekauft:</span> 
             <span class="fw-semibold ms-1">{{ player.stats.buyPriceValue }}</span>
           </div>
 
-          <div class="col-12 col-sm-6 small" [style.color]="player.colorMarketValue">
+          <div class="col-6 col-sm-6 small text-nowrap" [style.color]="player.colorMarketValue">
             <span>MW-Änderung:</span> 
             <span class="fw-semibold ms-1">{{ player.stats.realMarketValueChangeValue }} ({{ player.stats.realMarketValueChangeValuePrecent }})</span>
           </div>
 
-          <div class="col-12 col-sm-6 small" [style.color]="player.colorOffsetValue">
+          <div class="col-6 col-sm-6 small text-nowrap" [style.color]="player.colorOffsetValue">
             <span>Verlust/Gewinn:</span> 
             <span class="fw-bold ms-1">{{ player.offset }}</span>
           </div>
 
-          <div class="col-12 col-sm-6 small" [style.color]="player.colorSuccessValue">
-            <span>Erfolge bei Verkauf:</span> 
+          <!-- Erfolge (wird ausgegraut & markiert, wenn in der Liga deaktiviert) -->
+        <div class="col-6 col-sm-6 small text-nowrap" [class.opacity-50]="achievementsDisabled" [style.color]="achievementsDisabled ? 'inherit' : player.colorSuccessValue">
+          <span>Erfolge:</span> 
+          @if (achievementsDisabled) {
+            <span class="fw-semibold ms-1 text-muted text-decoration-line-through" title="In dieser Liga deaktiviert">0 €</span>
+          } @else {
             <span class="fw-semibold ms-1">{{ player.successValueString }}</span>
-          </div>
+          }
+        </div>
         }
 
         <!-- 3-Tage-Trend Tabelle -->
@@ -155,12 +167,12 @@
               <tbody>
                 <tr>
                   @for (item of player.stats.threeDaysValues; track item.key) {
-                    <td class="px-2 py-1 small">{{ item.value }}</td>
+                    <td class="px-2 py-1 small text-nowrap">{{ item.value }}</td>
                   }
                 </tr>
                 <tr>
                   @for (item of player.stats.threeDaysValuesPercent; track item.key) {
-                    <td class="px-2 py-1 small text-muted">{{ item.value }}</td>
+                    <td class="px-2 py-1 small text-muted text-nowrap">{{ item.value }}</td>
                   }
                 </tr>
               </tbody>
@@ -169,29 +181,50 @@
         </div>
 
         <!-- Punkte & Nächste Gegner -->
-        <div class="col-12">
-          <hr class="my-1 text-muted opacity-25" />
-        </div>
+<div class="col-12">
+  <hr class="my-1 text-muted opacity-25" />
+</div>
 
-        <div class="col-12 col-sm-6 small">
-          <span class="text-muted">Punkte:</span> 
-          <span class="fw-bold ms-1">{{ player.stats.points }}</span>
-        </div>
+<div class="col-6 col-sm-6 small text-nowrap">
+  <span class="text-muted">Punkte:</span> 
+  <span class="fw-bold ms-1">{{ player.stats.points }}</span>
+</div>
 
-        <div class="col-12 col-sm-6 small">
-          <span class="text-muted">Durchschnitt:</span> 
-          <span class="fw-bold ms-1">{{ player.stats.averagePoints }}</span>
-        </div>
+<div class="col-6 col-sm-6 small text-nowrap">
+  <span class="text-muted">Schnitt:</span> 
+  <span class="fw-bold ms-1">{{ player.stats.averagePoints }}</span>
+</div>
 
-        <div class="col-12 d-flex align-items-center gap-1 small mt-1">
-          <span class="text-muted me-1">Nächste Gegner:</span>
-          @for (nm of player.stats.nextThreeOpponents; track $index) {
-            <div class="d-inline-flex align-items-center me-2">
-              <img [src]="nm.imageUrl" class="team-picture me-1" (error)="errorHandler($event)">
-              <span class="fw-semibold ms-1">{{ nm.isHomeGame ? '(H)' : '(A)' }}</span>
-            </div>
-          }
-        </div>
+<!-- Nächste / Vergangene Spiele (Mobil-optimiert mit Flex-Wrap) -->
+<div class="col-12 mt-2">
+  <span class="text-muted small fw-bold text-uppercase d-block mb-1">Spiele / Gegner:</span>
+  
+  <div class="d-flex flex-wrap gap-2 align-items-center">
+    @for (match of player.stats.nextThreeOpponents; track $index) {
+      <div class="d-inline-flex align-items-center gap-1 p-1 px-2 rounded bg-light border shadow-sm small text-nowrap">
+        
+        <!-- Gegner Logo -->
+        <img [src]="match.imageUrl" class="team-picture" (error)="errorHandler($event)" style="width: 20px; height: 20px; object-fit: contain;">
+        
+        <!-- Heim / Auswärts -->
+        <span class="fw-semibold text-muted">{{ match.isHomeGame ? '(H)' : '(A)' }}</span>
+
+        <!-- Fall 1: Spiel hat stattgefunden -> Ergebnis anzeigen -->
+        @if (match.isFinished) {
+          <span class="fw-bold text-dark ms-1">{{ match.resultString }}</span>
+        } 
+        <!-- Fall 2: Spiel in der Zukunft -> Datum anzeigen -->
+        @else {
+          <span class="fw-bold text-primary ms-1">{{ match.dateString }}</span>
+        }
+
+        <!-- Spieltags-Bezeichnung (z. B. Spieltag 1) -->
+        <span class="text-muted extra-small ms-1">({{ match.dayLabel }})</span>
+
+      </div>
+    }
+  </div>
+</div>
       }
 
     </div>
