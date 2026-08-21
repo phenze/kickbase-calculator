@@ -147,10 +147,15 @@
             <span class="fw-bold ms-1">{{ player.offset }}</span>
           </div>
 
-          <div class="col-6 col-sm-6 small text-nowrap" [style.color]="player.colorSuccessValue">
-            <span>Erfolge:</span> 
+          <!-- Erfolge (wird ausgegraut & markiert, wenn in der Liga deaktiviert) -->
+        <div class="col-6 col-sm-6 small text-nowrap" [class.opacity-50]="achievementsDisabled" [style.color]="achievementsDisabled ? 'inherit' : player.colorSuccessValue">
+          <span>Erfolge:</span> 
+          @if (achievementsDisabled) {
+            <span class="fw-semibold ms-1 text-muted text-decoration-line-through" title="In dieser Liga deaktiviert">0 €</span>
+          } @else {
             <span class="fw-semibold ms-1">{{ player.successValueString }}</span>
-          </div>
+          }
+        </div>
         }
 
         <!-- 3-Tage-Trend Tabelle -->

@@ -223,6 +223,46 @@ describe('AppComponent', () => {
     });
   });
 
+  describe('achivements', () => {
+    it('sollte achievementsDisabled beim Ligawechsel aus der Liga übernehmen', async () => {
+    const mockLeagueWithAmd = new KickbaseLeague({ id: 1, name: 'Liga 1', lm: { amd: true } });
+    component.leagues = [mockLeagueWithAmd];
+
+    mockApiService.getMarket.and.resolveTo([] as any);
+    mockApiService.getLineup.and.resolveTo({ players: [] } as any);
+
+    await component.onSelectedLeagueChanged(1);
+
+    expect(component.achievementsDisabled).toBeTrue();
+  });
+
+  it('sollte achievementsDisabled = false setzen, wenn die Liga amd = false hat', async () => {
+    const mockLeagueNormal = new KickbaseLeague({ id: 2, name: 'Liga 2', lm: { amd: false } });
+    component.leagues = [mockLeagueNormal];
+
+    mockApiService.getMarket.and.resolveTo([] as any);
+    mockApiService.getLineup.and.resolveTo({ players: [] } as any);
+
+    await component.onSelectedLeagueChanged(2);
+
+    expect(component.achievementsDisabled).toBeFalse();
+  });
+
+  it('sollte achievementsDisabled an kickbaseGroup.calcValues übergeben', () => {
+    spyOn(component.kickbaseGroup, 'calcValues');
+    component.achievementsDisabled = true;
+
+    component.refreshGroups();
+
+    expect(component.kickbaseGroup.calcValues).toHaveBeenCalledWith(
+      component.amountValue,
+      component.includeMinusMarketValues,
+      component.dayUntilFriday,
+      true
+    );
+  });
+  });
+
   describe('Sortierung (sortCurrentPlayers)', () => {
     let p1: KickbasePlayer;
     let p2: KickbasePlayer;

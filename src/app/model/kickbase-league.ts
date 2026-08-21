@@ -6,9 +6,7 @@ export class KickbaseLeague {
     public name = '';
     public teamValue = 0;
     public budget = 0;
-
-
-
+    public amd = false;
 
     constructor(json: any) {
         Object.assign(this, json);
@@ -17,6 +15,9 @@ export class KickbaseLeague {
                 let lm = json["lm"];
                 this.teamValue = lm["teamValue"]
                 this.budget = lm["budget"]
+                this.amd = lm["amd"] ?? json["amd"] ?? false;
+            } else if (json.hasOwnProperty('amd')) {
+                this.amd = json["amd"];
             }
         }
     }

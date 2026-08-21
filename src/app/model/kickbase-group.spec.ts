@@ -200,4 +200,40 @@ describe('KickbaseGroup', () => {
       expect(group.color).toBe(KickbaseGroup.color_green);
     });
   });
+
+  describe('Achivements', () => {
+	let group: KickbaseGroup;
+
+	beforeEach(() => {
+		group = new KickbaseGroup();
+		group.players = [];
+	});
+
+	it('sollte successValue berechnen, wenn achievementsDisabled false ist', () => {
+		// Private/Protected Methoden über spyOn<any> mocken:
+		spyOn<any>(group, 'getSuccessValueTmp').and.returnValue(500000);
+		spyOn<any>(group, 'getNumberValueTmp').and.returnValue(1000000);
+		spyOn<any>(group, 'getTeamValueTmp').and.returnValue(20000000);
+		spyOn<any>(group, 'getTrend').and.returnValue(100000);
+		spyOn<any>(group, 'getLoss').and.returnValue(0);
+
+		group.calcValues(5000000, true, 3, false);
+
+		expect(group.successValue).toBe(500000);
+	});
+
+	it('sollte successValue auf 0 setzen, wenn achievementsDisabled true ist', () => {
+		// Private/Protected Methoden über spyOn<any> mocken:
+		spyOn<any>(group, 'getSuccessValueTmp').and.returnValue(500000);
+		spyOn<any>(group, 'getNumberValueTmp').and.returnValue(1000000);
+		spyOn<any>(group, 'getTeamValueTmp').and.returnValue(20000000);
+		spyOn<any>(group, 'getTrend').and.returnValue(100000);
+		spyOn<any>(group, 'getLoss').and.returnValue(0);
+
+		group.calcValues(5000000, true, 3, true);
+
+		expect(group.successValue).toBe(0);
+		expect(group.differenceValueFriday).toBe(6300000);
+	});
+	});
 });

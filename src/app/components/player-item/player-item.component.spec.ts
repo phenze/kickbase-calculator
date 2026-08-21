@@ -135,4 +135,56 @@ describe('PlayerItemComponent', () => {
       expect(component.playerChanged.emit).toHaveBeenCalled();
     });
   });
+
+  describe('Achivements', () => {
+  
+
+  beforeEach(async () => {
+    // Dummy Spieler initialisieren
+    const mockPlayer = new KickbasePlayer({
+      id: '1',
+      firstName: 'Max',
+      lastName: 'Mustermann',
+      marketValue: 10000000
+    }, 'user123');
+    mockPlayer.stats = {
+      buyPriceValue: '10.000.000 €',
+      realMarketValueChangeValue: '+100.000 €',
+      realMarketValueChangeValuePrecent: '1%',
+      threeDaysValues: [],
+      threeDaysValuesPercent: [],
+      points: 500,
+      averagePoints: 50,
+      nextThreeOpponents: []
+    } as any;
+    mockPlayer.successValueString = '50.000 €';
+
+    component.player = mockPlayer;
+    component.printMode = false;
+    component.isMarketOverview = false;
+
+    fixture.detectChanges();
+  });
+
+  it('sollte den Erfolgswert anzeigen, wenn achievementsDisabled false ist', () => {
+    component.achievementsDisabled = false;
+    fixture.detectChanges();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+    expect(compiled.textContent).toContain('Erfolge:');
+    expect(compiled.textContent).toContain('50.000 €');
+  });
+
+  it('sollte "0 €" durchgestrichen anzeigen, wenn achievementsDisabled true ist', () => {
+    component.achievementsDisabled = true;
+    fixture.detectChanges();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+    const strikeElement = compiled.querySelector('.text-decoration-line-through');
+
+    expect(compiled.textContent).toContain('Erfolge:');
+    expect(strikeElement).not.toBeNull();
+    expect(strikeElement?.textContent).toContain('0 €');
+  });
+});
 });

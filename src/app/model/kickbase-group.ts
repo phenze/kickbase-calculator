@@ -55,14 +55,22 @@ export class KickbaseGroup {
 
 	}
 
-	public calcValues(currentAmount: number, includeMinusMarketValues: boolean, dayUntilFriday: number) {
+	public calcValues(
+		currentAmount: number, 
+		includeMinusMarketValues: boolean, 
+		dayUntilFriday: number,
+		achievementsDisabled: boolean = false
+	) {
 		for (const pl of this.players) {
 			pl.calcValues();
 		}
 		this.numberValue = this.getNumberValueTmp();
 		let n = numeral(this.numberValue);
 		this.value = n.format('0,0 $');
-		this.successValue = this.getSuccessValueTmp();
+
+		// NEU: Wenn Erfolge deaktiviert sind (amd = true), setzen wir den Erfolgswert auf 0
+		this.successValue = achievementsDisabled ? 0 : this.getSuccessValueTmp();
+
 		this.teamValue = this.getTeamValueTmp(false);
 		this.differenceValue = currentAmount + this.numberValue;
 		this.trendValue = this.getTrend(includeMinusMarketValues);
@@ -70,39 +78,31 @@ export class KickbaseGroup {
 
 		this.profitValue = this.getTrend(false);
 
-		// let di = numeral(this.differenceValue * -1);
 		let di = numeral(this.differenceValue);
 		this.difference = di.format('0,0 $');
 
 		let tm = numeral(this.teamValue);
 
 		let minusReferenceValue = this.teamValue;
-		// if we are in minus substract it from kaderwert
 		if (this.differenceValue < 0 && this.teamValue > 0) {
 			minusReferenceValue += this.differenceValue;
 		}
-		// take 33% of real kaderwert
 		minusReferenceValue *= 0.33;
 		minusReferenceValue = Math.floor(minusReferenceValue);
 
-		// let minusAvailable = minusReferenceValue;
-		// if (this.differenceValue < 0) {
-		// 	minusAvailable += this.differenceValue;
-		// }
-
 		let minus = numeral(minusReferenceValue);
-		// let ma = numeral(minusAvailable);
 		this.team = tm.format('0,0 $');
 		this.possibleMinus = minus.format('0,0 $');
 
-		let availOfferValue = numeral(minusReferenceValue + this.differenceValue)
+		let availOfferValue = numeral(minusReferenceValue + this.differenceValue);
 		this.possibleOffer = availOfferValue.format('0,0 $');
 
+		// successValue ist hier bereits 0, falls achievementsDisabled = true ist
 		this.differenceValueFriday = currentAmount +
 			(this.numberValue +
 				this.successValue +
 				(this.trendValue * dayUntilFriday));
-		// let dif = numeral((this.differenceValueFriday * -1));
+
 		let dif = numeral(this.differenceValueFriday);
 		this.differenceFriday = dif.format('0,0 $');
 

@@ -73,6 +73,7 @@ export class AppComponent implements OnInit, AfterViewInit {
   public currentMarket: KickbaseMarket | null = null;
   public currentGift: KickbaseGift | null = null;
   public selectedLeague: number | null = null;
+  public achievementsDisabled = false;
 
 
   public readonly sorting_default = -1;
@@ -294,6 +295,8 @@ export class AppComponent implements OnInit, AfterViewInit {
         return;
       }
 
+      this.achievementsDisabled = league.amd ?? false;
+
       const lineUp = await this.apiService.getLineup(newValue);
 
       const budget = numeral(league.budget);
@@ -422,7 +425,12 @@ export class AppComponent implements OnInit, AfterViewInit {
     } else {
       this.amountPlayers--
     }
-    this.kickbaseGroup.calcValues(this.amountValue, this.includeMinusMarketValues, this.dayUntilFriday);
+    this.kickbaseGroup.calcValues(
+      this.amountValue,
+      this.includeMinusMarketValues,
+      this.dayUntilFriday,
+      this.achievementsDisabled
+    );
   }
 
 
@@ -518,7 +526,11 @@ export class AppComponent implements OnInit, AfterViewInit {
   }
 
   refreshGroups() {
-    this.kickbaseGroup.calcValues(this.amountValue, this.includeMinusMarketValues, this.dayUntilFriday);
+    this.kickbaseGroup.calcValues(
+      this.amountValue,
+      this.includeMinusMarketValues,
+      this.dayUntilFriday,
+      this.achievementsDisabled);
     this.sortCurrentPlayers();
   }
 
