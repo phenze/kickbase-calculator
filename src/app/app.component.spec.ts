@@ -151,19 +151,78 @@ describe('AppComponent', () => {
 
   describe('loadLeagues & onSelectedLeagueChanged', () => {
     beforeEach(() => {
-      const mockLeague: KickbaseLeague = { id: 10, name: 'Bundesliga', budget: 10000000 } as any;
-      mockApiService.getLeagues.and.resolveTo([mockLeague]);
+      const mockLeague10: KickbaseLeague = { id: 10, name: 'Bundesliga', budget: 10000000 } as any;
+      const mockLeague20: KickbaseLeague = { id: 20, name: '2. Bundesliga', budget: 5000000 } as any;
+      mockApiService.getLeagues.and.resolveTo([mockLeague10, mockLeague20]);
       mockApiService.getMarket.and.resolveTo({ players: [], offerAmountForUser: '500000' } as any);
       mockApiService.getLineup.and.resolveTo({ players: [makePlayer(1, 'Neuer', 5000000)] } as any);
     });
 
-    it('sollte die erste Liga auswählen, wenn keine lastLeagueId im ApiService existiert', fakeAsync(() => {
+    it('sollte eine Liga als String aus lastLeagueId korrekt als Zahl auswählen', fakeAsync(() => {
+      // Spy-Property mit Object.defineProperty überschreiben, damit der Getter '20' zurückgibt
+      Object.defineProperty(mockApiService, 'data', {
+        get: () => ({ lastLeagueId: '20' }),
+        configurable: true
+      });
+
+      component.loadLeagues();
+      tick();
+
+      expect(component.selectedLeague).toBe(20);
+      expect(mockApiService.setLastLeague).toHaveBeenCalledWith(20);
+      expect(component.kickbaseGroup.players.length).toBe(1);
+    }));
+
+    it('sollte eine Liga als Number aus lastLeagueId auswählen', fakeAsync(() => {
+      Object.defineProperty(mockApiService, 'data', {
+        get: () => ({ lastLeagueId: 10 }),
+        configurable: true
+      });
+
       component.loadLeagues();
       tick();
 
       expect(component.selectedLeague).toBe(10);
       expect(mockApiService.setLastLeague).toHaveBeenCalledWith(10);
-      expect(component.kickbaseGroup.players.length).toBe(1);
+    }));
+
+    it('sollte selectedLeague auf null setzen, wenn lastLeagueId = -1 ist', fakeAsync(() => {
+      Object.defineProperty(mockApiService, 'data', {
+        get: () => ({ lastLeagueId: -1 }),
+        configurable: true
+      });
+
+      component.loadLeagues();
+      tick();
+
+      expect(component.selectedLeague).toBeNull();
+      expect(mockApiService.setLastLeague).not.toHaveBeenCalled();
+    }));
+
+    it('sollte selectedLeague auf null setzen, wenn lastLeagueId undefined ist', fakeAsync(() => {
+      Object.defineProperty(mockApiService, 'data', {
+        get: () => ({ lastLeagueId: undefined }),
+        configurable: true
+      });
+
+      component.loadLeagues();
+      tick();
+
+      expect(component.selectedLeague).toBeNull();
+      expect(mockApiService.setLastLeague).not.toHaveBeenCalled();
+    }));
+
+    it('sollte selectedLeague auf null setzen, wenn die gespeicherte lastLeagueId in den geladenen Ligen nicht existiert', fakeAsync(() => {
+      Object.defineProperty(mockApiService, 'data', {
+        get: () => ({ lastLeagueId: '999' }),
+        configurable: true
+      });
+
+      component.loadLeagues();
+      tick();
+
+      expect(component.selectedLeague).toBeNull();
+      expect(mockApiService.setLastLeague).not.toHaveBeenCalled();
     }));
 
     it('sollte die Werte zurücksetzen, wenn null als Liga ausgewählt wird', fakeAsync(() => {

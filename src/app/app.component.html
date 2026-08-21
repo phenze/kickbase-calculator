@@ -50,18 +50,28 @@
   }
   <hr />
   <div class="row">
-
-      <div class="col-12">
-        <label class="form-label" for="selectedLeague">Liga</label>
-        <select id="selectedLeague" class="form-select" [(ngModel)]="selectedLeague"
-          (ngModelChange)="onSelectedLeagueChanged($event)">
-          @for (league of leagues; track league.id) {
-            <option [ngValue]="+league.id">{{league.name}}</option>
-          }
-        </select>
-      </div>
-
+    <div class="col-12">
+      <label class="form-label" for="selectedLeague">Liga</label>
+      <select id="selectedLeague" class="form-select" [(ngModel)]="selectedLeague"
+        (ngModelChange)="onSelectedLeagueChanged($event)">
+        <option [ngValue]="null">-- Bitte eine Liga auswählen --</option>
+        @for (league of leagues; track league.id) {
+          <option [ngValue]="+league.id">{{league.name}}</option>
+        }
+      </select>
+    </div>
   </div>
+
+  @if (selectedLeague === null && !loadingData) {
+    <div class="alert alert-info d-flex align-items-center mt-3 shadow-sm" role="alert">
+      <i class="bi bi-info-circle-fill me-2 fs-5"></i>
+      <div>
+        <strong>Keine Liga ausgewählt:</strong> Bitte wähle oben eine Liga aus, um den Rechner oder Marktübersichten zu nutzen.
+      </div>
+    </div>
+  }
+
+  @if (selectedLeague !== null) {
 
     <div class="row mt-2">
       <div class="col-12 ">
@@ -383,4 +393,5 @@
 </div>
     }
   }
+}
 }

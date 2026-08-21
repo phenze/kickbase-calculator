@@ -246,21 +246,34 @@ export class AppComponent implements OnInit, AfterViewInit {
 
   loadLeagues = async () => {
     await this.apiService.getLeagues().then(
-      leagues => {
+      async leagues => {
         this.leagues = leagues;
         if (this.leagues.length > 0) {
-          if (this.apiService.data.lastLeagueId !== -1 && this.apiService.data.lastLeagueId !== undefined) {
-            this.selectedLeague = this.apiService.data.lastLeagueId;
-            this.onSelectedLeagueChanged(this.apiService.data.lastLeagueId);
-          } else {
-            this.selectedLeague = leagues[0].id;
-            this.onSelectedLeagueChanged(leagues[0].id);
-          }
-        }
+          // In Zahl umwandeln, egal ob String oder Number aus dem LocalStorage kommt
+          const rawLastId = this.apiService.data?.lastLeagueId;
+          const parsedLastId = rawLastId !== undefined && rawLastId !== null ? Number(rawLastId) : null;
 
+          // Prüfen, ob eine gültige Liga-ID vorhanden ist und sie auch in den geladenen Ligen existiert
+          const leagueExists = leagues.some(l => Number(l.id) === parsedLastId);
+
+          if (parsedLastId !== null && !isNaN(parsedLastId) && parsedLastId !== -1 && leagueExists) {
+            this.selectedLeague = parsedLastId;
+            await this.onSelectedLeagueChanged(parsedLastId);
+          } else {
+            // Falls keine/ungültige LeagueId vorhanden ist: auf null setzen (oder auf leagues[0].id)
+            this.selectedLeague = null;
+            await this.onSelectedLeagueChanged(null);
+          }
+        } else {
+          this.selectedLeague = null;
+          await this.onSelectedLeagueChanged(null);
+        }
       }
     ).catch(error => {
-      console.log(error)
+      console.error(error);
+    }).finally(() => {
+      // Change Detection für die UI erzwingen
+      this.cdRef.detectChanges();
     });
   }
 
