@@ -62,7 +62,7 @@ body {
   @container (max-width: 444px) {
     .kpi-group {
       flex-direction: column;
-      
+
       .kpi-box {
         width: 100%;
         justify-content: center;
@@ -125,7 +125,7 @@ svg-icon {
 /* Header-Anpassungen */
 .card-header {
   /* Holt die Hintergrundfarbe der Karte ab oder nutzt ein leicht abgedunkeltes Anstelle von Reinweiß */
-  background-color: rgba(0, 0, 0, 0.04) !important; 
+  background-color: rgba(0, 0, 0, 0.04) !important;
   border-bottom: 1px solid rgba(0, 0, 0, 0.08) !important;
 }
 
@@ -288,5 +288,141 @@ svg-icon {
   &.disabled {
     cursor: unset;
     color: gray;
+  }
+}
+
+
+/* ==========================================================================
+   Modernisierter Header-/Einstiegsbereich
+   (Login-Topbar, Spenden-Karte, Liga-Auswahl, Ansicht-Umschalter, Kader-Titel)
+   Sticky-KPI-Header & unterer Zusammenfassungs-Bereich bleiben unverändert.
+   ========================================================================== */
+
+// Obere Aktionsleiste: Geschenk-Chip + Logout, rechtsbündig, kompakt auf Mobile
+.app-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  padding-block: 0.5rem;
+}
+
+.gift-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  background-color: var(--bs-light);
+  border: 1px solid var(--bs-border-color-translucent);
+  border-radius: 999px;
+  padding: 0.25rem 0.65rem 0.25rem 0.5rem;
+  font-weight: 600;
+  font-size: 0.85rem;
+
+  .gift-icon {
+    width: 20px;
+    height: 20px;
+  }
+}
+
+.logout-btn {
+  border-radius: 999px;
+  padding-inline: 0.9rem;
+}
+
+// Spenden-Hinweis als ruhige, abgesetzte Karte statt nackter Fließtext
+.support-card {
+  background-color: var(--bs-light);
+  border: 1px solid var(--bs-border-color-translucent);
+  border-radius: 0.75rem;
+  padding: 1rem 1.1rem;
+  text-align: center;
+}
+
+.support-text {
+  font-size: 0.85rem;
+  color: var(--bs-secondary-color, #6c757d);
+  margin-bottom: 0.75rem;
+}
+
+// Generische, wiederverwendbare Karte für Formular-/Info-Blöcke im Einstiegsbereich
+.section-card {
+  background-color: #fff;
+  border: 1px solid var(--bs-border-color-translucent);
+  border-radius: 0.75rem;
+  padding: 1rem 1.1rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.section-title {
+  font-size: 1rem;
+  font-weight: 700;
+  margin-bottom: 0.85rem;
+}
+
+// Segmented Control für Rechner/Markt statt btn-group – fühlt sich moderner
+// und "app-artig" an, gleiche Optik wie die Icon-Pille im Sticky-Header
+.segmented-control {
+  display: flex;
+  background-color: var(--bs-light);
+  border-radius: 999px;
+  padding: 4px;
+  gap: 4px;
+  width: 100%;
+}
+
+.segmented-btn {
+  flex: 1 1 0;
+  border: none;
+  background: transparent;
+  border-radius: 999px;
+  padding: 0.5rem 0.75rem;
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--bs-secondary-color, #6c757d);
+  transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+
+  &.active {
+    background-color: #fff;
+    color: var(--bs-primary);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+  }
+
+  &:not(.active):hover {
+    color: var(--bs-body-color);
+  }
+}
+
+// Kader-Titel direkt unter dem Sticky-Header
+.squad-title {
+  text-align: center;
+
+  .squad-title-team {
+    margin-bottom: 0.25rem;
+    font-weight: 700;
+  }
+
+  .squad-title-meta {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 0.25rem 1rem;
+    color: var(--bs-secondary-color, #6c757d);
+    font-size: 0.85rem;
+  }
+}
+
+// Mobile-Feinschliff: engere Abstände & etwas kleinere Segmented-Control-Schrift
+@media (max-width: 400px) {
+  .segmented-btn {
+    font-size: 0.85rem;
+    padding: 0.5rem 0.4rem;
+  }
+
+  .section-card {
+    padding: 0.85rem 0.9rem;
+  }
+
+  .support-card {
+    padding: 0.85rem 0.9rem;
   }
 }
