@@ -259,7 +259,8 @@ export class ApiService {
 
   async getPlayerStats(league: number, playerID: number): Promise<KickbasePlayerStats> {
     // https://api.kickbase.com/leagues/868390/players/2322/stats
-    let url = this.baseUrl + 'competitions/1/players/' + playerID + '?leagueId=' + league;
+    // let url = this.baseUrl + 'competitions/1/players/' + playerID + '?leagueId=' + league;
+    let url = this.baseUrl + `leagues/${league}/players/${playerID}`;
     try {
       const result = await this.http.get(url, {
         headers: this.customApiHeaders(),
