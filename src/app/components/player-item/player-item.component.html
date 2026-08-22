@@ -108,6 +108,26 @@
         </div>
       }
 
+      <!-- NEU: Fixer Erwartungswert (Wunschpreis) -->
+      <!-- Wird nur im Rechner angezeigt und nur, wenn der Spieler wirklich zum Verkauf steht -->
+      @if (!isMarketOverview && !printMode && !player.isFixedSquad && !player.isKept) {
+        <div class="col-12 mt-1">
+          <div class="d-flex align-items-center bg-black bg-opacity-10 rounded p-1">
+            <label class="text-muted small ms-2 me-2 mb-0 text-nowrap">Fixpreis:</label>
+            
+            <!-- stopImmediatePropagation verhindert, dass die Karte sich öffnet, wenn man reinklickt -->
+            <input type="number" 
+                   class="form-control form-control-sm border-0 bg-transparent text-end fw-bold p-0" 
+                   [(ngModel)]="player.expectedSaleValue" 
+                   (ngModelChange)="onExpectedPriceChanged()"
+                   (click)="$event.stopImmediatePropagation()"
+                   placeholder="Optional (z.B. 10000000)">
+                   
+            <span class="text-muted small ms-1 me-2">€</span>
+          </div>
+        </div>
+      }
+
       <!-- Finanz-Metriken: jede Kennzahl als eigene, klar abgesetzte Chip-Box -->
       <div class="col-12">
         <div class="d-flex flex-wrap gap-2">

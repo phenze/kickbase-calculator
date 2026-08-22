@@ -56,4 +56,10 @@ export class PlayerItemComponent implements OnInit {
     this.playerChanged.emit()
   }
 
+  onExpectedPriceChanged() {
+    // Feuert das Event, damit die AppComponent (oder wer auch immer die Gruppe hält)
+    // group.calcValues() neu aufruft.
+    this.playerChanged.emit();
+  }
+
 }

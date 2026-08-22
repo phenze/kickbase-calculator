@@ -346,4 +346,61 @@ describe('KickbaseGroup', () => {
       expect(group.lossValue).toBe(-80); // -50 + -30
     });
   });
+
+  describe('Feature: Fixer Erwartungswert (expectedSaleValue)', () => {
+    
+    it('überschreibt den regulären Wert (value) beim Verkaufswert (numberValue)', () => {
+      const player = makePlayer({ value: 5000000 });
+      player.expectedSaleValue = 8000000; // Fixer Wert ist höher
+
+      group.players = [player];
+      group.calcValues(0, false, 0);
+
+      // Erwartung: numberValue ist 8 Mio statt 5 Mio
+      expect(group.numberValue).toBe(8000000);
+    });
+
+    it('ignoriert den Marktwert-Trend (trendValue), wenn ein expectedSaleValue gesetzt ist', () => {
+      const stats = new KickbasePlayerStats(null);
+      stats.realMarketValueChange = 500000; // Würde normalerweise den Trend erhöhen
+
+      const player = makePlayer({ value: 5000000, stats });
+      player.expectedSaleValue = 8000000; 
+
+      group.players = [player];
+      group.calcValues(0, false, 0);
+
+      // Erwartung: Da der Preis fixiert ist, gibt es keinen Trend mehr für diesen Spieler
+      expect(group.trendValue).toBe(0);
+    });
+
+    it('ignoriert den Verlust (lossValue), wenn ein expectedSaleValue gesetzt ist', () => {
+      const stats = new KickbasePlayerStats(null);
+      stats.realMarketValueChange = -300000; 
+
+      const player = makePlayer({ value: 5000000, stats });
+      player.expectedSaleValue = 4000000; 
+
+      group.players = [player];
+      group.calcValues(0, false, 0);
+
+      expect(group.lossValue).toBe(0);
+    });
+
+    it('behält den Trend bei, wenn der Spieler isFixedSquad ist (da expectedSaleValue nur beim Verkauf greift)', () => {
+      const stats = new KickbasePlayerStats(null);
+      stats.realMarketValueChange = 500000; 
+
+      const player = makePlayer({ value: 5000000, isFixedSquad: true, stats });
+      // Ergibt logisch zwar keinen Sinn, einen festen Kaderspieler mit einem 
+      // Verkaufswert zu versehen, aber zur Sicherheit prüfen wir es:
+      player.expectedSaleValue = 8000000; 
+
+      group.players = [player];
+      group.calcValues(0, false, 0);
+
+      // Erwartung: Da er nicht verkauft wird, schwankt sein Marktwert (Trend) weiterhin
+      expect(group.trendValue).toBe(500000);
+    });
+  });
 });

@@ -144,8 +144,11 @@ export class KickbaseGroup {
 		let value = 0;
 		for (let player of this.players) {
 		if (!player.isDeleted) {
-			// Fließt ein, wenn er verkauft wird ODER fest im Kader ist
-			if (this.isSelling(player) || player.isFixedSquad) {
+			// NEU: Hat der Spieler einen fixen Verkaufspreis?
+			const hasFixedSale = this.isSelling(player) && player.expectedSaleValue !== null;
+			
+			// Der Trend greift nur, wenn der Preis NICHT fix ist
+			if (!hasFixedSale && (this.isSelling(player) || player.isFixedSquad)) {
 			if (player.stats !== null) {
 				if (player.stats.realMarketValueChange > 0 || includeMinusMarketValues) {
 				value += player.stats.realMarketValueChange;
@@ -160,9 +163,14 @@ export class KickbaseGroup {
 	getLoss() {
 		let value = 0;
 		for (let player of this.players) {
-		if (!player.isDeleted && (this.isSelling(player) || player.isFixedSquad)) {
+		if (!player.isDeleted) {
+			// NEU: Wie beim Trend - ignorieren, wenn ein fixer Verkaufswert existiert
+			const hasFixedSale = this.isSelling(player) && player.expectedSaleValue !== null;
+			
+			if (!hasFixedSale && (this.isSelling(player) || player.isFixedSquad)) {
 			if (player.stats !== null && player.stats.realMarketValueChange < 0) {
-			value += player.stats.realMarketValueChange;
+				value += player.stats.realMarketValueChange;
+			}
 			}
 		}
 		}
@@ -172,9 +180,10 @@ export class KickbaseGroup {
 	private getNumberValueTmp() {
 		let retVal = 0;
 		for (let p of this.players) {
-		// Nur Spieler, die WIRKLICH verkauft werden, bringen Geld
 		if (this.isSelling(p)) {
-			retVal += p.value;
+			// NEU: Nimm den fixen Erwartungswert, falls gesetzt. Sonst den normalen Wert.
+			const salePrice = p.expectedSaleValue !== null ? p.expectedSaleValue : p.value;
+			retVal += salePrice;
 		}
 		}
 		return retVal;

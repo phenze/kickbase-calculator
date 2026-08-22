@@ -48,6 +48,8 @@ export class KickbasePlayer {
   public marketValuesShown!: boolean;
   public username!: string;
 
+  public expectedSaleValue: number | null = null;
+
   constructor(json: any, userID: string | number) {
     this.offervalue = 0;
     this.hasOfferFromAny = false;
@@ -256,7 +258,7 @@ export class KickbasePlayer {
   public offsetNumber = 0;
   private getOffsetNumberTmp() {
     if (this.stats !== null) {
-      return this.value - this.stats.buyPrice;
+      return (this.expectedSaleValue !== null ? this.expectedSaleValue : this.value) - this.stats.buyPrice;
     }
     return 0;
   }
@@ -322,6 +324,7 @@ export class KickbasePlayer {
     retVal.successValue = this.successValue;
     retVal.offsetNumber = this.offsetNumber;
     retVal.nameHash = this.nameHash;
+    retVal.expectedSaleValue = this.expectedSaleValue;
 
     return retVal;
   }
