@@ -30,8 +30,8 @@ describe('MarketOverviewComponent', () => {
       providers: [
         { provide: ApiService, useValue: mockApiService },
         provideHttpClient(),
-        provideHttpClientTesting()
-      ]
+        provideHttpClientTesting(),
+      ],
     }).compileComponents();
   });
 
@@ -130,52 +130,58 @@ describe('MarketOverviewComponent', () => {
     });
 
     it('should filter out user-offered players when onlyKickbasePlayers is true', () => {
-    const playerSystem = new KickbasePlayer({ i: '1', n: 'Weiser', exs: 2000 }, '123');
-    const playerUser = new KickbasePlayer({ i: '2', n: 'Grifo', u: { n: 'harti' } }, '123');
+      const playerSystem = new KickbasePlayer({ i: '1', n: 'Weiser', exs: 2000 }, '123');
+      const playerUser = new KickbasePlayer({ i: '2', n: 'Grifo', u: { n: 'harti' } }, '123');
 
-    component.sortedPlayers = [playerSystem, playerUser];
-    component.onlyKickbasePlayers = true;
-    component.onlyManualPrices = false;
+      component.sortedPlayers = [playerSystem, playerUser];
+      component.onlyKickbasePlayers = true;
+      component.onlyManualPrices = false;
 
-    // Filter ausführen via Lifecycle Hook
-    component.ngOnChanges();
+      // Filter ausführen via Lifecycle Hook
+      component.ngOnChanges();
 
-    expect(component.playersToShow.length).toBe(1);
-    expect(component.playersToShow[0].name).toBe('Weiser');
-  });
+      expect(component.playersToShow.length).toBe(1);
+      expect(component.playersToShow[0].name).toBe('Weiser');
+    });
 
-  it('should filter only user-offered players with manual prices when onlyManualPrices is true', () => {
-  // Mitchell Weiser (System-Angebot, prc == mv)
-  const playerSystem = new KickbasePlayer({
-    i: "43",
-    fn: "Mitchell",
-    n: "Weiser",
-    mv: 4673252,
-    prc: 4673252
-  }, '123');
+    it('should filter only user-offered players with manual prices when onlyManualPrices is true', () => {
+      // Mitchell Weiser (System-Angebot, prc == mv)
+      const playerSystem = new KickbasePlayer(
+        {
+          i: '43',
+          fn: 'Mitchell',
+          n: 'Weiser',
+          mv: 4673252,
+          prc: 4673252,
+        },
+        '123',
+      );
 
-  // Vincenzo Grifo (User-Angebot von 'harti', prc > mv)
-  const playerUserManual = new KickbasePlayer({
-    i: "118",
-    fn: "Vincenzo",
-    n: "Grifo",
-    mv: 12316047,
-    prc: 16500000,
-    u: {
-      i: "1919688",
-      n: "harti"
-    }
-  }, '123');
+      // Vincenzo Grifo (User-Angebot von 'harti', prc > mv)
+      const playerUserManual = new KickbasePlayer(
+        {
+          i: '118',
+          fn: 'Vincenzo',
+          n: 'Grifo',
+          mv: 12316047,
+          prc: 16500000,
+          u: {
+            i: '1919688',
+            n: 'harti',
+          },
+        },
+        '123',
+      );
 
-  component.sortedPlayers = [playerSystem, playerUserManual];
-  component.onlyKickbasePlayers = false;
-  component.onlyManualPrices = true;
+      component.sortedPlayers = [playerSystem, playerUserManual];
+      component.onlyKickbasePlayers = false;
+      component.onlyManualPrices = true;
 
-  component.ngOnChanges();
+      component.ngOnChanges();
 
-  expect(component.playersToShow.length).toBe(1);
-  expect(component.playersToShow[0].name).toBe('Grifo');
-});
+      expect(component.playersToShow.length).toBe(1);
+      expect(component.playersToShow[0].name).toBe('Grifo');
+    });
   });
 
   describe('Outputs / EventEmitters', () => {

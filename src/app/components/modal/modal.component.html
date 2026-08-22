@@ -1,16 +1,18 @@
 <div class="modal-header">
-  <h4 class="modal-title">{{title}}</h4>
+  <h4 class="modal-title">{{ title }}</h4>
   <button type="button" class="btn-close" aria-label="Close" (click)="bsModalRef.hide()"></button>
 </div>
 <div class="modal-body">
   @if (list.length) {
     <ul>
       @for (item of list; track item) {
-        <li>{{item}}</li>
+        <li>{{ item }}</li>
       }
     </ul>
   }
 </div>
 <div class="modal-footer">
-  <button type="button" class="btn btn-secondary" (click)="bsModalRef.hide()">{{closeBtnName}}</button>
+  <button type="button" class="btn btn-secondary" (click)="bsModalRef.hide()">
+    {{ closeBtnName }}
+  </button>
 </div>

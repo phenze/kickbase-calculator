@@ -10,7 +10,7 @@ describe('KickbasePlayer', () => {
   beforeAll(() => {
     numeral.locale('de');
   });
-  
+
   beforeEach(() => {
     localStorage.clear();
     player = new KickbasePlayer(null, 'user123');
@@ -34,7 +34,7 @@ describe('KickbasePlayer', () => {
         prc: 5500000,
         n: 'Müller',
         uoid: '0',
-        exs: 3600
+        exs: 3600,
       };
 
       player = new KickbasePlayer(rawJson, 'user123');
@@ -62,8 +62,8 @@ describe('KickbasePlayer', () => {
         uoid: '0',
         ofs: [
           { u: 'otherUser', uop: '1500' },
-          { u: 'user123', uop: '2000' }
-        ]
+          { u: 'user123', uop: '2000' },
+        ],
       };
 
       player = new KickbasePlayer(rawJson, 'user123');
@@ -156,7 +156,10 @@ describe('KickbasePlayer', () => {
 
   describe('createArrayInstance', () => {
     it('erzeugt ein Array aus Instanzen von KickbasePlayer', () => {
-      const rawData = [{ i: 1, mv: 100 }, { i: 2, mv: 200 }];
+      const rawData = [
+        { i: 1, mv: 100 },
+        { i: 2, mv: 200 },
+      ];
 
       const result = KickbasePlayer.createArrayInstance(rawData, 'user123');
 
@@ -177,7 +180,10 @@ describe('KickbasePlayer', () => {
       player.id = 99;
       player.marketValue = 1000000;
 
-      const mockApiService = jasmine.createSpyObj('ApiService', ['getPlayerStats', 'getMarketValuePlayerStats']);
+      const mockApiService = jasmine.createSpyObj('ApiService', [
+        'getPlayerStats',
+        'getMarketValuePlayerStats',
+      ]);
       const mockStats = new KickbasePlayerStats(null);
       mockStats.mv = 1000000;
 
@@ -217,7 +223,7 @@ describe('KickbasePlayer', () => {
         nameHash: '',
         value: 1000,
         marketValue: 1000,
-        realMarketValueChange: 0
+        realMarketValueChange: 0,
       });
     });
   });
@@ -225,49 +231,46 @@ describe('KickbasePlayer', () => {
   describe('Username Handling', () => {
     const currentUserId = '12345';
     it('should set username correctly when player is offered by a user', () => {
-    const rawPayload = {
-      i: '118',
-      n: 'Grifo',
-      mv: 12316047,
-      prc: 16500000,
-      u: {
-        i: '1919688',
-        n: 'harti'
-      }
-    };
+      const rawPayload = {
+        i: '118',
+        n: 'Grifo',
+        mv: 12316047,
+        prc: 16500000,
+        u: {
+          i: '1919688',
+          n: 'harti',
+        },
+      };
 
-    const player = new KickbasePlayer(rawPayload, currentUserId);
+      const player = new KickbasePlayer(rawPayload, currentUserId);
 
-    expect(player.username).toBe('harti');
+      expect(player.username).toBe('harti');
+    });
+
+    it('should set empty username when player is offered by Kickbase system', () => {
+      const rawPayload = {
+        i: '43',
+        n: 'Weiser',
+        mv: 4673252,
+        exs: 23317,
+      };
+
+      const player = new KickbasePlayer(rawPayload, currentUserId);
+
+      expect(player.username).toBe('');
+    });
+
+    it('should copy username correctly in copy() method', () => {
+      const rawPayload = {
+        i: '118',
+        n: 'Grifo',
+        u: { n: 'harti' },
+      };
+
+      const player = new KickbasePlayer(rawPayload, currentUserId);
+      const copiedPlayer = player.copy(currentUserId);
+
+      expect(copiedPlayer.username).toBe('harti');
+    });
   });
-
-  it('should set empty username when player is offered by Kickbase system', () => {
-    const rawPayload = {
-      i: '43',
-      n: 'Weiser',
-      mv: 4673252,
-      exs: 23317
-    };
-
-    const player = new KickbasePlayer(rawPayload, currentUserId);
-
-    expect(player.username).toBe('');
-  });
-
-  it('should copy username correctly in copy() method', () => {
-    const rawPayload = {
-      i: '118',
-      n: 'Grifo',
-      u: { n: 'harti' }
-    };
-
-    const player = new KickbasePlayer(rawPayload, currentUserId);
-    const copiedPlayer = player.copy(currentUserId);
-
-    expect(copiedPlayer.username).toBe('harti');
-  });
-
-  
-  });
-
 });

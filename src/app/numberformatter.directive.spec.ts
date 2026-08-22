@@ -7,7 +7,7 @@ import { MyCurrencyPipe } from './my-currency.pipe';
 @Component({
   standalone: true,
   imports: [NumberformatterDirective],
-  template: `<input type="text" appNumberformatter value="1000" />`
+  template: `<input type="text" appNumberformatter value="1000" />`,
 })
 class TestHostComponent {}
 
@@ -22,9 +22,7 @@ describe('NumberformatterDirective', () => {
 
     await TestBed.configureTestingModule({
       imports: [TestHostComponent, NumberformatterDirective],
-      providers: [
-        { provide: MyCurrencyPipe, useValue: mockCurrencyPipe }
-      ]
+      providers: [{ provide: MyCurrencyPipe, useValue: mockCurrencyPipe }],
     }).compileComponents();
 
     fixture = TestBed.createComponent(TestHostComponent);
@@ -33,14 +31,14 @@ describe('NumberformatterDirective', () => {
   });
 
   it('sollte den Initialwert in ngOnInit über die Pipe transformieren', () => {
-    fixture.detectChanges(); // Stößt ngOnInit an
+    fixture.detectChanges();
 
     expect(mockCurrencyPipe.transform).toHaveBeenCalledWith('1000');
     expect(inputEl.value).toBe('formatted_1000');
   });
 
   it('sollte den Wert beim Blur-Event erneut transformieren', () => {
-    fixture.detectChanges(); // Initialisierung
+    fixture.detectChanges();
 
     inputEl.value = '2500';
     inputEl.dispatchEvent(new Event('blur'));

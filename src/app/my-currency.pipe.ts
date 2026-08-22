@@ -1,47 +1,44 @@
 import { Pipe, PipeTransform } from '@angular/core';
 
-
-const PADDING = "000000";
+const PADDING = '000000';
 
 @Pipe({
-    name: 'myCurrency',
-    standalone: true
+  name: 'myCurrency',
+  standalone: true,
 })
 export class MyCurrencyPipe implements PipeTransform {
+  private DECIMAL_SEPARATOR: string;
+  private THOUSANDS_SEPARATOR: string;
 
-	private DECIMAL_SEPARATOR: string;
-	private THOUSANDS_SEPARATOR: string;
+  constructor() {
+    // TODO comes from configuration settings
+    this.DECIMAL_SEPARATOR = ',';
+    this.THOUSANDS_SEPARATOR = '.';
+  }
 
-	constructor() {
-		// TODO comes from configuration settings
-		this.DECIMAL_SEPARATOR = ",";
-		this.THOUSANDS_SEPARATOR = ".";
-	}
+  transform(value: number | string, fractionSize: number = 2): string {
+    let [integer, fraction = ''] = (value || '').toString().split(this.DECIMAL_SEPARATOR);
 
-	transform(value: number | string, fractionSize: number = 2): string {
-		let [integer, fraction = ""] = (value || "").toString()
-			.split(this.DECIMAL_SEPARATOR);
+    fraction =
+      fractionSize > 0
+        ? this.DECIMAL_SEPARATOR + (fraction + PADDING).substring(0, fractionSize)
+        : '';
 
-		fraction = fractionSize > 0
-			? this.DECIMAL_SEPARATOR + (fraction + PADDING).substring(0, fractionSize)
-			: "";
+    integer = integer.replace(/\B(?=(\d{3})+(?!\d))/g, this.THOUSANDS_SEPARATOR);
 
-		integer = integer.replace(/\B(?=(\d{3})+(?!\d))/g, this.THOUSANDS_SEPARATOR);
+    return integer + fraction;
+  }
 
-		return integer + fraction;
-	}
+  parse(value: string, fractionSize: number = 2): string {
+    let [integer, fraction = ''] = (value || '').split(this.DECIMAL_SEPARATOR);
 
-	parse(value: string, fractionSize: number = 2): string {
-		let [integer, fraction = ""] = (value || "").split(this.DECIMAL_SEPARATOR);
+    integer = integer.replaceAll(this.THOUSANDS_SEPARATOR, '');
 
-		// replaceAll verhindert das Wildcard-Verhalten des Punktes im Regex
-		integer = integer.replaceAll(this.THOUSANDS_SEPARATOR, "");
+    fraction =
+      parseInt(fraction, 10) > 0 && fractionSize > 0
+        ? this.DECIMAL_SEPARATOR + (fraction + PADDING).substring(0, fractionSize)
+        : '';
 
-		fraction = parseInt(fraction, 10) > 0 && fractionSize > 0
-			? this.DECIMAL_SEPARATOR + (fraction + PADDING).substring(0, fractionSize)
-			: "";
-
-		return integer + fraction;
-	}
-
+    return integer + fraction;
+  }
 }

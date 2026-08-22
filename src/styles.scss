@@ -1,7 +1,7 @@
 // /* You can add global styles to this file, and also import other style files */
-@use "variables" as variables;
+@use 'variables' as variables;
 
-@use "bootstrap/scss/bootstrap" with (
+@use 'bootstrap/scss/bootstrap' with (
   $font-family-base: variables.$font-family-base,
   $headings-font-family: variables.$headings-font-family,
   $primary: variables.$primary,
@@ -14,11 +14,11 @@
   $dark: variables.$dark
 );
 
-@import url("https://fonts.googleapis.com/css?family=Muli:200,300,400,700&display=swap");
-@import url("https://fonts.googleapis.com/css?family=Oswald:200,300,400,700&display=swap");
+@import url('https://fonts.googleapis.com/css?family=Muli:200,300,400,700&display=swap');
+@import url('https://fonts.googleapis.com/css?family=Oswald:200,300,400,700&display=swap');
 
 body {
-  background-color: #F0F0F0;
+  background-color: #f0f0f0;
 }
 
 .header-container {
@@ -33,7 +33,7 @@ body {
   padding: 0.25rem 0.5rem;
   border-radius: 0.375rem;
   white-space: nowrap; // Text bricht innerhalb der Box nie um
-  flex-shrink: 0;      // Box schrumpft nicht unter ihren Inhalt
+  flex-shrink: 0; // Box schrumpft nicht unter ihren Inhalt
 }
 
 .kpi-group {
@@ -116,11 +116,9 @@ svg-icon {
   }
 
   &.active {
-    color: #007D34;
+    color: #007d34;
   }
 }
-
-
 
 /* Header-Anpassungen */
 .card-header {
@@ -169,9 +167,7 @@ svg-icon {
   }
 }
 
-
 .player-row {
-
   // margin: 5px;
   // padding: 5px;
   // border: 1px dashed black;
@@ -222,19 +218,18 @@ svg-icon {
   padding-top: 5px;
   padding-bottom: 5px;
   box-sizing: border-box;
-  box-shadow: 0 5px 5px -3px rgba(0, 0, 0, 0.2),
+  box-shadow:
+    0 5px 5px -3px rgba(0, 0, 0, 0.2),
     0 8px 10px 1px rgba(0, 0, 0, 0.14),
     0 3px 14px 2px rgba(0, 0, 0, 0.12);
 }
-
-
 
 .btn-group.special {
   display: flex;
 }
 
 .special .btn {
-  flex: 1
+  flex: 1;
 }
 
 .number_players {
@@ -266,7 +261,7 @@ svg-icon {
   margin-top: 3px;
 
   &.active {
-    color: #007D34;
+    color: #007d34;
   }
 }
 
@@ -290,7 +285,6 @@ svg-icon {
     color: gray;
   }
 }
-
 
 /* ==========================================================================
    Modernisierter Header-/Einstiegsbereich
@@ -379,7 +373,10 @@ svg-icon {
   font-weight: 600;
   font-size: 0.9rem;
   color: var(--bs-secondary-color, #6c757d);
-  transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+  transition:
+    background-color 0.2s ease-in-out,
+    color 0.2s ease-in-out,
+    box-shadow 0.2s ease-in-out;
 
   &.active {
     background-color: #fff;
@@ -427,7 +424,6 @@ svg-icon {
   }
 }
 
-
 /* ==========================================================================
    Modernisierte Spieler-Karte (player-item)
    ========================================================================== */
@@ -435,7 +431,9 @@ svg-icon {
 .player-card {
   border-radius: 0.9rem;
   cursor: pointer;
-  transition: transform 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+  transition:
+    transform 0.15s ease-in-out,
+    box-shadow 0.15s ease-in-out;
 
   &:hover {
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12) !important;
@@ -508,7 +506,6 @@ svg-icon {
 
 .trend-table {
   margin-bottom: 0;
-
 
   tr:first-child td {
     font-weight: 600;

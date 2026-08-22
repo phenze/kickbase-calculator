@@ -7,10 +7,12 @@
     "ng": "ng",
     "start": "ng serve",
     "build": "ng build",
-    "build:prod": "ng build --configuration production",
-    "build:prod-update": "ng build --configuration production-update",
+    "build:prod": "npm run format:check && npm run test:ci && ng build --configuration production",
+    "build:prod-update": "npm run format:check && npm run test:ci && ng build --configuration production-update",
     "test": "ng test --watch=false --code-coverage",
-    "test:ci": "ng test --watch=false --browsers=ChromeHeadless"
+    "test:ci": "ng test --watch=false --browsers=ChromeHeadless --code-coverage",
+    "format": "prettier --write \"src/**/*.{ts,html,scss,css,json,md}\"",
+    "format:check": "prettier --check \"src/**/*.{ts,html,scss,css,json,md}\""
   },
   "dependencies": {
     "@angular/animations": "22.1.2",
@@ -44,6 +46,8 @@
     "karma-coverage": "2.2.1",
     "karma-jasmine": "5.1.0",
     "karma-jasmine-html-reporter": "2.2.0",
+    "prettier": "^3.9.6",
+    "prettier-plugin-organize-imports": "^4.3.0",
     "typescript": "6.0.3"
   }
 }

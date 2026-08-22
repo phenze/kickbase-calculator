@@ -5,13 +5,24 @@
       <!-- <form> -->
       <div class="mb-3">
         <label class="form-label" for="exampleInputEmail1">Email address</label>
-        <input type="email" [(ngModel)]="username" class="form-control" id="exampleInputEmail1"
-          aria-describedby="emailHelp" placeholder="Enter email">
+        <input
+          type="email"
+          [(ngModel)]="username"
+          class="form-control"
+          id="exampleInputEmail1"
+          aria-describedby="emailHelp"
+          placeholder="Enter email"
+        />
       </div>
       <div class="mb-3">
         <label class="form-label" for="exampleInputPassword1">Password</label>
-        <input type="password" [(ngModel)]="password" class="form-control" id="exampleInputPassword1"
-          placeholder="Password">
+        <input
+          type="password"
+          [(ngModel)]="password"
+          class="form-control"
+          id="exampleInputPassword1"
+          placeholder="Password"
+        />
       </div>
       <button (click)="loginPrivate()" type="button" class="btn btn-primary w-100">
         @if (!doLogin) {
@@ -22,7 +33,7 @@
           Loading...
         }
       </button>
-    <!-- </form> -->
+      <!-- </form> -->
+    </div>
   </div>
-</div>
 }

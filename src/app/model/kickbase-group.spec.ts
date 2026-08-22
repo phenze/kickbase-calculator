@@ -47,22 +47,22 @@ describe('KickbaseGroup', () => {
     });
 
     it('summiert successValue nur ueber aktive Spieler', () => {
-		// Erzeugt einen Offset von 5 Mio -> ergibt 250.000 + 500.000 = 750.000 successValue
-		const statsA = new KickbasePlayerStats(null);
-		statsA.buyPrice = 0;
+      // Erzeugt einen Offset von 5 Mio -> ergibt 250.000 + 500.000 = 750.000 successValue
+      const statsA = new KickbasePlayerStats(null);
+      statsA.buyPrice = 0;
 
-		const activePlayer1 = makePlayer({ value: 5000000, stats: statsA });
-		const activePlayer2 = makePlayer({ value: 5000000, stats: statsA });
-		const deactivatedPlayer = makePlayer({ value: 5000000, isKept: true, stats: statsA });
+      const activePlayer1 = makePlayer({ value: 5000000, stats: statsA });
+      const activePlayer2 = makePlayer({ value: 5000000, stats: statsA });
+      const deactivatedPlayer = makePlayer({ value: 5000000, isKept: true, stats: statsA });
 
-		group.players = [activePlayer1, activePlayer2, deactivatedPlayer];
+      group.players = [activePlayer1, activePlayer2, deactivatedPlayer];
 
-		group.calcValues(0, false, 0);
+      group.calcValues(0, false, 0);
 
-		// successValue berechnet sich automatisch aus den aktiven Spielern
-		expect(group.successValue).toBe(activePlayer1.successValue + activePlayer2.successValue);
-		expect(group.successValue).toBeGreaterThan(0);
-		});
+      // successValue berechnet sich automatisch aus den aktiven Spielern
+      expect(group.successValue).toBe(activePlayer1.successValue + activePlayer2.successValue);
+      expect(group.successValue).toBeGreaterThan(0);
+    });
 
     it('teamValue summiert marketValue NUR ueber inaktive Spieler', () => {
       group.players = [
@@ -99,17 +99,13 @@ describe('KickbaseGroup', () => {
   describe('calcValues - Trend und Verlust', () => {
     function playerWithChange(change: number, opts: Partial<KickbasePlayer> = {}) {
       const stats = new KickbasePlayerStats(null);
-	stats.realMarketValueChange = change;
+      stats.realMarketValueChange = change;
 
-	return makePlayer({ stats, ...opts });
+      return makePlayer({ stats, ...opts });
     }
 
     it('trendValue summiert nur positive realMarketValueChange, wenn includeMinusMarketValues=false', () => {
-      group.players = [
-        playerWithChange(100),
-        playerWithChange(-50),
-        playerWithChange(30),
-      ];
+      group.players = [playerWithChange(100), playerWithChange(-50), playerWithChange(30)];
 
       group.calcValues(0, false, 0);
 
@@ -117,10 +113,7 @@ describe('KickbaseGroup', () => {
     });
 
     it('trendValue summiert auch negative Werte, wenn includeMinusMarketValues=true', () => {
-      group.players = [
-        playerWithChange(100),
-        playerWithChange(-50),
-      ];
+      group.players = [playerWithChange(100), playerWithChange(-50)];
 
       group.calcValues(0, true, 0);
 
@@ -128,11 +121,7 @@ describe('KickbaseGroup', () => {
     });
 
     it('lossValue summiert nur negative realMarketValueChange', () => {
-      group.players = [
-        playerWithChange(100),
-        playerWithChange(-50),
-        playerWithChange(-30),
-      ];
+      group.players = [playerWithChange(100), playerWithChange(-50), playerWithChange(-30)];
 
       group.calcValues(0, false, 0);
 
@@ -141,24 +130,22 @@ describe('KickbaseGroup', () => {
   });
 
   describe('calcValues - differenceValueFriday', () => {
-
-	
     it('berechnet den Freitagswert unter Einbezug von Trend * Tage', () => {
-		const stats = new KickbasePlayerStats(null);
-		stats.realMarketValueChange = 50;
-		stats.buyPrice = 3000000;
+      const stats = new KickbasePlayerStats(null);
+      stats.realMarketValueChange = 50;
+      stats.buyPrice = 3000000;
 
-		// value = 6.000.000, buyPrice = 3.000.000 -> offset = 3.000.000 -> successValue = 250.000
-		const player = makePlayer({ value: 6000000, stats });
-		group.players = [player];
+      // value = 6.000.000, buyPrice = 3.000.000 -> offset = 3.000.000 -> successValue = 250.000
+      const player = makePlayer({ value: 6000000, stats });
+      group.players = [player];
 
-		group.calcValues(0, false, 3);
+      group.calcValues(0, false, 3);
 
-		const expectedSuccessValue = player.successValue; // 250.000
-		const expectedValue = 6000000 + expectedSuccessValue + (50 * 3);
+      const expectedSuccessValue = player.successValue; // 250.000
+      const expectedValue = 6000000 + expectedSuccessValue + 50 * 3;
 
-		expect(group.differenceValueFriday).toBe(expectedValue);
-	});
+      expect(group.differenceValueFriday).toBe(expectedValue);
+    });
   });
 
   describe('calcColors', () => {
@@ -202,42 +189,42 @@ describe('KickbaseGroup', () => {
   });
 
   describe('Achivements', () => {
-	let group: KickbaseGroup;
+    let group: KickbaseGroup;
 
-	beforeEach(() => {
-		group = new KickbaseGroup();
-		group.players = [];
-	});
+    beforeEach(() => {
+      group = new KickbaseGroup();
+      group.players = [];
+    });
 
-	it('sollte successValue berechnen, wenn achievementsDisabled false ist', () => {
-		// Private/Protected Methoden über spyOn<any> mocken:
-		spyOn<any>(group, 'getSuccessValueTmp').and.returnValue(500000);
-		spyOn<any>(group, 'getNumberValueTmp').and.returnValue(1000000);
-		spyOn<any>(group, 'getTeamValueTmp').and.returnValue(20000000);
-		spyOn<any>(group, 'getTrend').and.returnValue(100000);
-		spyOn<any>(group, 'getLoss').and.returnValue(0);
+    it('sollte successValue berechnen, wenn achievementsDisabled false ist', () => {
+      // Private/Protected Methoden über spyOn<any> mocken:
+      spyOn<any>(group, 'getSuccessValueTmp').and.returnValue(500000);
+      spyOn<any>(group, 'getNumberValueTmp').and.returnValue(1000000);
+      spyOn<any>(group, 'getTeamValueTmp').and.returnValue(20000000);
+      spyOn<any>(group, 'getTrend').and.returnValue(100000);
+      spyOn<any>(group, 'getLoss').and.returnValue(0);
 
-		group.calcValues(5000000, true, 3, false);
+      group.calcValues(5000000, true, 3, false);
 
-		expect(group.successValue).toBe(500000);
-	});
+      expect(group.successValue).toBe(500000);
+    });
 
-	it('sollte successValue auf 0 setzen, wenn achievementsDisabled true ist', () => {
-		// Private/Protected Methoden über spyOn<any> mocken:
-		spyOn<any>(group, 'getSuccessValueTmp').and.returnValue(500000);
-		spyOn<any>(group, 'getNumberValueTmp').and.returnValue(1000000);
-		spyOn<any>(group, 'getTeamValueTmp').and.returnValue(20000000);
-		spyOn<any>(group, 'getTrend').and.returnValue(100000);
-		spyOn<any>(group, 'getLoss').and.returnValue(0);
+    it('sollte successValue auf 0 setzen, wenn achievementsDisabled true ist', () => {
+      // Private/Protected Methoden über spyOn<any> mocken:
+      spyOn<any>(group, 'getSuccessValueTmp').and.returnValue(500000);
+      spyOn<any>(group, 'getNumberValueTmp').and.returnValue(1000000);
+      spyOn<any>(group, 'getTeamValueTmp').and.returnValue(20000000);
+      spyOn<any>(group, 'getTrend').and.returnValue(100000);
+      spyOn<any>(group, 'getLoss').and.returnValue(0);
 
-		group.calcValues(5000000, true, 3, true);
+      group.calcValues(5000000, true, 3, true);
 
-		expect(group.successValue).toBe(0);
-		expect(group.differenceValueFriday).toBe(6300000);
-	});
-	});
+      expect(group.successValue).toBe(0);
+      expect(group.differenceValueFriday).toBe(6300000);
+    });
+  });
 
-	describe('calcValues - Summenbildung', () => {
+  describe('calcValues - Summenbildung', () => {
     it('summiert für den Verkaufswert (numberValue) NUR Spieler, die wirklich verkauft werden', () => {
       group.players = [
         makePlayer({ value: 1000000 }), // Wird verkauft -> Zählt
@@ -256,9 +243,9 @@ describe('KickbaseGroup', () => {
       const statsA = new KickbasePlayerStats(null);
       statsA.buyPrice = 0;
 
-      const sellingPlayer = makePlayer({ value: 5000000, stats: statsA }); 
-      const fixedPlayer = makePlayer({ value: 5000000, isFixedSquad: true, stats: statsA }); 
-      const keptPlayer = makePlayer({ value: 5000000, isKept: true, stats: statsA }); 
+      const sellingPlayer = makePlayer({ value: 5000000, stats: statsA });
+      const fixedPlayer = makePlayer({ value: 5000000, isFixedSquad: true, stats: statsA });
+      const keptPlayer = makePlayer({ value: 5000000, isKept: true, stats: statsA });
 
       group.players = [sellingPlayer, fixedPlayer, keptPlayer];
 
@@ -325,7 +312,7 @@ describe('KickbaseGroup', () => {
       group.players = [
         playerWithChange(100),
         playerWithChange(-50, { isFixedSquad: true }), // Fester Spieler im Minus -> Zählt
-        playerWithChange(-200, { isKept: true }) // Behaltener Spieler -> Zählt NICHT
+        playerWithChange(-200, { isKept: true }), // Behaltener Spieler -> Zählt NICHT
       ];
 
       group.calcValues(0, true, 0);
@@ -338,7 +325,7 @@ describe('KickbaseGroup', () => {
         playerWithChange(100),
         playerWithChange(-50), // Verkaufsspieler -> Zählt
         playerWithChange(-30, { isFixedSquad: true }), // Fester Spieler -> Zählt
-        playerWithChange(-500, { isKept: true }) // Behaltener Spieler -> Zählt NICHT
+        playerWithChange(-500, { isKept: true }), // Behaltener Spieler -> Zählt NICHT
       ];
 
       group.calcValues(0, false, 0);
@@ -348,7 +335,6 @@ describe('KickbaseGroup', () => {
   });
 
   describe('Feature: Fixer Erwartungswert (expectedSaleValue)', () => {
-    
     it('überschreibt den regulären Wert (value) beim Verkaufswert (numberValue)', () => {
       const player = makePlayer({ value: 5000000 });
       player.expectedSaleValue = 8000000; // Fixer Wert ist höher
@@ -365,7 +351,7 @@ describe('KickbaseGroup', () => {
       stats.realMarketValueChange = 500000; // Würde normalerweise den Trend erhöhen
 
       const player = makePlayer({ value: 5000000, stats });
-      player.expectedSaleValue = 8000000; 
+      player.expectedSaleValue = 8000000;
 
       group.players = [player];
       group.calcValues(0, false, 0);
@@ -376,10 +362,10 @@ describe('KickbaseGroup', () => {
 
     it('ignoriert den Verlust (lossValue), wenn ein expectedSaleValue gesetzt ist', () => {
       const stats = new KickbasePlayerStats(null);
-      stats.realMarketValueChange = -300000; 
+      stats.realMarketValueChange = -300000;
 
       const player = makePlayer({ value: 5000000, stats });
-      player.expectedSaleValue = 4000000; 
+      player.expectedSaleValue = 4000000;
 
       group.players = [player];
       group.calcValues(0, false, 0);
@@ -389,12 +375,12 @@ describe('KickbaseGroup', () => {
 
     it('behält den Trend bei, wenn der Spieler isFixedSquad ist (da expectedSaleValue nur beim Verkauf greift)', () => {
       const stats = new KickbasePlayerStats(null);
-      stats.realMarketValueChange = 500000; 
+      stats.realMarketValueChange = 500000;
 
       const player = makePlayer({ value: 5000000, isFixedSquad: true, stats });
-      // Ergibt logisch zwar keinen Sinn, einen festen Kaderspieler mit einem 
+      // Ergibt logisch zwar keinen Sinn, einen festen Kaderspieler mit einem
       // Verkaufswert zu versehen, aber zur Sicherheit prüfen wir es:
-      player.expectedSaleValue = 8000000; 
+      player.expectedSaleValue = 8000000;
 
       group.players = [player];
       group.calcValues(0, false, 0);

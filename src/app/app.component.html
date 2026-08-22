@@ -2,8 +2,11 @@
   <div>
     <app-login (login)="login($event)" [doLogin]="doLogin"></app-login>
     <div class="support-card mt-4 mb-4">
-      <p class="support-text">Wenn ihr mich und meine Arbeit unterstützen wollt könnt ihr mir eine kleine Spende da lassen. Diese
-        Spende ist vollkommen freiwillig. Der Rechner wird auch weiterhin kostenlos für euch bleiben</p>
+      <p class="support-text">
+        Wenn ihr mich und meine Arbeit unterstützen wollt könnt ihr mir eine kleine Spende da
+        lassen. Diese Spende ist vollkommen freiwillig. Der Rechner wird auch weiterhin kostenlos
+        für euch bleiben
+      </p>
       <div id="donate-button-container" class="d-flex justify-content-center">
         <div id="donate-button"></div>
       </div>
@@ -15,10 +18,14 @@
   <div class="app-topbar">
     @if (currentGift !== null) {
       <div class="gift-chip" title="Geschenk">
-        <svg-icon [class.disabled]="!currentGift.isAvailable" (click)="getGift()" class="nav-icon gift-icon"
-          src="assets/card_giftcard-24px.svg">
+        <svg-icon
+          [class.disabled]="!currentGift.isAvailable"
+          (click)="getGift()"
+          class="nav-icon gift-icon"
+          src="assets/card_giftcard-24px.svg"
+        >
         </svg-icon>
-        <span class="gift-value">{{currentGift.value}}</span>
+        <span class="gift-value">{{ currentGift.value }}</span>
       </div>
     }
     <button (click)="logout()" type="button" class="btn btn-outline-secondary btn-sm logout-btn">
@@ -27,8 +34,11 @@
   </div>
 
   <div class="support-card mt-2 mb-3">
-    <p class="support-text">Wenn ihr mich und meine Arbeit unterstützen wollt könnt ihr mir eine kleine Spende da lassen. Diese
-      Spende ist vollkommen freiwillig. Der Rechner wird auch weiterhin kostenlos für euch bleiben</p>
+    <p class="support-text">
+      Wenn ihr mich und meine Arbeit unterstützen wollt könnt ihr mir eine kleine Spende da lassen.
+      Diese Spende ist vollkommen freiwillig. Der Rechner wird auch weiterhin kostenlos für euch
+      bleiben
+    </p>
     <div id="donate-button-container" class="d-flex justify-content-center">
       <div id="donate-button"></div>
     </div>
@@ -40,11 +50,15 @@
 
   <div class="section-card mb-3">
     <label class="form-label fw-semibold" for="selectedLeague">Liga</label>
-    <select id="selectedLeague" class="form-select" [(ngModel)]="selectedLeague"
-      (ngModelChange)="onSelectedLeagueChanged($event)">
+    <select
+      id="selectedLeague"
+      class="form-select"
+      [(ngModel)]="selectedLeague"
+      (ngModelChange)="onSelectedLeagueChanged($event)"
+    >
       <option [ngValue]="null">-- Bitte eine Liga auswählen --</option>
       @for (league of leagues; track league.id) {
-        <option [ngValue]="+league.id">{{league.name}}</option>
+        <option [ngValue]="+league.id">{{ league.name }}</option>
       }
     </select>
   </div>
@@ -53,20 +67,30 @@
     <div class="alert alert-info d-flex align-items-center mt-3 shadow-sm" role="alert">
       <i class="bi bi-info-circle-fill me-2 fs-5 flex-shrink-0"></i>
       <div>
-        <strong>Keine Liga ausgewählt:</strong> Bitte wähle oben eine Liga aus, um den Rechner oder Marktübersichten zu nutzen.
+        <strong>Keine Liga ausgewählt:</strong> Bitte wähle oben eine Liga aus, um den Rechner oder
+        Marktübersichten zu nutzen.
       </div>
     </div>
   }
 
   @if (selectedLeague !== null) {
-
     <div class="segmented-control mt-2 mb-3" role="group" aria-label="Ansicht wählen">
-      <button (click)="switchDisplay(AppComponent.display_mode_calculator)" type="button"
+      <button
+        (click)="switchDisplay(AppComponent.display_mode_calculator)"
+        type="button"
         class="segmented-btn"
-      [class.active]="displayMode === AppComponent.display_mode_calculator"><i class="bi bi-calculator me-1"></i>Rechner</button>
-      <button (click)="switchDisplay(AppComponent.display_mode_market_overview)" type="button"
+        [class.active]="displayMode === AppComponent.display_mode_calculator"
+      >
+        <i class="bi bi-calculator me-1"></i>Rechner
+      </button>
+      <button
+        (click)="switchDisplay(AppComponent.display_mode_market_overview)"
+        type="button"
         class="segmented-btn"
-      [class.active]="displayMode === AppComponent.display_mode_market_overview"><i class="bi bi-graph-up-arrow me-1"></i>Markt</button>
+        [class.active]="displayMode === AppComponent.display_mode_market_overview"
+      >
+        <i class="bi bi-graph-up-arrow me-1"></i>Markt
+      </button>
     </div>
 
     @if (loadingData) {
@@ -80,19 +104,30 @@
     @if (!loadingData) {
       @if (displayMode === AppComponent.display_mode_market_overview) {
         <div class="section-card mt-3 mb-3">
-          <button type="button" class="btn btn-outline-secondary w-100" (click)="onLoadAllDetails(true)">
+          <button
+            type="button"
+            class="btn btn-outline-secondary w-100"
+            (click)="onLoadAllDetails(true)"
+          >
             @if (!loadingAllDetailsManual) {
               <span><i class="bi bi-arrow-repeat me-1"></i>Alle Details laden</span>
             }
             @if (loadingAllDetailsManual) {
-              <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+              <span
+                class="spinner-border spinner-border-sm"
+                role="status"
+                aria-hidden="true"
+              ></span>
               Lade Details...
             }
           </button>
           <div class="mt-3">
             <label class="form-label fw-semibold mb-1">Sortierung</label>
-            <select class="form-select" [(ngModel)]="selectedSorting"
-              (ngModelChange)="onSelectedSortingChanged($event)">
+            <select
+              class="form-select"
+              [(ngModel)]="selectedSorting"
+              (ngModelChange)="onSelectedSortingChanged($event)"
+            >
               <option [ngValue]="-1">Standard</option>
               <option [ngValue]="1">MW &darr;</option>
               <option [ngValue]="2">MW &uarr;</option>
@@ -115,46 +150,97 @@
           <label class="form-label" for="balanceValue">Kontostand</label>
           <div class="input-group mb-3">
             <span class="input-group-text">€</span>
-            <input type="text" [ngModel]="minusValueString" readonly class="form-control currency" id="balanceValue" />
+            <input
+              type="text"
+              [ngModel]="minusValueString"
+              readonly
+              class="form-control currency"
+              id="balanceValue"
+            />
           </div>
 
           <label class="form-label" for="extraAmount">Erwarte Ausgaben/Ausstehende Angebote</label>
           <div class="input-group mb-3">
             <span class="input-group-text">€</span>
-            <input type="text" min="0" inputmode="numeric" pattern="[0-9]*" [ngModel]="extraAmountString"
-              (ngModelChange)="onExtraAmountChange($event)" class="form-control currency" id="extraAmount" />
+            <input
+              type="text"
+              min="0"
+              inputmode="numeric"
+              pattern="[0-9]*"
+              [ngModel]="extraAmountString"
+              (ngModelChange)="onExtraAmountChange($event)"
+              class="form-control currency"
+              id="extraAmount"
+            />
           </div>
 
           <label class="form-label" for="offerOffset">Offset für Angebote</label>
           <div class="input-group">
             <span class="input-group-text">%</span>
-            <input type="text" min="0" [ngModel]="offerOffset" (ngModelChange)="onOfferOffsetChange($event)"
-              class="form-control currency" id="offerOffset" />
+            <input
+              type="text"
+              min="0"
+              [ngModel]="offerOffset"
+              (ngModelChange)="onOfferOffsetChange($event)"
+              class="form-control currency"
+              id="offerOffset"
+            />
           </div>
         </div>
 
         <div class="section-card mb-3">
           <h4 class="section-title">Optionen</h4>
           <div class="form-check form-switch mb-2">
-            <input type="checkbox" class="form-check-input" role="switch" [(ngModel)]="includeAdditionalAmount"
-              (ngModelChange)="onIncludeAdditionalAmountChanged()" id="customSwitch1">
-            <label class="form-check-label" for="customSwitch1">Erwarte Ausgaben/Ausstehende Angebote einbeziehen</label>
+            <input
+              type="checkbox"
+              class="form-check-input"
+              role="switch"
+              [(ngModel)]="includeAdditionalAmount"
+              (ngModelChange)="onIncludeAdditionalAmountChanged()"
+              id="customSwitch1"
+            />
+            <label class="form-check-label" for="customSwitch1"
+              >Erwarte Ausgaben/Ausstehende Angebote einbeziehen</label
+            >
           </div>
 
           <div class="form-check form-switch mb-2">
-            <input type="checkbox" class="form-check-input" role="switch" [(ngModel)]="includeMinusMarketValues"
-              (ngModelChange)="onIncludeAdditionalAmountChanged()" id="customSwitch2">
-            <label class="form-check-label" for="customSwitch2">Negative Marktwertänderung mit einbeziehen</label>
+            <input
+              type="checkbox"
+              class="form-check-input"
+              role="switch"
+              [(ngModel)]="includeMinusMarketValues"
+              (ngModelChange)="onIncludeAdditionalAmountChanged()"
+              id="customSwitch2"
+            />
+            <label class="form-check-label" for="customSwitch2"
+              >Negative Marktwertänderung mit einbeziehen</label
+            >
           </div>
 
           <div class="form-check form-switch mb-2">
-            <input type="checkbox" class="form-check-input" role="switch" [(ngModel)]="loadStatsAlways"
-              (ngModelChange)="onLoadStatsAlwaysChanged()" id="customSwitch3">
-            <label class="form-check-label" for="customSwitch3">Alle Details automatisch laden</label>
+            <input
+              type="checkbox"
+              class="form-check-input"
+              role="switch"
+              [(ngModel)]="loadStatsAlways"
+              (ngModelChange)="onLoadStatsAlwaysChanged()"
+              id="customSwitch3"
+            />
+            <label class="form-check-label" for="customSwitch3"
+              >Alle Details automatisch laden</label
+            >
           </div>
 
           <div class="form-check form-switch mb-3">
-            <input type="checkbox" class="form-check-input" role="switch" [checked]="!achievementsDisabled" [disabled]="achievementsDisabled" id="customSwitch4">
+            <input
+              type="checkbox"
+              class="form-check-input"
+              role="switch"
+              [checked]="!achievementsDisabled"
+              [disabled]="achievementsDisabled"
+              id="customSwitch4"
+            />
             <label class="form-check-label" for="customSwitch4">
               Erfolge einbeziehen
               @if (achievementsDisabled) {
@@ -165,7 +251,14 @@
 
           <div class="col-12 mt-2">
             <div class="form-check form-switch">
-              <input type="checkbox" class="form-check-input" role="switch" [(ngModel)]="isGroupedView" id="customSwitchGrouped" (ngModelChange)="onGroupedViewChanged()">
+              <input
+                type="checkbox"
+                class="form-check-input"
+                role="switch"
+                [(ngModel)]="isGroupedView"
+                id="customSwitchGrouped"
+                (ngModelChange)="onGroupedViewChanged()"
+              />
               <label class="form-check-label" for="customSwitchGrouped">
                 Kader-Ansicht gruppieren (Verkaufskandidaten / Fester Kader)
               </label>
@@ -173,8 +266,11 @@
           </div>
 
           <label class="form-label fw-semibold mb-1">Sortierung</label>
-          <select class="form-select mb-3" [(ngModel)]="selectedSorting"
-            (ngModelChange)="onSelectedSortingChanged($event)">
+          <select
+            class="form-select mb-3"
+            [(ngModel)]="selectedSorting"
+            (ngModelChange)="onSelectedSortingChanged($event)"
+          >
             <option [ngValue]="-1">Standard</option>
             <option [ngValue]="1">MW &darr;</option>
             <option [ngValue]="2">MW &uarr;</option>
@@ -182,18 +278,27 @@
             <option [ngValue]="4">MW Änderung &uarr;</option>
           </select>
 
-          <label class="form-label fw-semibold mb-1">Einnahmen Anzahl Tage ({{fridayDate | date:'dd.MM.yyyy'}})</label>
-          <input type="text" min="0" inputmode="numeric" pattern="[0-9]*" step="1" id="daysToFriday"
-            class="form-control" [ngModel]="dayUntilFriday" (ngModelChange)="onFridayDateChanged($event)">
+          <label class="form-label fw-semibold mb-1"
+            >Einnahmen Anzahl Tage ({{ fridayDate | date: 'dd.MM.yyyy' }})</label
+          >
+          <input
+            type="text"
+            min="0"
+            inputmode="numeric"
+            pattern="[0-9]*"
+            step="1"
+            id="daysToFriday"
+            class="form-control"
+            [ngModel]="dayUntilFriday"
+            (ngModelChange)="onFridayDateChanged($event)"
+          />
         </div>
 
         <!-- ERHALTENER ORIGINAL STICKY HEADER -->
         <div class="sticky-top bg-body border-bottom shadow-sm px-2 py-1 mb-2 header-container">
           <div class="header-responsive-wrapper">
-            
             <!-- Finanz-KPIs Wrapper -->
             <div class="kpi-group">
-              
               <!-- Kontostand -->
               <div class="kpi-box bg-light">
                 <span class="text-muted small">Konto:</span>
@@ -209,65 +314,101 @@
                   {{ kickbaseGroup.differenceFriday }}
                 </span>
               </div>
-
             </div>
 
             <!-- Action-Icons & Spieleranzahl -->
             <div class="controls-group">
-              
               <!-- Icon Bar -->
               <div class="d-inline-flex align-items-center bg-light rounded-pill px-1 py-1">
-                <button type="button" class="btn-header-icon" (click)="reload()" title="Aktualisieren">
+                <button
+                  type="button"
+                  class="btn-header-icon"
+                  (click)="reload()"
+                  title="Aktualisieren"
+                >
                   <svg-icon src="assets/refresh-24px.svg"></svg-icon>
                 </button>
 
                 @if (!printMode) {
-                  <button type="button" class="btn-header-icon opacity-50" (click)="printMode = true" title="Druckmodus aktivieren">
+                  <button
+                    type="button"
+                    class="btn-header-icon opacity-50"
+                    (click)="printMode = true"
+                    title="Druckmodus aktivieren"
+                  >
                     <svg-icon src="assets/print_disabled_black_24dp.svg"></svg-icon>
                   </button>
                 } @else {
-                  <button type="button" class="btn-header-icon active" (click)="printMode = false" title="Druckmodus deaktivieren">
+                  <button
+                    type="button"
+                    class="btn-header-icon active"
+                    (click)="printMode = false"
+                    title="Druckmodus deaktivieren"
+                  >
                     <svg-icon src="assets/print_black_24dp.svg"></svg-icon>
                   </button>
                 }
 
                 @if (!showPermanentDeletedPlayers) {
-                  <button type="button" class="btn-header-icon" (click)="showPermanentDeletedPlayers = true" title="Deaktivierte Spieler einblenden">
+                  <button
+                    type="button"
+                    class="btn-header-icon"
+                    (click)="showPermanentDeletedPlayers = true"
+                    title="Deaktivierte Spieler einblenden"
+                  >
                     <svg-icon src="assets/person_add-24px.svg"></svg-icon>
                   </button>
                 } @else {
-                  <button type="button" class="btn-header-icon active" (click)="showPermanentDeletedPlayers = false" title="Deaktivierte Spieler ausblenden">
+                  <button
+                    type="button"
+                    class="btn-header-icon active"
+                    (click)="showPermanentDeletedPlayers = false"
+                    title="Deaktivierte Spieler ausblenden"
+                  >
                     <svg-icon src="assets/person_remove-24px.svg"></svg-icon>
                   </button>
                 }
               </div>
 
               <!-- Spieler-Anzahl Badge -->
-              <span class="badge bg-primary rounded-pill px-2 py-1 fw-bold fs-6 ms-1" title="Anzahl Spieler">
+              <span
+                class="badge bg-primary rounded-pill px-2 py-1 fw-bold fs-6 ms-1"
+                title="Anzahl Spieler"
+              >
                 {{ amountPlayers }}
               </span>
-
             </div>
-
           </div>
         </div>
 
         <div class="squad-title mt-3 mb-2">
-          <h4 class="squad-title-team">{{kickbaseGroup.team}}</h4>
+          <h4 class="squad-title-team">{{ kickbaseGroup.team }}</h4>
           <div class="squad-title-meta">
-            <span>Mögliches Minus: <strong>{{kickbaseGroup.possibleMinus}}</strong></span>
-            <span>Maximales Angebot: <strong>{{kickbaseGroup.possibleOffer}}</strong></span>
+            <span
+              >Mögliches Minus: <strong>{{ kickbaseGroup.possibleMinus }}</strong></span
+            >
+            <span
+              >Maximales Angebot: <strong>{{ kickbaseGroup.possibleOffer }}</strong></span
+            >
           </div>
         </div>
 
         <div class="row mb-3">
           <div class="col-12 mt-1">
-            <button type="button" class="btn btn-outline-secondary w-100" (click)="onLoadAllDetails(true)">
+            <button
+              type="button"
+              class="btn btn-outline-secondary w-100"
+              (click)="onLoadAllDetails(true)"
+            >
               @if (!loadingAllDetailsManual) {
                 <span><i class="bi bi-arrow-repeat me-1"></i>Alle Details laden</span>
               }
               @if (loadingAllDetailsManual) {
-                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                <span
+                  class="spinner-border spinner-border-sm"
+                  role="status"
+                  aria-hidden="true"
+                ></span>
                 Lade Details...
               }
             </button>
@@ -278,10 +419,11 @@
         <!-- NEUE GRUPPIERTE ANSICHT (WENN isGroupedView === true) -->
         <!-- ======================================================= -->
         @if (isGroupedView) {
-          
           <!-- SEKTION 1: VERKAUFS-KANDIDATEN (Aktive Spieler) -->
           <div class="card border-primary border-opacity-25 shadow-sm mb-4">
-            <div class="card-header bg-primary-subtle text-primary-emphasis d-flex justify-content-between align-items-center py-2 px-3">
+            <div
+              class="card-header bg-primary-subtle text-primary-emphasis d-flex justify-content-between align-items-center py-2 px-3"
+            >
               <div class="fw-bold small d-flex align-items-center gap-2">
                 <i class="bi bi-tags-fill"></i>
                 <span>Verkaufskandidaten</span>
@@ -290,22 +432,24 @@
                 {{ getActivePlayersCount() }} Spieler
               </span>
             </div>
-            
+
             <div class="card-body p-2 bg-body-tertiary">
               <p class="extra-small text-muted mb-2 px-1">
-                Diese Spieler stehen zur Disposition. Aktiviere/Deaktiviere sie, um den Verkaufs-Saldo anzupassen.
+                Diese Spieler stehen zur Disposition. Aktiviere/Deaktiviere sie, um den
+                Verkaufs-Saldo anzupassen.
               </p>
-              
+
               <div class="d-flex flex-column gap-2">
                 @for (player of kickbaseGroup.players; track player.id) {
                   @if (showPlayer(player) && !player.isFixedSquad) {
-                    <app-player-item 
-                      [player]="player" 
-                      [printMode]="printMode" 
+                    <app-player-item
+                      [player]="player"
+                      [printMode]="printMode"
                       [achievementsDisabled]="achievementsDisabled"
                       (loadDetails)="onLoadAllDetailsForPlayer(player)"
-                      (removePlayer)="onRemovePlayer(player)" 
-                      (playerChanged)="onPlayerValueChanged(player)">
+                      (removePlayer)="onRemovePlayer(player)"
+                      (playerChanged)="onPlayerValueChanged(player)"
+                    >
                     </app-player-item>
                   }
                 }
@@ -314,61 +458,61 @@
           </div>
 
           <!-- SEKTION 2: FESTES TEAM (Deaktivierte / Behaltene Spieler) -->
-        <div class="card border-0 shadow-sm mb-4">
-          <div class="card-header bg-success-subtle text-success-emphasis d-flex justify-content-between align-items-center py-2 px-3 cursor-pointer select-none"
-               (click)="isCardExpanded = !isCardExpanded"
-               role="button"
-               [attr.aria-expanded]="isCardExpanded">
-            
-            <div class="fw-bold small d-flex align-items-center gap-2">
-              <i class="bi bi-shield-check text-success fs-5"></i>
-              <span>Fester Kader (Unverkäuflich)</span>
+          <div class="card border-0 shadow-sm mb-4">
+            <div
+              class="card-header bg-success-subtle text-success-emphasis d-flex justify-content-between align-items-center py-2 px-3 cursor-pointer select-none"
+              (click)="isCardExpanded = !isCardExpanded"
+              role="button"
+              [attr.aria-expanded]="isCardExpanded"
+            >
+              <div class="fw-bold small d-flex align-items-center gap-2">
+                <i class="bi bi-shield-check text-success fs-5"></i>
+                <span>Fester Kader (Unverkäuflich)</span>
+              </div>
+
+              <div class="d-flex align-items-center gap-2">
+                <span class="badge bg-success rounded-pill">
+                  {{ getDisabledPlayersCount() }} Spieler
+                </span>
+                <!-- Auf-/Zuklapp Icon mit CSS-Rotationsanimation -->
+                <span class="chevron-icon" [class.rotated]="isCardExpanded">&#9660;</span>
+              </div>
             </div>
 
-            <div class="d-flex align-items-center gap-2">
-              <span class="badge bg-success rounded-pill">
-                {{ getDisabledPlayersCount() }} Spieler
-              </span>
-              <!-- Auf-/Zuklapp Icon mit CSS-Rotationsanimation -->
-               <span class="chevron-icon" [class.rotated]="isCardExpanded">&#9660;</span>
-              
-            </div>
-          </div>
+            <!-- Animierter Card-Body -->
+            <div class="collapsible-wrapper" [class.expanded]="isCardExpanded">
+              <div class="collapsible-content">
+                <div class="card-body p-2 bg-light">
+                  <p class="extra-small text-muted mb-2 px-1">
+                    Diese Spieler sind vom Verkauf ausgenommen und fest für dein Team eingeplant.
+                  </p>
 
-          <!-- Animierter Card-Body -->
-          <div class="collapsible-wrapper" [class.expanded]="isCardExpanded">
-            <div class="collapsible-content">
-              <div class="card-body p-2 bg-light">
-                <p class="extra-small text-muted mb-2 px-1">
-                  Diese Spieler sind vom Verkauf ausgenommen und fest für dein Team eingeplant.
-                </p>
-
-                <div class="d-flex flex-column gap-2">
-                  @for (player of kickbaseGroup.players; track player.id) {
-                    @if (player.isFixedSquad) {
-                      <app-player-item 
-                        [player]="player" 
-                        [printMode]="printMode" 
-                        [achievementsDisabled]="achievementsDisabled"
-                        (loadDetails)="onLoadAllDetailsForPlayer(player)"
-                        (removePlayer)="onRemovePlayer(player)" 
-                        (playerChanged)="onPlayerValueChanged(player)">
-                      </app-player-item>
+                  <div class="d-flex flex-column gap-2">
+                    @for (player of kickbaseGroup.players; track player.id) {
+                      @if (player.isFixedSquad) {
+                        <app-player-item
+                          [player]="player"
+                          [printMode]="printMode"
+                          [achievementsDisabled]="achievementsDisabled"
+                          (loadDetails)="onLoadAllDetailsForPlayer(player)"
+                          (removePlayer)="onRemovePlayer(player)"
+                          (playerChanged)="onPlayerValueChanged(player)"
+                        >
+                        </app-player-item>
+                      }
                     }
-                  }
-                  
-                  @if (getDisabledPlayersCount() === 0) {
-                    <div class="text-center py-3 text-muted extra-small">
-                      Noch keine Spieler fest eingeteilt. Deaktiviere einen Spieler in der Liste oben, um ihn hierher zu verschieben.
-                    </div>
-                  }
+
+                    @if (getDisabledPlayersCount() === 0) {
+                      <div class="text-center py-3 text-muted extra-small">
+                        Noch keine Spieler fest eingeteilt. Deaktiviere einen Spieler in der Liste
+                        oben, um ihn hierher zu verschieben.
+                      </div>
+                    }
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
-          
-
         }
 
         <!-- ======================================================= -->
@@ -379,13 +523,14 @@
             <div class="col-12 mt-2">
               @for (player of kickbaseGroup.players; track player.id) {
                 @if (showPlayer(player)) {
-                  <app-player-item 
-                    [player]="player" 
-                    [printMode]="printMode" 
+                  <app-player-item
+                    [player]="player"
+                    [printMode]="printMode"
                     [achievementsDisabled]="achievementsDisabled"
                     (loadDetails)="onLoadAllDetailsForPlayer(player)"
-                    (removePlayer)="onRemovePlayer(player)" 
-                    (playerChanged)="onPlayerValueChanged(player)">
+                    (removePlayer)="onRemovePlayer(player)"
+                    (playerChanged)="onPlayerValueChanged(player)"
+                  >
                   </app-player-item>
                 }
               }
@@ -435,7 +580,9 @@
               </div>
 
               <div class="d-flex justify-content-between align-items-center py-1 border-bottom">
-                <span><i class="bi bi-graph-down-arrow text-danger me-2"></i>Täglicher Verlust</span>
+                <span
+                  ><i class="bi bi-graph-down-arrow text-danger me-2"></i>Täglicher Verlust</span
+                >
                 <span class="fw-semibold text-dark">{{ kickbaseGroup.loss }}</span>
               </div>
 
@@ -446,14 +593,24 @@
                 </div>
               } @else {
                 <div class="d-flex justify-content-between align-items-center py-1 border-bottom">
-                  <span><i class="bi bi-calendar-event me-2"></i>Einnahmen bis Freitag (ohne Verlust)</span>
+                  <span
+                    ><i class="bi bi-calendar-event me-2"></i>Einnahmen bis Freitag (ohne
+                    Verlust)</span
+                  >
                   <span class="fw-semibold text-dark">{{ kickbaseGroup.trendFriday }}</span>
                 </div>
               }
 
-              <div class="d-flex justify-content-between align-items-center py-1 border-bottom" [class.opacity-50]="achievementsDisabled">
+              <div
+                class="d-flex justify-content-between align-items-center py-1 border-bottom"
+                [class.opacity-50]="achievementsDisabled"
+              >
                 <span>
-                  <i class="bi bi-trophy me-2" [class.text-warning]="!achievementsDisabled" [class.text-muted]="achievementsDisabled"></i>
+                  <i
+                    class="bi bi-trophy me-2"
+                    [class.text-warning]="!achievementsDisabled"
+                    [class.text-muted]="achievementsDisabled"
+                  ></i>
                   Erfolge
                 </span>
                 @if (achievementsDisabled) {
