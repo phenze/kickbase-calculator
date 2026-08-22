@@ -143,13 +143,16 @@ export class KickbaseGroup {
 	getTrend(includeMinusMarketValues: boolean) {
 		let value = 0;
 		for (let player of this.players) {
-			if (!player.isDeactivated && !player.isDeleted && !player.isPersitantDeleted) {
-				if (player.stats !== null) {
-					if (player.stats.realMarketValueChange > 0 || includeMinusMarketValues) {
-						value += player.stats.realMarketValueChange;
-					}
+		if (!player.isDeleted) {
+			// Fließt ein, wenn er verkauft wird ODER fest im Kader ist
+			if (this.isSelling(player) || player.isFixedSquad) {
+			if (player.stats !== null) {
+				if (player.stats.realMarketValueChange > 0 || includeMinusMarketValues) {
+				value += player.stats.realMarketValueChange;
 				}
 			}
+			}
+		}
 		}
 		return value;
 	}
@@ -157,24 +160,22 @@ export class KickbaseGroup {
 	getLoss() {
 		let value = 0;
 		for (let player of this.players) {
-			if (!player.isDeactivated && !player.isDeleted && !player.isPersitantDeleted) {
-				if (player.stats !== null) {
-					if (player.stats.realMarketValueChange < 0) {
-						value += player.stats.realMarketValueChange;
-					}
-				}
+		if (!player.isDeleted && (this.isSelling(player) || player.isFixedSquad)) {
+			if (player.stats !== null && player.stats.realMarketValueChange < 0) {
+			value += player.stats.realMarketValueChange;
 			}
+		}
 		}
 		return value;
 	}
 
-
 	private getNumberValueTmp() {
 		let retVal = 0;
 		for (let p of this.players) {
-			if (!p.isDeactivated && !p.isDeleted && !p.isPersitantDeleted) {
-				retVal = retVal + p.value;
-			}
+		// Nur Spieler, die WIRKLICH verkauft werden, bringen Geld
+		if (this.isSelling(p)) {
+			retVal += p.value;
+		}
 		}
 		return retVal;
 	}
@@ -182,9 +183,9 @@ export class KickbaseGroup {
 	private getSuccessValueTmp() {
 		let retVal = 0;
 		for (let p of this.players) {
-			if (!p.isDeactivated && !p.isDeleted && !p.isPersitantDeleted) {
-				retVal = retVal + p.successValue;
-			}
+		if (!p.isDeleted && (this.isSelling(p) || p.isFixedSquad)) {
+			retVal += p.successValue;
+		}
 		}
 		return retVal;
 	}
@@ -192,11 +193,15 @@ export class KickbaseGroup {
 	private getTeamValueTmp(force: boolean) {
 		let retVal = 0;
 		for (let p of this.players) {
-			if (p.isDeactivated || p.isDeleted || p.isPersitantDeleted || force) {
-				retVal = retVal + p.marketValue;
-			}
+		if (p.isKept || p.isFixedSquad || p.isDeleted || force) {
+			retVal += p.marketValue;
+		}
 		}
 		return retVal;
+	}
+
+	private isSelling(p: KickbasePlayer): boolean {
+		return !p.isKept && !p.isFixedSquad && !p.isDeleted;
 	}
 
 }

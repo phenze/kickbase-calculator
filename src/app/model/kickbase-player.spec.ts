@@ -20,9 +20,9 @@ describe('KickbasePlayer', () => {
     it('sollte Standardwerte setzen, wenn json null ist', () => {
       expect(player.offervalue).toBe(0);
       expect(player.hasOfferFromAny).toBeFalse();
-      expect(player.isDeactivated).toBeFalse();
+      expect(player.isKept).toBeFalse();
       expect(player.isDeleted).toBeFalse();
-      expect(player.isPersitantDeleted).toBeFalse();
+      expect(player.isFixedSquad).toBeFalse();
       expect(player.leagueId).toBe(-1);
     });
 
@@ -123,7 +123,7 @@ describe('KickbasePlayer', () => {
     });
 
     it('ueberschreibt Farbe bei deaktivierten oder geloeschten Spielern', () => {
-      player.isDeactivated = true;
+      player.isKept = true;
 
       player.calcColors(1000000);
 

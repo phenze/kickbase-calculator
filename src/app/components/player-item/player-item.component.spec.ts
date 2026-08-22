@@ -31,7 +31,7 @@ describe('PlayerItemComponent', () => {
     mockPlayer = new KickbasePlayer(null, 'user123');
     mockPlayer.id = 42;
     mockPlayer.leagueId = 100;
-    mockPlayer.isPersitantDeleted = false;
+    mockPlayer.isFixedSquad = false;
 
     component.player = mockPlayer;
     component.printMode = false;
@@ -130,7 +130,7 @@ describe('PlayerItemComponent', () => {
 
       expect(mockEvent.stopImmediatePropagation).toHaveBeenCalled();
       expect(mockEvent.preventDefault).toHaveBeenCalled();
-      expect(mockPlayer.isPersitantDeleted).toBeTrue();
+      expect(mockPlayer.isFixedSquad).toBeTrue();
       expect(mockApiService.setPlayerPermanentDeleted).toHaveBeenCalledWith(100, 42, true);
       expect(component.playerChanged.emit).toHaveBeenCalled();
     });

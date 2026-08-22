@@ -51,7 +51,7 @@ export class PlayerItemComponent implements OnInit {
   onSetPlayerPermanentDeleted(event: MouseEvent, player: KickbasePlayer, deleted: boolean) {
     event.stopImmediatePropagation();
     event.preventDefault();
-    player.isPersitantDeleted = deleted;
+    player.isFixedSquad = deleted;
     this.apiService.setPlayerPermanentDeleted(player.leagueId, player.id, deleted);
     this.playerChanged.emit()
   }

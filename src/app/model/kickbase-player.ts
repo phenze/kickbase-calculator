@@ -30,30 +30,31 @@ export class KickbasePlayer {
   public leagueId!: number;
   public stats: KickbasePlayerStats | null = null;
   public offervalue = 0;
-  public isPersitantDeleted: boolean;
   public imageUrl = '';
   public color = '';
   public colorMarketValue = '';
   public colorOfferValue = '';
   public colorSuccessValue = '';
   public colorOffsetValue = '';
-
+  
   public hasOfferFromAny!: boolean;
-  public isDeactivated!: boolean;
-  public isDeleted!: boolean;
 
+  public isFixedSquad: boolean;
+  public isKept: boolean;
+  public isDeleted: boolean;
+  
   public isInEditMode!: boolean;
-
+  
   public marketValuesShown!: boolean;
   public username!: string;
 
   constructor(json: any, userID: string | number) {
     this.offervalue = 0;
     this.hasOfferFromAny = false;
-    this.isDeactivated = false;
+    this.isKept = false;
     this.isDeleted = false;
     this.marketValuesShown = false;
-    this.isPersitantDeleted = false;
+    this.isFixedSquad = false;
     this.nameHash = '';
     this.leagueId = -1;
     this.username = '';
@@ -148,7 +149,7 @@ export class KickbasePlayer {
     } else {
       this.color = "#C100201F";
     }
-    if (this.isDeactivated || this.isPersitantDeleted) {
+    if (this.isKept || this.isFixedSquad) {
       this.color = "#260C0C1F";
     }
 
@@ -311,7 +312,9 @@ export class KickbasePlayer {
     retVal.colorOffsetValue = this.colorOffsetValue;
     retVal.colorOfferValue = this.colorOfferValue;
     retVal.hasOfferFromAny = this.hasOfferFromAny;
-    retVal.isDeactivated = this.isDeactivated;
+    retVal.isKept = this.isKept;
+    retVal.isFixedSquad = this.isFixedSquad;
+    retVal.isDeleted = this.isDeleted;
 
     retVal.valueString = this.valueString;
     retVal.marketValueString = this.marketValueString;

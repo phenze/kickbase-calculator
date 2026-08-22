@@ -259,11 +259,11 @@ describe('AppComponent', () => {
 
     it('sollte den Deaktivierungs-Status eines Spielers umschalten (onDeactivatePlayer)', () => {
       const player = makePlayer(1, 'Musiala', 18000000);
-      player.isDeactivated = false;
+      player.isKept = false;
 
       component.onDeactivatePlayer(player);
 
-      expect(player.isDeactivated).toBeTrue();
+      expect(player.isKept).toBeTrue();
     });
 
     it('sollte filterbezogene Sichtbarkeit mit showPlayer prüfen', () => {
@@ -272,7 +272,7 @@ describe('AppComponent', () => {
       pDeleted.isDeleted = true;
 
       const pPermDeleted = makePlayer(3, 'C', 1000);
-      pPermDeleted.isPersitantDeleted = true;
+      pPermDeleted.isFixedSquad = true;
 
       expect(component.showPlayer(pNormal)).toBeTrue();
       expect(component.showPlayer(pDeleted)).toBeFalse();
@@ -451,7 +451,7 @@ describe('AppComponent', () => {
       expect(component.loadingData).toBeFalse();
       expect(p1.loadStats).toHaveBeenCalled();
       expect(p1.calcValues).toHaveBeenCalled();
-      expect(p1.isDeactivated).toBeTrue();
+      expect(p1.isKept).toBeTrue();
     }));
 
     it('sollte onLoadAllDetails im Market Overview Modus für alle Spieler laden', fakeAsync(() => {
@@ -510,20 +510,24 @@ describe('AppComponent', () => {
     it('sollte Spieler deaktivieren, wenn stats bereits geladen ist', fakeAsync(() => {
       component.selectedLeague = 10;
       const player = makePlayer(1, 'Kimmich', 10000000);
-      player.isDeactivated = false;
+      player.isKept = false;
 
       component.onLoadAllDetailsForPlayer(player);
       tick();
 
-      expect(player.isDeactivated).toBeTrue();
+      expect(player.isKept).toBeTrue();
     }));
 
     it('sollte onPlayerValueChanged die Spieleranzahl und Werte neu berechnen', () => {
       const player = makePlayer(1, 'Musiala', 10000000);
-      player.isPersitantDeleted = true;
+      player.isFixedSquad = true;
+      
+      // NEU: Der Spieler muss ins Array, damit der Getter ihn zählen kann!
+      component.kickbaseGroup.players = [player];
 
       component.onPlayerValueChanged(player);
 
+      // Zählt jetzt korrekt die Spieler mit isFixedSquad === true
       expect(component.amountPlayers).toBe(1);
     });
   });
@@ -576,4 +580,29 @@ describe('AppComponent', () => {
       expect(localStorage.getItem('loadStatsAlways')).toBe('false');
     });
   });
+  describe('amountPlayers Getter', () => {
+  it('sollte exakt die Spieler zählen, die behalten werden (isKept) oder fest im Kader sind (isFixedSquad)', () => {
+    // 1. Spieler: Wird normal verkauft (sollte nicht gezählt werden)
+    const p1 = makePlayer(1, 'Spieler 1', 1000); 
+    
+    // 2. Spieler: Temporär behalten (sollte gezählt werden)
+    const p2 = makePlayer(2, 'Spieler 2', 1000); 
+    p2.isKept = true; 
+    
+    // 3. Spieler: Fest im Kader (sollte gezählt werden)
+    const p3 = makePlayer(3, 'Spieler 3', 1000);
+    p3.isFixedSquad = true; 
+    
+    // 4. Spieler: Fest im Kader, aber gelöscht (sollte nicht gezählt werden)
+    const p4 = makePlayer(4, 'Spieler 4', 1000);
+    p4.isFixedSquad = true; 
+    p4.isDeleted = true; 
+
+    // Alle Spieler der Gruppe zuweisen
+    component.kickbaseGroup.players = [p1, p2, p3, p4];
+
+    // Erwartung: Nur p2 und p3 werden gezählt
+    expect(component.amountPlayers).toBe(2);
+  });
+});
 });

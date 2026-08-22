@@ -298,7 +298,7 @@
               
               <div class="d-flex flex-column gap-2">
                 @for (player of kickbaseGroup.players; track player.id) {
-                  @if (showPlayer(player) && !player.isPersitantDeleted) {
+                  @if (showPlayer(player) && !player.isFixedSquad) {
                     <app-player-item 
                       [player]="player" 
                       [printMode]="printMode" 
@@ -345,7 +345,7 @@
 
                 <div class="d-flex flex-column gap-2">
                   @for (player of kickbaseGroup.players; track player.id) {
-                    @if (player.isPersitantDeleted) {
+                    @if (player.isFixedSquad) {
                       <app-player-item 
                         [player]="player" 
                         [printMode]="printMode" 

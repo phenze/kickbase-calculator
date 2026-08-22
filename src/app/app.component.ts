@@ -56,7 +56,6 @@ export class AppComponent implements OnInit, AfterViewInit {
   public minusValue: number = 0;
   public minusValueString: string = '0';
   public availableAmountString: string = '0';
-  public amountPlayers: number = 0;
   public offerOffset: string = '0';
   public includeAdditionalAmount = false;
   public loadStatsAlways = true;
@@ -114,6 +113,11 @@ export class AppComponent implements OnInit, AfterViewInit {
     private modalService: BsModalService,
     public cdRef: ChangeDetectorRef) {
     numeral.locale("de");
+  }
+
+  get amountPlayers(): number {
+    if (!this.kickbaseGroup?.players) return 0;
+    return this.kickbaseGroup.players.filter(p => !p.isDeleted && (p.isKept || p.isFixedSquad)).length;
   }
 
 
@@ -213,7 +217,7 @@ export class AppComponent implements OnInit, AfterViewInit {
         }
 
         player.calcValues();
-        player.isDeactivated = true;
+        player.isKept = true;
         player.calcColors(0);
       }
 
@@ -348,8 +352,6 @@ export class AppComponent implements OnInit, AfterViewInit {
             : [];
       }
 
-      this.amountPlayers = 0;
-
       for (const player of lineUp.players) {
         const marketPlayer = this.currentMarket?.players.find(
             marketItem => marketItem.id === player.id
@@ -361,14 +363,10 @@ export class AppComponent implements OnInit, AfterViewInit {
         }
 
         player.leagueId = newValue;
-        player.isPersitantDeleted =
+        player.isFixedSquad =
             permanentlyDeletedPlayers.includes(String(player.id));
 
         this.kickbaseGroup.players.push(player);
-
-        if (player.isPersitantDeleted) {
-          this.amountPlayers++;
-        }
       }
 
       // Nur zusätzliche Details laden, wenn aktiviert.
@@ -406,7 +404,7 @@ export class AppComponent implements OnInit, AfterViewInit {
         await pl.loadStats(this.selectedLeague, this.apiService);
         if (refresh) {
           pl.calcValues();
-          pl.isDeactivated = true;
+          pl.isKept = true;
           pl.calcColors(0);
         }
       }
@@ -441,11 +439,6 @@ export class AppComponent implements OnInit, AfterViewInit {
   }
 
   onPlayerValueChanged(player: KickbasePlayer) {
-    if (player.isPersitantDeleted) {
-      this.amountPlayers++
-    } else {
-      this.amountPlayers--
-    }
     this.kickbaseGroup.calcValues(
       this.amountValue,
       this.includeMinusMarketValues,
@@ -527,22 +520,11 @@ export class AppComponent implements OnInit, AfterViewInit {
       return;
     }
     index.isDeleted = true;
-    if (!player.isPersitantDeleted) {
-      this.amountPlayers++
-    }
     this.refreshGroups();
   }
 
   onDeactivatePlayer(player: KickbasePlayer) {
-    if (!player.isPersitantDeleted) {
-      if (player.isDeactivated) {
-        this.amountPlayers--
-      } else {
-        this.amountPlayers++
-      }
-
-    }
-    player.isDeactivated = !player.isDeactivated;
+    player.isKept = !player.isKept;
     this.refreshGroups();
   }
 
@@ -711,7 +693,7 @@ export class AppComponent implements OnInit, AfterViewInit {
     if (player.isDeleted) {
       return false;
     }
-    if (player.isPersitantDeleted) {
+    if (player.isFixedSquad) {
       return this.showPermanentDeletedPlayers;
     }
     return true;
@@ -730,13 +712,13 @@ export class AppComponent implements OnInit, AfterViewInit {
 
   getActivePlayersCount(): number {
     if (!this.kickbaseGroup?.players) return 0;
-    return this.kickbaseGroup.players.filter(p => !p.isPersitantDeleted).length;
+    return this.kickbaseGroup.players.filter(p => !p.isFixedSquad).length;
   }
 
   // Gibt die Anzahl der fest eingeplanten (deaktivierten) Spieler zurück
   getDisabledPlayersCount(): number {
     if (!this.kickbaseGroup?.players) return 0;
-    return this.kickbaseGroup.players.filter(p => p.isPersitantDeleted).length;
+    return this.kickbaseGroup.players.filter(p => p.isFixedSquad).length;
   }
 
   onGroupedViewChanged() {

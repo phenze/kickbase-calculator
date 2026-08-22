@@ -38,9 +38,9 @@
         <div class="d-flex align-items-center gap-1 ms-1">
 
           <!-- Status Checkbox: NUR anzeigen, wenn der Spieler NICHT im festen Kader ist -->
-          @if (!player.isPersitantDeleted) {
+          @if (!player.isFixedSquad) {
             <span class="icon-btn">
-              @if (!player.isDeactivated) {
+              @if (!player.isKept) {
                 <svg-icon class="player-icon text-success" src="assets/check_box-24px.svg"></svg-icon>
               } @else {
                 <svg-icon class="player-icon text-muted" src="assets/check_box_outline_blank-24px.svg"></svg-icon>
@@ -49,7 +49,7 @@
           }
 
           <!-- Permanent Hinzufügen / Entfernen Button -->
-          @if (player.isPersitantDeleted) {
+          @if (player.isFixedSquad) {
             <button type="button" class="icon-btn border-0"
               (click)="onSetPlayerPermanentDeleted($event, player, false)" title="Spieler wieder für Verkäufe freigeben">
               <svg-icon src="assets/person_remove-24px.svg" class="player-icon icon-permanent text-danger"></svg-icon>
