@@ -426,3 +426,159 @@ svg-icon {
     padding: 0.85rem 0.9rem;
   }
 }
+
+
+/* ==========================================================================
+   Modernisierte Spieler-Karte (player-item)
+   ========================================================================== */
+
+.player-card {
+  border-radius: 0.9rem;
+  cursor: pointer;
+  transition: transform 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+
+  &:hover {
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12) !important;
+  }
+
+  &:active {
+    transform: scale(0.997);
+  }
+}
+
+.player-card-header {
+  border-top-left-radius: 0.9rem;
+  border-top-right-radius: 0.9rem;
+}
+
+.expiry-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.15rem 0.55rem;
+  border-radius: 999px;
+  background-color: rgba(255, 255, 255, 0.7);
+}
+
+// Ersetzt die früheren "p-2 bg-light rounded" Ad-hoc-Boxen durch eine
+// einheitliche, wiederverwendbare Stat-Box
+.stat-box {
+  background-color: rgba(255, 255, 255, 0.55);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 0.6rem;
+  padding: 0.5rem 0.75rem;
+}
+
+.offer-box {
+  width: 100%;
+  background-color: rgba(255, 255, 255, 0.7);
+  font-size: 0.95rem;
+}
+
+// Kompaktes Kennzahlen-Grid (Gekauft, MW-Änderung, Gewinn/Verlust, Erfolge, Punkte, Schnitt)
+.finance-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.35rem 0.75rem;
+}
+
+.finance-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.05rem;
+  font-size: 0.8rem;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.section-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--bs-secondary-color, #6c757d);
+  margin-bottom: 0.35rem;
+}
+
+.trend-box {
+  background-color: rgba(255, 255, 255, 0.55);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 0.6rem;
+  overflow: hidden;
+}
+
+.trend-table {
+  margin-bottom: 0;
+
+
+  tr:first-child td {
+    font-weight: 600;
+  }
+}
+
+// Marktwert/Preis besonders hervorgehoben in der Haupt-Info-Box
+.value-chip {
+  display: inline-block;
+  background-color: rgba(255, 255, 255, 0.75);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 0.5rem;
+  padding: 0.15rem 0.55rem;
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--bs-dark, #212529);
+}
+
+// Einzelne Finanz-Kennzahl als eigene, klar abgesetzte Box (Label über Wert)
+// statt Fließtext in einer gemeinsamen Leiste
+.metric-chip {
+  display: flex;
+  flex-direction: column;
+  gap: 0.05rem;
+  background-color: rgba(255, 255, 255, 0.65);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 0.6rem;
+  padding: 0.35rem 0.65rem;
+  font-size: 0.82rem;
+  line-height: 1.25;
+  white-space: nowrap;
+}
+
+.metric-label {
+  color: var(--bs-secondary-color, #6c757d);
+  font-size: 0.68rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.metric-value {
+  font-weight: 600;
+}
+
+.match-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.6rem;
+  border-radius: 999px;
+  background-color: rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  font-size: 0.8rem;
+  white-space: nowrap;
+}
+
+@media (max-width: 400px) {
+  .metric-chip {
+    font-size: 0.78rem;
+    padding: 0.3rem 0.55rem;
+  }
+}
+
+@media (max-width: 400px) {
+  .finance-grid {
+    gap: 0.3rem 0.5rem;
+  }
+
+  .finance-item {
+    font-size: 0.78rem;
+  }
+}

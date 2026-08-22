@@ -163,6 +163,15 @@
             </label>
           </div>
 
+          <div class="col-12 mt-2">
+            <div class="form-check form-switch">
+              <input type="checkbox" class="form-check-input" role="switch" [(ngModel)]="isGroupedView" id="customSwitchGrouped" (ngModelChange)="onGroupedViewChanged()">
+              <label class="form-check-label" for="customSwitchGrouped">
+                Kader-Ansicht gruppieren (Verkaufskandidaten / Fester Kader)
+              </label>
+            </div>
+          </div>
+
           <label class="form-label fw-semibold mb-1">Sortierung</label>
           <select class="form-select mb-3" [(ngModel)]="selectedSorting"
             (ngModelChange)="onSelectedSortingChanged($event)">
@@ -246,12 +255,12 @@
         <div class="squad-title mt-3 mb-2">
           <h4 class="squad-title-team">{{kickbaseGroup.team}}</h4>
           <div class="squad-title-meta">
-            <span>Minus: <strong>{{kickbaseGroup.possibleMinus}}</strong></span>
-            <span>Max Angebot: <strong>{{kickbaseGroup.possibleOffer}}</strong></span>
+            <span>Mögliches Minus: <strong>{{kickbaseGroup.possibleMinus}}</strong></span>
+            <span>Maximales Angebot: <strong>{{kickbaseGroup.possibleOffer}}</strong></span>
           </div>
         </div>
 
-        <div class="row">
+        <div class="row mb-3">
           <div class="col-12 mt-1">
             <button type="button" class="btn btn-outline-secondary w-100" (click)="onLoadAllDetails(true)">
               @if (!loadingAllDetailsManual) {
@@ -263,17 +272,126 @@
               }
             </button>
           </div>
-          <div class="col-12 mt-2">
-            @for (player of kickbaseGroup.players; track player.id) {
-              @if (showPlayer(player)) {
-                <app-player-item [player]="player" [printMode]="printMode" [achievementsDisabled]="achievementsDisabled"
-                  (loadDetails)="onLoadAllDetailsForPlayer(player)"
-                  (removePlayer)="onRemovePlayer(player)" (playerChanged)="onPlayerValueChanged(player)">
-                </app-player-item>
-              }
-            }
+        </div>
+
+        <!-- ======================================================= -->
+        <!-- NEUE GRUPPIERTE ANSICHT (WENN isGroupedView === true) -->
+        <!-- ======================================================= -->
+        @if (isGroupedView) {
+          
+          <!-- SEKTION 1: VERKAUFS-KANDIDATEN (Aktive Spieler) -->
+          <div class="card border-primary border-opacity-25 shadow-sm mb-4">
+            <div class="card-header bg-primary-subtle text-primary-emphasis d-flex justify-content-between align-items-center py-2 px-3">
+              <div class="fw-bold small d-flex align-items-center gap-2">
+                <i class="bi bi-tags-fill"></i>
+                <span>Verkaufskandidaten</span>
+              </div>
+              <span class="badge bg-primary rounded-pill">
+                {{ getActivePlayersCount() }} Spieler
+              </span>
+            </div>
+            
+            <div class="card-body p-2 bg-body-tertiary">
+              <p class="extra-small text-muted mb-2 px-1">
+                Diese Spieler stehen zur Disposition. Aktiviere/Deaktiviere sie, um den Verkaufs-Saldo anzupassen.
+              </p>
+              
+              <div class="d-flex flex-column gap-2">
+                @for (player of kickbaseGroup.players; track player.id) {
+                  @if (showPlayer(player) && !player.isPersitantDeleted) {
+                    <app-player-item 
+                      [player]="player" 
+                      [printMode]="printMode" 
+                      [achievementsDisabled]="achievementsDisabled"
+                      (loadDetails)="onLoadAllDetailsForPlayer(player)"
+                      (removePlayer)="onRemovePlayer(player)" 
+                      (playerChanged)="onPlayerValueChanged(player)">
+                    </app-player-item>
+                  }
+                }
+              </div>
+            </div>
+          </div>
+
+          <!-- SEKTION 2: FESTES TEAM (Deaktivierte / Behaltene Spieler) -->
+        <div class="card border-0 shadow-sm mb-4">
+          <div class="card-header bg-success-subtle text-success-emphasis d-flex justify-content-between align-items-center py-2 px-3 cursor-pointer select-none"
+               (click)="isCardExpanded = !isCardExpanded"
+               role="button"
+               [attr.aria-expanded]="isCardExpanded">
+            
+            <div class="fw-bold small d-flex align-items-center gap-2">
+              <i class="bi bi-shield-check text-success fs-5"></i>
+              <span>Fester Kader (Unverkäuflich)</span>
+            </div>
+
+            <div class="d-flex align-items-center gap-2">
+              <span class="badge bg-success rounded-pill">
+                {{ getDisabledPlayersCount() }} Spieler
+              </span>
+              <!-- Auf-/Zuklapp Icon mit CSS-Rotationsanimation -->
+               <span class="chevron-icon" [class.rotated]="isCardExpanded">&#9660;</span>
+              
+            </div>
+          </div>
+
+          <!-- Animierter Card-Body -->
+          <div class="collapsible-wrapper" [class.expanded]="isCardExpanded">
+            <div class="collapsible-content">
+              <div class="card-body p-2 bg-light">
+                <p class="extra-small text-muted mb-2 px-1">
+                  Diese Spieler sind vom Verkauf ausgenommen und fest für dein Team eingeplant.
+                </p>
+
+                <div class="d-flex flex-column gap-2">
+                  @for (player of kickbaseGroup.players; track player.id) {
+                    @if (player.isPersitantDeleted) {
+                      <app-player-item 
+                        [player]="player" 
+                        [printMode]="printMode" 
+                        [achievementsDisabled]="achievementsDisabled"
+                        (loadDetails)="onLoadAllDetailsForPlayer(player)"
+                        (removePlayer)="onRemovePlayer(player)" 
+                        (playerChanged)="onPlayerValueChanged(player)">
+                      </app-player-item>
+                    }
+                  }
+                  
+                  @if (getDisabledPlayersCount() === 0) {
+                    <div class="text-center py-3 text-muted extra-small">
+                      Noch keine Spieler fest eingeteilt. Deaktiviere einen Spieler in der Liste oben, um ihn hierher zu verschieben.
+                    </div>
+                  }
+                </div>
+              </div>
+            </div>
           </div>
         </div>
+          
+
+        }
+
+        <!-- ======================================================= -->
+        <!-- ALTE STANDARD ANSICHT (WENN isGroupedView === false)   -->
+        <!-- ======================================================= -->
+        @if (!isGroupedView) {
+          <div class="row">
+            <div class="col-12 mt-2">
+              @for (player of kickbaseGroup.players; track player.id) {
+                @if (showPlayer(player)) {
+                  <app-player-item 
+                    [player]="player" 
+                    [printMode]="printMode" 
+                    [achievementsDisabled]="achievementsDisabled"
+                    (loadDetails)="onLoadAllDetailsForPlayer(player)"
+                    (removePlayer)="onRemovePlayer(player)" 
+                    (playerChanged)="onPlayerValueChanged(player)">
+                  </app-player-item>
+                }
+              }
+            </div>
+          </div>
+        }
 
         <hr />
 

@@ -84,6 +84,9 @@ export class AppComponent implements OnInit, AfterViewInit {
 
   public selectedSorting: number = -1;
 
+  public isGroupedView: boolean = true;
+  public isCardExpanded: boolean = true;
+
   // public groups: KickbaseGroup[];
 
 
@@ -122,6 +125,11 @@ export class AppComponent implements OnInit, AfterViewInit {
     let sorting = localStorage.getItem('sorting');
     if (sorting !== null && sorting !== undefined) {
       this.selectedSorting = Number.parseInt(sorting);
+    }
+
+    let groupedView = localStorage.getItem('groupedView');
+    if (groupedView !== null && groupedView !== undefined) {
+      this.isGroupedView = groupedView === 'true' ? true : false;
     }
 
     const loadStatsAlwaysTmp = localStorage.getItem('loadStatsAlways');
@@ -719,5 +727,24 @@ export class AppComponent implements OnInit, AfterViewInit {
       await this.reloadMarket(true);
     }
   };
+
+  getActivePlayersCount(): number {
+    if (!this.kickbaseGroup?.players) return 0;
+    return this.kickbaseGroup.players.filter(p => !p.isPersitantDeleted).length;
+  }
+
+  // Gibt die Anzahl der fest eingeplanten (deaktivierten) Spieler zurück
+  getDisabledPlayersCount(): number {
+    if (!this.kickbaseGroup?.players) return 0;
+    return this.kickbaseGroup.players.filter(p => p.isPersitantDeleted).length;
+  }
+
+  onGroupedViewChanged() {
+    localStorage.setItem('groupedView', this.isGroupedView.toString());
+    if(this.isGroupedView) {
+      this.showPermanentDeletedPlayers = true;
+    }
+    this.cdRef.detectChanges();
+  }
 
 }

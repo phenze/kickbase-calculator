@@ -163,8 +163,7 @@ describe('ApiService', () => {
 
     it('sollte getPlayerStats aufrufen', fakeAsync(() => {
       service.getPlayerStats(10, 99);
-
-      const req = httpMock.expectOne(`${baseUrl}competitions/1/players/99?leagueId=10`);
+      const req = httpMock.expectOne(`${baseUrl}leagues/10/players/99`);
       expect(req.request.method).toBe('GET');
 
       req.flush({});
@@ -377,8 +376,7 @@ describe('ApiService', () => {
     it('sollte bei 500er Fehlern in getPlayerStats fehlschlagen', fakeAsync(() => {
       let error: any;
       service.getPlayerStats(10, 99).catch(e => (error = e));
-
-      const req = httpMock.expectOne(`${baseUrl}competitions/1/players/99?leagueId=10`);
+      const req = httpMock.expectOne(`${baseUrl}leagues/10/players/99`);
       req.flush(null, { status: 500, statusText: 'Internal Error' });
       tick();
 
@@ -456,7 +454,7 @@ describe('ApiService', () => {
       expect(service.refreshToken).toHaveBeenCalled();
 
       // ApiService ruft bei 401 intern getPlayerStats() auf
-      const reqRetry = httpMock.expectOne(`${baseUrl}competitions/1/players/10?leagueId=1`);
+      const reqRetry = httpMock.expectOne(`${baseUrl}leagues/1/players/10`);
       reqRetry.flush({ id: '10' });
       tick();
     }));
@@ -492,10 +490,10 @@ describe('ApiService', () => {
 
     // 3. getPlayerStats
     service.getPlayerStats(1, 10);
-    const reqStats = httpMock.expectOne(`${baseUrl}competitions/1/players/10?leagueId=1`);
+    const reqStats = httpMock.expectOne(`${baseUrl}leagues/1/players/10`);
     reqStats.flush('Unauthorized', { status: 401, statusText: 'Unauthorized' });
     tick();
-    const retryStats = httpMock.expectOne(`${baseUrl}competitions/1/players/10?leagueId=1`);
+    const retryStats = httpMock.expectOne(`${baseUrl}leagues/1/players/10`);
     retryStats.flush({});
 
     tick();

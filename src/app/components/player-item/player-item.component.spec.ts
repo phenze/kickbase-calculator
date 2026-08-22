@@ -171,7 +171,8 @@ describe('PlayerItemComponent', () => {
     fixture.detectChanges();
 
     const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.textContent).toContain('Erfolge:');
+    // Label steht jetzt ohne Doppelpunkt in einer eigenen .metric-label-Box
+    expect(compiled.textContent).toContain('Erfolge');
     expect(compiled.textContent).toContain('50.000 €');
   });
 
@@ -182,7 +183,8 @@ describe('PlayerItemComponent', () => {
     const compiled = fixture.nativeElement as HTMLElement;
     const strikeElement = compiled.querySelector('.text-decoration-line-through');
 
-    expect(compiled.textContent).toContain('Erfolge:');
+    // Label steht jetzt ohne Doppelpunkt in einer eigenen .metric-label-Box
+    expect(compiled.textContent).toContain('Erfolge');
     expect(strikeElement).not.toBeNull();
     expect(strikeElement?.textContent).toContain('0 €');
   });
