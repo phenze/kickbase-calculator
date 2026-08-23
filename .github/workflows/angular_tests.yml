@@ -1,0 +1,32 @@
+name: Angular Unit Tests
+
+# Der Workflow startet bei jedem Push oder Pull Request auf den main-Branch
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Den Quellcode aus deinem Repository auf den Server laden
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      # 2. Node.js installieren und npm-Cache aktivieren (macht den Workflow schneller)
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24' # Passe dies an deine lokale Node-Version an (z.B. 18, 20 oder 22)
+          cache: 'npm'
+
+      # 3. Abhängigkeiten installieren (npm ci ist schneller und sicherer für CI-Server als npm install)
+      - name: Install Dependencies
+        run: npm ci
+
+      # 4. Die eigentlichen Tests im Hintergrund (ohne Monitor) ausführen
+      - name: Run Unit Tests
+        run: npm run test:ci
