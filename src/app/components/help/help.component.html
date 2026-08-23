@@ -1,29 +1,93 @@
-<div class="text-center mt-2">
-  <a href="https://pascalhenze.de/kickbase-doc/" target="_blank">
-    <h6>Ausführliche Dokumentation (Klick)</h6>
-  </a>
-</div>
-<button class="btn btn-link" (click)="showHelp = !showHelp">Hilfe anzeigen</button>
-@if (showHelp) {
-  <ul>
-    <li>
-      Das Team , die Schulden und alles Weitere wird automatisch geladen. Danach könnt ihr aus der
-      Gruppe aller Spieler einfach diejenigen entfernen/deaktivieren die ihr nicht verkaufen wollt.
-      Alle die übrig bleiben, werden summiert. Ist der Betrag oben grün ist alles gut (ihr kommt ins
-      plus mit den Verkäufen). Bei Rot reichts nicht. Zum resetten der Liste einfach die Seite neu
-      laden.
-    </li>
+<div class="card border-0 shadow-sm mb-3">
+  <!-- Card Header (Klickbar zum Ein-/Ausklappen) -->
+  <div
+    class="card-header bg-light border-0 py-2 d-flex justify-content-between align-items-center cursor-pointer select-none"
+    (click)="isHelpExpanded = !isHelpExpanded"
+    role="button"
+    [attr.aria-expanded]="isHelpExpanded"
+  >
+    <div class="fw-bold d-flex align-items-center gap-2">
+      <i class="bi bi-question-circle text-primary fs-5"></i>
+      <span>Wie funktioniert der Rechner?</span>
+    </div>
 
-    <li>
-      Um Spieler komplett zu entfernen (wegen der besseren Übersicht) einfach auf das Spielerfoto
-      klicken
-    </li>
-    <li>Der Verlust/Gewinn bis Freitag ist nur eine grobe Hausnummer und NICHT genau</li>
-    <li>Der Kontostand oben zeigt den Kontostand an würde man alle Spieler der Gruppe verkaufen</li>
-    <li>
-      Ist ein Spieler grün hinterlegt kann dieser noch finanziert werden und muss nicht verkauft
-      werden. Ist er Rot hinterlegt würde man ins Minus gehen sollte man diesen nicht verkaufen
-    </li>
-    <li>Version 6.4</li>
-  </ul>
-}
+    <div class="d-flex align-items-center gap-3">
+      <!-- Link zur ausführlichen Dokumentation -->
+      <a
+        href="https://pascalhenze.de/kickbase-doc"
+        target="_blank"
+        class="btn btn-sm btn-outline-primary"
+        (click)="$event.stopPropagation()"
+      >
+        <i class="bi bi-book me-1"></i>Doku
+      </a>
+      <!-- Auf-/Zuklapp Icon -->
+      <span class="chevron-icon" [class.rotated]="isHelpExpanded">&#9660;</span>
+    </div>
+  </div>
+
+  <!-- Animierter Card-Body -->
+  <div class="collapsible-wrapper" [class.expanded]="isHelpExpanded">
+    <div class="collapsible-content">
+      <div class="card-body p-3 bg-body-tertiary">
+        <!-- Sektion 1 -->
+        <h6 class="fw-bold small text-primary mb-2">
+          <i class="bi bi-calculator me-1"></i>Kontostand & Berechnung
+        </h6>
+        <ul class="extra-small text-muted mb-3 ps-3">
+          <li class="mb-2">
+            <strong>Konto & +Einnahmen:</strong> Im fixierten Header siehst du deinen aktuellen
+            Kontostand und den simulierten Stand inkl. Einnahmen bis Freitag.
+          </li>
+          <li class="mb-2">
+            <strong>Erwarte Ausgaben:</strong> Trage hier Summen ein, die du z. B. für ausstehende
+            Gebote reservieren möchtest.
+          </li>
+          <li>
+            <strong>Fixpreis (Neu):</strong> In der Kader-Ansicht kannst du bei Verkaufskandidaten
+            nun einen fixen Wunschpreis hinterlegen, der anstelle des Marktwertes für die Simulation
+            genutzt wird.
+          </li>
+        </ul>
+
+        <!-- Sektion 2 -->
+        <h6 class="fw-bold small text-primary mb-2">
+          <i class="bi bi-sliders me-1"></i>Optionen & Filter
+        </h6>
+        <ul class="extra-small text-muted mb-3 ps-3">
+          <li class="mb-2">
+            <strong>Negative Marktwertänderung:</strong> Zieht fallende Marktwerte von deinen
+            simulierten Einnahmen ab.
+          </li>
+          <li class="mb-2">
+            <strong>Erfolge einbeziehen:</strong> Addiert die geschätzten Einnahmen durch
+            Kickbase-Erfolge zum Kontostand (falls in deiner Liga nicht deaktiviert).
+          </li>
+          <li>
+            <strong>Offset für Angebote:</strong> Setze einen prozentualen Auf- oder Abschlag, um
+            Angebote unter/über Marktwert zu simulieren.
+          </li>
+        </ul>
+
+        <!-- Sektion 3 -->
+        <h6 class="fw-bold small text-primary mb-2">
+          <i class="bi bi-people me-1"></i>Kader-Verwaltung
+        </h6>
+        <ul class="extra-small text-muted mb-0 ps-3">
+          <li class="mb-2">
+            <strong>Gruppierte Ansicht:</strong> Teilt dein Team übersichtlich in Verkaufskandidaten
+            und deinen "Festen Kader" ein.
+          </li>
+          <li class="mb-2">
+            <strong>Spieler verschieben:</strong> Nutze die Icons am Spieler, um ihn vom Verkauf
+            auszuschließen (verschiebt ihn in den Festen Kader).
+          </li>
+          <li>
+            <strong>Druckmodus:</strong> Klicke auf das Drucker-Icon im Header für eine reduzierte
+            PDF- oder Druckansicht.
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>

@@ -13,4 +13,6 @@ export class HelpComponent implements OnInit {
   constructor() {}
 
   ngOnInit(): void {}
+
+  public isHelpExpanded: boolean = false;
 }

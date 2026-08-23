@@ -12,6 +12,9 @@ import { KickbasePlayer } from 'src/app/model/kickbase-player';
 import { ApiService } from 'src/app/services/api.service';
 import { AngularSvgIconModule } from 'angular-svg-icon';
 
+import numeral from 'numeral';
+import 'numeral/locales/de';
+
 @Component({
   selector: 'app-player-item',
   templateUrl: './player-item.component.html',
@@ -30,9 +33,13 @@ export class PlayerItemComponent implements OnInit {
   @Output() loadDetails = new EventEmitter();
 
   @Output() playerChanged = new EventEmitter();
+
+  public onExpectedPriceString = '';
   constructor(public apiService: ApiService) {}
 
-  ngOnInit(): void {}
+  ngOnInit(): void {
+    this.onExpectedPriceString = this.formatExpectedPrice(this.player.expectedSaleValue);
+  }
 
   onLoadAllDetailsForPlayer = async () => {
     this.loadDetails.emit();
@@ -58,7 +65,26 @@ export class PlayerItemComponent implements OnInit {
     this.playerChanged.emit();
   }
 
-  onExpectedPriceChanged() {
+  formatExpectedPrice(value: number | null): string {
+    if (value !== null && value > 0) {
+      const di = numeral(value);
+      return di.format('0,0');
+    } else {
+      return '';
+    }
+  }
+
+  onExpectedPriceChanged(event: number | string) {
+    try {
+      let price = Number(event.toString().replace(/\s/g, ''));
+      if (price !== null && price > 0) {
+        this.player.expectedSaleValue = price;
+      } else {
+        this.player.expectedSaleValue = null;
+      }
+      this.onExpectedPriceString = this.formatExpectedPrice(this.player.expectedSaleValue);
+    } catch {}
+
     this.playerChanged.emit();
   }
 }
