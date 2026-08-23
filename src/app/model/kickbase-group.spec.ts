@@ -238,7 +238,7 @@ describe('KickbaseGroup', () => {
       expect(group.numberValue).toBe(1000000);
     });
 
-    it('summiert successValue für Verkaufsspieler UND feste Kaderspieler, aber NICHT für temporär behaltene', () => {
+    it('summiert successValue für Verkaufsspieler aber nicht für feste Kaderspieler, aber NICHT für temporär behaltene', () => {
       // Erzeugt einen Offset von 5 Mio -> ergibt 250.000 successValue pro Spieler
       const statsA = new KickbasePlayerStats(null);
       statsA.buyPrice = 0;
@@ -252,7 +252,7 @@ describe('KickbaseGroup', () => {
       group.calcValues(0, false, 0);
 
       // successValue berechnet sich aus dem Verkaufsspieler UND dem festen Spieler
-      expect(group.successValue).toBe(sellingPlayer.successValue + fixedPlayer.successValue);
+      expect(group.successValue).toBe(sellingPlayer.successValue);
       expect(group.successValue).toBeGreaterThan(0);
     });
 
@@ -298,14 +298,14 @@ describe('KickbaseGroup', () => {
     it('trendValue summiert positive realMarketValueChange für Verkaufs- und feste Spieler', () => {
       group.players = [
         playerWithChange(100), // Verkaufsspieler -> Zählt
-        playerWithChange(200, { isFixedSquad: true }), // Fester Spieler -> Zählt
+        playerWithChange(200, { isFixedSquad: true }), // Fester Spieler -> Zählt NICHT
         playerWithChange(500, { isKept: true }), // Behaltener Spieler -> Zählt NICHT
         playerWithChange(-50), // Negativer Wert -> Zählt NICHT (da includeMinusMarketValues=false)
       ];
 
       group.calcValues(0, false, 0);
 
-      expect(group.trendValue).toBe(300); // 100 + 200
+      expect(group.trendValue).toBe(100); // 100
     });
 
     it('trendValue summiert auch negative Werte, wenn includeMinusMarketValues=true', () => {
@@ -317,20 +317,20 @@ describe('KickbaseGroup', () => {
 
       group.calcValues(0, true, 0);
 
-      expect(group.trendValue).toBe(50); // 100 - 50
+      expect(group.trendValue).toBe(100);
     });
 
     it('lossValue summiert nur negative realMarketValueChange für Verkaufs- und feste Spieler', () => {
       group.players = [
         playerWithChange(100),
         playerWithChange(-50), // Verkaufsspieler -> Zählt
-        playerWithChange(-30, { isFixedSquad: true }), // Fester Spieler -> Zählt
+        playerWithChange(-30, { isFixedSquad: true }), // Fester Spieler -> Zählt NICHT
         playerWithChange(-500, { isKept: true }), // Behaltener Spieler -> Zählt NICHT
       ];
 
       group.calcValues(0, false, 0);
 
-      expect(group.lossValue).toBe(-80); // -50 + -30
+      expect(group.lossValue).toBe(-50); // 100 - 50
     });
   });
 
@@ -373,7 +373,7 @@ describe('KickbaseGroup', () => {
       expect(group.lossValue).toBe(0);
     });
 
-    it('behält den Trend bei, wenn der Spieler isFixedSquad ist (da expectedSaleValue nur beim Verkauf greift)', () => {
+    it('behält den Trend nicht bei, wenn der Spieler isFixedSquad ist (da expectedSaleValue nur beim Verkauf greift)', () => {
       const stats = new KickbasePlayerStats(null);
       stats.realMarketValueChange = 500000;
 
@@ -386,7 +386,7 @@ describe('KickbaseGroup', () => {
       group.calcValues(0, false, 0);
 
       // Erwartung: Da er nicht verkauft wird, schwankt sein Marktwert (Trend) weiterhin
-      expect(group.trendValue).toBe(500000);
+      expect(group.trendValue).toBe(0);
     });
   });
 });

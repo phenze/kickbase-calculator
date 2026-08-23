@@ -137,7 +137,7 @@ export class KickbaseGroup {
         const hasFixedSale = this.isSelling(player) && player.expectedSaleValue !== null;
 
         // Der Trend greift nur, wenn der Preis NICHT fix ist
-        if (!hasFixedSale && (this.isSelling(player) || player.isFixedSquad)) {
+        if (!hasFixedSale && this.isSelling(player)) {
           if (player.stats !== null) {
             if (player.stats.realMarketValueChange > 0 || includeMinusMarketValues) {
               value += player.stats.realMarketValueChange;
@@ -156,7 +156,7 @@ export class KickbaseGroup {
         // NEU: Wie beim Trend - ignorieren, wenn ein fixer Verkaufswert existiert
         const hasFixedSale = this.isSelling(player) && player.expectedSaleValue !== null;
 
-        if (!hasFixedSale && (this.isSelling(player) || player.isFixedSquad)) {
+        if (!hasFixedSale && this.isSelling(player)) {
           if (player.stats !== null && player.stats.realMarketValueChange < 0) {
             value += player.stats.realMarketValueChange;
           }
@@ -181,7 +181,7 @@ export class KickbaseGroup {
   private getSuccessValueTmp() {
     let retVal = 0;
     for (let p of this.players) {
-      if (!p.isDeleted && (this.isSelling(p) || p.isFixedSquad)) {
+      if (!p.isDeleted && this.isSelling(p)) {
         retVal += p.successValue;
       }
     }
