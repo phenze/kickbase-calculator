@@ -20,8 +20,8 @@ describe('PlayerItemComponent', () => {
       providers: [
         { provide: ApiService, useValue: mockApiService },
         provideHttpClient(),
-        provideHttpClientTesting()
-      ]
+        provideHttpClientTesting(),
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(PlayerItemComponent);
@@ -31,7 +31,7 @@ describe('PlayerItemComponent', () => {
     mockPlayer = new KickbasePlayer(null, 'user123');
     mockPlayer.id = 42;
     mockPlayer.leagueId = 100;
-    mockPlayer.isPersitantDeleted = false;
+    mockPlayer.isFixedSquad = false;
 
     component.player = mockPlayer;
     component.printMode = false;
@@ -45,45 +45,45 @@ describe('PlayerItemComponent', () => {
 
   describe('matches', () => {
     it('should render result for finished matches and date for upcoming matches', () => {
-    component.player = {
-      name: 'Test Player',
-      stats: {
-        points: 500,
-        averagePoints: 50,
-        nextThreeOpponents: [
-          {
-            imageUrl: 'assets/team1.svg',
-            isHomeGame: true,
-            dayLabel: 'Spieltag 1',
-            dateString: '30.08.',
-            resultString: '0:0',
-            isFinished: false // Zukünftiges Spiel
-          },
-          {
-            imageUrl: 'assets/team2.svg',
-            isHomeGame: false,
-            dayLabel: 'Spieltag 32',
-            dateString: '02.05.',
-            resultString: '3:3',
-            isFinished: true // Vergangenes Spiel
-          }
-        ]
-      }
-    } as any;
+      component.player = {
+        name: 'Test Player',
+        stats: {
+          points: 500,
+          averagePoints: 50,
+          nextThreeOpponents: [
+            {
+              imageUrl: 'assets/team1.svg',
+              isHomeGame: true,
+              dayLabel: 'Spieltag 1',
+              dateString: '30.08.',
+              resultString: '0:0',
+              isFinished: false, // Zukünftiges Spiel
+            },
+            {
+              imageUrl: 'assets/team2.svg',
+              isHomeGame: false,
+              dayLabel: 'Spieltag 32',
+              dateString: '02.05.',
+              resultString: '3:3',
+              isFinished: true, // Vergangenes Spiel
+            },
+          ],
+        },
+      } as any;
 
-    fixture.detectChanges();
+      fixture.detectChanges();
 
-    const compiled = fixture.nativeElement as HTMLElement;
-    const cardText = compiled.textContent || '';
+      const compiled = fixture.nativeElement as HTMLElement;
+      const cardText = compiled.textContent || '';
 
-    // Für das zukünftige Spiel soll das Datum rendern
-    expect(cardText).toContain('30.08.');
-    // Für das vergangene Spiel soll das Ergebnis rendern
-    expect(cardText).toContain('3:3');
-    // Beide Spieltage sollen gerendert werden
-    expect(cardText).toContain('Spieltag 1');
-    expect(cardText).toContain('Spieltag 32');
-  });
+      // Für das zukünftige Spiel soll das Datum rendern
+      expect(cardText).toContain('30.08.');
+      // Für das vergangene Spiel soll das Ergebnis rendern
+      expect(cardText).toContain('3:3');
+      // Beide Spieltage sollen gerendert werden
+      expect(cardText).toContain('Spieltag 1');
+      expect(cardText).toContain('Spieltag 32');
+    });
   });
 
   describe('Outputs / EventEmitters', () => {
@@ -123,68 +123,74 @@ describe('PlayerItemComponent', () => {
 
   describe('onSetPlayerPermanentDeleted', () => {
     it('sollte Event-Propagation stoppen, den Status aktualisieren, die API aufrufen und playerChanged emitten', () => {
-      const mockEvent = jasmine.createSpyObj<MouseEvent>('MouseEvent', ['stopImmediatePropagation', 'preventDefault']);
+      const mockEvent = jasmine.createSpyObj<MouseEvent>('MouseEvent', [
+        'stopImmediatePropagation',
+        'preventDefault',
+      ]);
       spyOn(component.playerChanged, 'emit');
 
       component.onSetPlayerPermanentDeleted(mockEvent, mockPlayer, true);
 
       expect(mockEvent.stopImmediatePropagation).toHaveBeenCalled();
       expect(mockEvent.preventDefault).toHaveBeenCalled();
-      expect(mockPlayer.isPersitantDeleted).toBeTrue();
+      expect(mockPlayer.isFixedSquad).toBeTrue();
       expect(mockApiService.setPlayerPermanentDeleted).toHaveBeenCalledWith(100, 42, true);
       expect(component.playerChanged.emit).toHaveBeenCalled();
     });
   });
 
   describe('Achivements', () => {
-  
+    beforeEach(async () => {
+      // Dummy Spieler initialisieren
+      const mockPlayer = new KickbasePlayer(
+        {
+          id: '1',
+          firstName: 'Max',
+          lastName: 'Mustermann',
+          marketValue: 10000000,
+        },
+        'user123',
+      );
+      mockPlayer.stats = {
+        buyPriceValue: '10.000.000 €',
+        realMarketValueChangeValue: '+100.000 €',
+        realMarketValueChangeValuePrecent: '1%',
+        threeDaysValues: [],
+        threeDaysValuesPercent: [],
+        points: 500,
+        averagePoints: 50,
+        nextThreeOpponents: [],
+      } as any;
+      mockPlayer.successValueString = '50.000 €';
 
-  beforeEach(async () => {
-    // Dummy Spieler initialisieren
-    const mockPlayer = new KickbasePlayer({
-      id: '1',
-      firstName: 'Max',
-      lastName: 'Mustermann',
-      marketValue: 10000000
-    }, 'user123');
-    mockPlayer.stats = {
-      buyPriceValue: '10.000.000 €',
-      realMarketValueChangeValue: '+100.000 €',
-      realMarketValueChangeValuePrecent: '1%',
-      threeDaysValues: [],
-      threeDaysValuesPercent: [],
-      points: 500,
-      averagePoints: 50,
-      nextThreeOpponents: []
-    } as any;
-    mockPlayer.successValueString = '50.000 €';
+      component.player = mockPlayer;
+      component.printMode = false;
+      component.isMarketOverview = false;
 
-    component.player = mockPlayer;
-    component.printMode = false;
-    component.isMarketOverview = false;
+      fixture.detectChanges();
+    });
 
-    fixture.detectChanges();
+    it('sollte den Erfolgswert anzeigen, wenn achievementsDisabled false ist', () => {
+      component.achievementsDisabled = false;
+      fixture.detectChanges();
+
+      const compiled = fixture.nativeElement as HTMLElement;
+      // Label steht jetzt ohne Doppelpunkt in einer eigenen .metric-label-Box
+      expect(compiled.textContent).toContain('Erfolge');
+      expect(compiled.textContent).toContain('50.000 €');
+    });
+
+    it('sollte "0 €" durchgestrichen anzeigen, wenn achievementsDisabled true ist', () => {
+      component.achievementsDisabled = true;
+      fixture.detectChanges();
+
+      const compiled = fixture.nativeElement as HTMLElement;
+      const strikeElement = compiled.querySelector('.text-decoration-line-through');
+
+      // Label steht jetzt ohne Doppelpunkt in einer eigenen .metric-label-Box
+      expect(compiled.textContent).toContain('Erfolge');
+      expect(strikeElement).not.toBeNull();
+      expect(strikeElement?.textContent).toContain('0 €');
+    });
   });
-
-  it('sollte den Erfolgswert anzeigen, wenn achievementsDisabled false ist', () => {
-    component.achievementsDisabled = false;
-    fixture.detectChanges();
-
-    const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.textContent).toContain('Erfolge:');
-    expect(compiled.textContent).toContain('50.000 €');
-  });
-
-  it('sollte "0 €" durchgestrichen anzeigen, wenn achievementsDisabled true ist', () => {
-    component.achievementsDisabled = true;
-    fixture.detectChanges();
-
-    const compiled = fixture.nativeElement as HTMLElement;
-    const strikeElement = compiled.querySelector('.text-decoration-line-through');
-
-    expect(compiled.textContent).toContain('Erfolge:');
-    expect(strikeElement).not.toBeNull();
-    expect(strikeElement?.textContent).toContain('0 €');
-  });
-});
 });

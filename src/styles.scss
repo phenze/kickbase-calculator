@@ -1,7 +1,7 @@
 // /* You can add global styles to this file, and also import other style files */
-@use "variables" as variables;
+@use 'variables' as variables;
 
-@use "bootstrap/scss/bootstrap" with (
+@use 'bootstrap/scss/bootstrap' with (
   $font-family-base: variables.$font-family-base,
   $headings-font-family: variables.$headings-font-family,
   $primary: variables.$primary,
@@ -14,11 +14,11 @@
   $dark: variables.$dark
 );
 
-@import url("https://fonts.googleapis.com/css?family=Muli:200,300,400,700&display=swap");
-@import url("https://fonts.googleapis.com/css?family=Oswald:200,300,400,700&display=swap");
+@import url('https://fonts.googleapis.com/css?family=Muli:200,300,400,700&display=swap');
+@import url('https://fonts.googleapis.com/css?family=Oswald:200,300,400,700&display=swap');
 
 body {
-  background-color: #F0F0F0;
+  background-color: #f0f0f0;
 }
 
 .header-container {
@@ -33,7 +33,7 @@ body {
   padding: 0.25rem 0.5rem;
   border-radius: 0.375rem;
   white-space: nowrap; // Text bricht innerhalb der Box nie um
-  flex-shrink: 0;      // Box schrumpft nicht unter ihren Inhalt
+  flex-shrink: 0; // Box schrumpft nicht unter ihren Inhalt
 }
 
 .kpi-group {
@@ -62,7 +62,7 @@ body {
   @container (max-width: 444px) {
     .kpi-group {
       flex-direction: column;
-      
+
       .kpi-box {
         width: 100%;
         justify-content: center;
@@ -116,16 +116,14 @@ svg-icon {
   }
 
   &.active {
-    color: #007D34;
+    color: #007d34;
   }
 }
-
-
 
 /* Header-Anpassungen */
 .card-header {
   /* Holt die Hintergrundfarbe der Karte ab oder nutzt ein leicht abgedunkeltes Anstelle von Reinweiß */
-  background-color: rgba(0, 0, 0, 0.04) !important; 
+  background-color: rgba(0, 0, 0, 0.04) !important;
   border-bottom: 1px solid rgba(0, 0, 0, 0.08) !important;
 }
 
@@ -169,9 +167,7 @@ svg-icon {
   }
 }
 
-
 .player-row {
-
   // margin: 5px;
   // padding: 5px;
   // border: 1px dashed black;
@@ -222,19 +218,18 @@ svg-icon {
   padding-top: 5px;
   padding-bottom: 5px;
   box-sizing: border-box;
-  box-shadow: 0 5px 5px -3px rgba(0, 0, 0, 0.2),
+  box-shadow:
+    0 5px 5px -3px rgba(0, 0, 0, 0.2),
     0 8px 10px 1px rgba(0, 0, 0, 0.14),
     0 3px 14px 2px rgba(0, 0, 0, 0.12);
 }
-
-
 
 .btn-group.special {
   display: flex;
 }
 
 .special .btn {
-  flex: 1
+  flex: 1;
 }
 
 .number_players {
@@ -266,7 +261,7 @@ svg-icon {
   margin-top: 3px;
 
   &.active {
-    color: #007D34;
+    color: #007d34;
   }
 }
 
@@ -288,5 +283,330 @@ svg-icon {
   &.disabled {
     cursor: unset;
     color: gray;
+  }
+}
+
+/* ==========================================================================
+   Modernisierter Header-/Einstiegsbereich
+   (Login-Topbar, Spenden-Karte, Liga-Auswahl, Ansicht-Umschalter, Kader-Titel)
+   Sticky-KPI-Header & unterer Zusammenfassungs-Bereich bleiben unverändert.
+   ========================================================================== */
+
+// Obere Aktionsleiste: Geschenk-Chip + Logout, rechtsbündig, kompakt auf Mobile
+.app-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  padding-block: 0.5rem;
+}
+
+.gift-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  background-color: var(--bs-light);
+  border: 1px solid var(--bs-border-color-translucent);
+  border-radius: 999px;
+  padding: 0.25rem 0.65rem 0.25rem 0.5rem;
+  font-weight: 600;
+  font-size: 0.85rem;
+
+  .gift-icon {
+    width: 20px;
+    height: 20px;
+  }
+}
+
+.logout-btn {
+  border-radius: 999px;
+  padding-inline: 0.9rem;
+}
+
+// Spenden-Hinweis als ruhige, abgesetzte Karte statt nackter Fließtext
+.support-card {
+  background-color: var(--bs-light);
+  border: 1px solid var(--bs-border-color-translucent);
+  border-radius: 0.75rem;
+  padding: 1rem 1.1rem;
+  text-align: center;
+}
+
+.support-text {
+  font-size: 0.85rem;
+  color: var(--bs-secondary-color, #6c757d);
+  margin-bottom: 0.75rem;
+}
+
+// Generische, wiederverwendbare Karte für Formular-/Info-Blöcke im Einstiegsbereich
+.section-card {
+  background-color: #fff;
+  border: 1px solid var(--bs-border-color-translucent);
+  border-radius: 0.75rem;
+  padding: 1rem 1.1rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.section-title {
+  font-size: 1rem;
+  font-weight: 700;
+  margin-bottom: 0.85rem;
+}
+
+// Segmented Control für Rechner/Markt statt btn-group – fühlt sich moderner
+// und "app-artig" an, gleiche Optik wie die Icon-Pille im Sticky-Header
+.segmented-control {
+  display: flex;
+  background-color: var(--bs-light);
+  border-radius: 999px;
+  padding: 4px;
+  gap: 4px;
+  width: 100%;
+}
+
+.segmented-btn {
+  flex: 1 1 0;
+  border: none;
+  background: transparent;
+  border-radius: 999px;
+  padding: 0.5rem 0.75rem;
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--bs-secondary-color, #6c757d);
+  transition:
+    background-color 0.2s ease-in-out,
+    color 0.2s ease-in-out,
+    box-shadow 0.2s ease-in-out;
+
+  &.active {
+    background-color: #fff;
+    color: var(--bs-primary);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+  }
+
+  &:not(.active):hover {
+    color: var(--bs-body-color);
+  }
+}
+
+// Kader-Titel direkt unter dem Sticky-Header
+.squad-title {
+  text-align: center;
+
+  .squad-title-team {
+    margin-bottom: 0.25rem;
+    font-weight: 700;
+  }
+
+  .squad-title-meta {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 0.25rem 1rem;
+    color: var(--bs-secondary-color, #6c757d);
+    font-size: 0.85rem;
+  }
+}
+
+// Mobile-Feinschliff: engere Abstände & etwas kleinere Segmented-Control-Schrift
+@media (max-width: 400px) {
+  .segmented-btn {
+    font-size: 0.85rem;
+    padding: 0.5rem 0.4rem;
+  }
+
+  .section-card {
+    padding: 0.85rem 0.9rem;
+  }
+
+  .support-card {
+    padding: 0.85rem 0.9rem;
+  }
+}
+
+/* ==========================================================================
+   Modernisierte Spieler-Karte (player-item)
+   ========================================================================== */
+
+.player-card {
+  border-radius: 0.9rem;
+  cursor: pointer;
+  transition:
+    transform 0.15s ease-in-out,
+    box-shadow 0.15s ease-in-out;
+
+  &:hover {
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12) !important;
+  }
+
+  &:active {
+    transform: scale(0.997);
+  }
+}
+
+.player-card-header {
+  border-top-left-radius: 0.9rem;
+  border-top-right-radius: 0.9rem;
+}
+
+.expiry-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.15rem 0.55rem;
+  border-radius: 999px;
+  background-color: rgba(255, 255, 255, 0.7);
+}
+
+// Ersetzt die früheren "p-2 bg-light rounded" Ad-hoc-Boxen durch eine
+// einheitliche, wiederverwendbare Stat-Box
+.stat-box {
+  background-color: rgba(255, 255, 255, 0.55);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 0.6rem;
+  padding: 0.5rem 0.75rem;
+}
+
+.offer-box {
+  width: 100%;
+  background-color: rgba(255, 255, 255, 0.7);
+  font-size: 0.95rem;
+}
+
+// Kompaktes Kennzahlen-Grid (Gekauft, MW-Änderung, Gewinn/Verlust, Erfolge, Punkte, Schnitt)
+.finance-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.35rem 0.75rem;
+}
+
+.finance-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.05rem;
+  font-size: 0.8rem;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.section-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--bs-secondary-color, #6c757d);
+  margin-bottom: 0.35rem;
+}
+
+.trend-box {
+  background-color: rgba(255, 255, 255, 0.55);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 0.6rem;
+  overflow: hidden;
+}
+
+.trend-table {
+  margin-bottom: 0;
+
+  tr:first-child td {
+    font-weight: 600;
+  }
+}
+
+// Marktwert/Preis besonders hervorgehoben in der Haupt-Info-Box
+.value-chip {
+  display: inline-block;
+  background-color: rgba(255, 255, 255, 0.75);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 0.5rem;
+  padding: 0.15rem 0.55rem;
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--bs-dark, #212529);
+}
+
+// Einzelne Finanz-Kennzahl als eigene, klar abgesetzte Box (Label über Wert)
+// statt Fließtext in einer gemeinsamen Leiste
+.metric-chip {
+  display: flex;
+  flex-direction: column;
+  gap: 0.05rem;
+  background-color: rgba(255, 255, 255, 0.65);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 0.6rem;
+  padding: 0.35rem 0.65rem;
+  font-size: 0.82rem;
+  line-height: 1.25;
+  white-space: nowrap;
+}
+
+.metric-label {
+  color: var(--bs-secondary-color, #6c757d);
+  font-size: 0.68rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.metric-value {
+  font-weight: 600;
+}
+
+.match-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.6rem;
+  border-radius: 999px;
+  background-color: rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  font-size: 0.8rem;
+  white-space: nowrap;
+}
+
+@media (max-width: 400px) {
+  .metric-chip {
+    font-size: 0.78rem;
+    padding: 0.3rem 0.55rem;
+  }
+}
+
+@media (max-width: 400px) {
+  .finance-grid {
+    gap: 0.3rem 0.5rem;
+  }
+
+  .finance-item {
+    font-size: 0.78rem;
+  }
+}
+
+// Verhindert Textmarkierung beim schnellen Tappen/Klicken
+.select-none {
+  user-select: none;
+}
+
+// Icon Rotation Animation (180 Grad Drehung)
+.chevron-icon {
+  display: inline-block;
+  font-size: 0.75rem;
+  transition: transform 0.3s ease-in-out;
+
+  &.rotated {
+    transform: rotate(180deg);
+  }
+}
+
+// Flüssige Auf-/Zuklapp-Animation für dynamischen Inhalt
+.collapsible-wrapper {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+  &.expanded {
+    grid-template-rows: 1fr;
+  }
+
+  .collapsible-content {
+    overflow: hidden;
   }
 }

@@ -20,27 +20,29 @@ import { HelpComponent } from './components/help/help.component';
 import { PlayerItemComponent } from './components/player-item/player-item.component';
 import { MarketOverviewComponent } from './components/market-overview/market-overview.component';
 
-
-@NgModule({ declarations: [
-        AppComponent
-    ],
-    bootstrap: [AppComponent], imports: [BrowserModule,
-        FormsModule,
-        BsDropdownModule,
-        ModalModule,
-        AngularSvgIconModule.forRoot(),
-        NumberformatterDirective,
-        MyCurrencyPipe,
-        ModalComponent,
-        LoginComponent,
-        HelpComponent,
-        PlayerItemComponent,
-        MarketOverviewComponent
-        // ServiceWorkerModule.register('ngsw-worker.js', { enabled: environment.production }),
-    ], providers: [
-        MyCurrencyPipe,
-        ApiService,
-        provideHttpClient(withFetch(), withInterceptorsFromDi()),
-        provideRouter([])
-    ] })
-export class AppModule { }
+@NgModule({
+  declarations: [AppComponent],
+  bootstrap: [AppComponent],
+  imports: [
+    BrowserModule,
+    FormsModule,
+    BsDropdownModule,
+    ModalModule,
+    AngularSvgIconModule.forRoot(),
+    NumberformatterDirective,
+    MyCurrencyPipe,
+    ModalComponent,
+    LoginComponent,
+    HelpComponent,
+    PlayerItemComponent,
+    MarketOverviewComponent,
+    // ServiceWorkerModule.register('ngsw-worker.js', { enabled: environment.production }),
+  ],
+  providers: [
+    MyCurrencyPipe,
+    ApiService,
+    provideHttpClient(withFetch(), withInterceptorsFromDi()),
+    provideRouter([]),
+  ],
+})
+export class AppModule {}

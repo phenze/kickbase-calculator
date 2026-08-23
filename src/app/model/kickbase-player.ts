@@ -1,18 +1,14 @@
-
-
 import numeral from 'numeral';
 import { ApiService } from '../services/api.service';
 import { KickbasePlayerStats } from './kickbase-player-stats';
 import { KickbaseGroup } from './kickbase-group';
 
 export class KickbasePlayer {
-
   public id!: number;
   public name!: string;
   public value!: number;
   public marketValue!: number;
   public uoid!: string;
-
 
   // local api fields
   public nameHash!: string;
@@ -30,7 +26,6 @@ export class KickbasePlayer {
   public leagueId!: number;
   public stats: KickbasePlayerStats | null = null;
   public offervalue = 0;
-  public isPersitantDeleted: boolean;
   public imageUrl = '';
   public color = '';
   public colorMarketValue = '';
@@ -39,68 +34,70 @@ export class KickbasePlayer {
   public colorOffsetValue = '';
 
   public hasOfferFromAny!: boolean;
-  public isDeactivated!: boolean;
-  public isDeleted!: boolean;
+
+  public isFixedSquad: boolean;
+  public isKept: boolean;
+  public isDeleted: boolean;
 
   public isInEditMode!: boolean;
 
   public marketValuesShown!: boolean;
   public username!: string;
 
+  public expectedSaleValue: number | null = null;
+
   constructor(json: any, userID: string | number) {
     this.offervalue = 0;
     this.hasOfferFromAny = false;
-    this.isDeactivated = false;
+    this.isKept = false;
     this.isDeleted = false;
     this.marketValuesShown = false;
-    this.isPersitantDeleted = false;
+    this.isFixedSquad = false;
     this.nameHash = '';
     this.leagueId = -1;
     this.username = '';
     Object.assign(this, json);
     if (json != null) {
-      this.id = json["i"];
-      this.value = json["mv"];
-      this.marketValue = json["mv"];
-      this.status = json["st"];
+      this.id = json['i'];
+      this.value = json['mv'];
+      this.marketValue = json['mv'];
+      this.status = json['st'];
       this.price = json['prc'];
-      if (json.hasOwnProperty("n")) {
-        this.name = json["n"]
+      if (json.hasOwnProperty('n')) {
+        this.name = json['n'];
       }
 
       this.price = json['prc'] ?? 0;
 
       // Nur wenn uoid/uop explizit im Payload übergeben werden (z. B. bei eigenen Angeboten)
-      if (json.hasOwnProperty('uoid') && json['uoid'] !== "0") {
+      if (json.hasOwnProperty('uoid') && json['uoid'] !== '0') {
         this.price = json['uop'] ?? this.price;
       }
 
-      if (json.hasOwnProperty("u") && json["u"] != null && json["u"]["n"]) {
-        this.username = json["u"]["n"];
+      if (json.hasOwnProperty('u') && json['u'] != null && json['u']['n']) {
+        this.username = json['u']['n'];
       } else {
         this.username = '';
       }
       if (json.hasOwnProperty('ofs')) {
-        const offers = json["ofs"] as unknown[];
+        const offers = json['ofs'] as unknown[];
         let lastOfferPrice = 0;
 
         for (const offer of offers) {
-          console.log(offer)
+          console.log(offer);
           const typedOffer = offer as Record<string, unknown>;
           const userIDOffer = typedOffer['u'];
-          const price = Number(typedOffer["uop"]);
+          const price = Number(typedOffer['uop']);
           if (Number(price) !== 1) {
             if (userIDOffer == userID) {
-              this.offervalue = Number(price)
-
+              this.offervalue = Number(price);
             }
             this.value = Math.max(price, lastOfferPrice);
             lastOfferPrice = price;
           }
-
         }
       }
-      this.expiry = json['exs']
+      this.expiry = json['exs'];
       const safeExpiry = Number(this.expiry) || 0;
 
       const date = this.addSeconds(new Date(), safeExpiry);
@@ -125,11 +122,10 @@ export class KickbasePlayer {
     if (this.stats !== null) {
       this.stats.calcValues();
     }
-
   }
 
   private addSeconds(baseDate: Date, seconds: number): Date {
-    return new Date(baseDate.getTime() + (seconds * 1000));
+    return new Date(baseDate.getTime() + seconds * 1000);
   }
 
   private formatGermanDateTime(date: Date): string {
@@ -144,22 +140,25 @@ export class KickbasePlayer {
 
   public calcColors(differenceValue: number) {
     if (differenceValue >= 0 && Math.abs(differenceValue) >= this.value) {
-      this.color = "#007D341F";
+      this.color = '#007D341F';
     } else {
-      this.color = "#C100201F";
+      this.color = '#C100201F';
     }
-    if (this.isDeactivated || this.isPersitantDeleted) {
-      this.color = "#260C0C1F";
+    if (this.isKept || this.isFixedSquad) {
+      this.color = '#260C0C1F';
     }
 
     if (this.stats !== null) {
-      this.colorMarketValue = this.stats.realMarketValueChange > 0 ? KickbaseGroup.color_green : KickbaseGroup.color_red;
+      this.colorMarketValue =
+        this.stats.realMarketValueChange > 0 ? KickbaseGroup.color_green : KickbaseGroup.color_red;
     }
-    this.colorSuccessValue = this.successValue > 0 ? KickbaseGroup.color_green : KickbaseGroup.color_red;
-    this.colorOffsetValue = this.offsetNumber > 0 ? KickbaseGroup.color_green : KickbaseGroup.color_red;
+    this.colorSuccessValue =
+      this.successValue > 0 ? KickbaseGroup.color_green : KickbaseGroup.color_red;
+    this.colorOffsetValue =
+      this.offsetNumber > 0 ? KickbaseGroup.color_green : KickbaseGroup.color_red;
     // add percent when value should turn green
     let offerOffset = 0;
-    const offerOffsetTmp = localStorage.getItem('offerOffset')
+    const offerOffsetTmp = localStorage.getItem('offerOffset');
     if (offerOffsetTmp !== null && offerOffsetTmp !== undefined) {
       try {
         offerOffset = Number.parseFloat(offerOffsetTmp) / 100;
@@ -167,7 +166,10 @@ export class KickbasePlayer {
         // no nothing when number could not be parsed
       }
     }
-    this.colorOfferValue = this.value >= (this.marketValue * (1 + offerOffset)) ? KickbaseGroup.color_green : KickbaseGroup.color_red;
+    this.colorOfferValue =
+      this.value >= this.marketValue * (1 + offerOffset)
+        ? KickbaseGroup.color_green
+        : KickbaseGroup.color_red;
     this.hasOfferFromAny = this.value !== this.marketValue;
     this.expiryColor = '#212529';
     // one hour
@@ -176,9 +178,7 @@ export class KickbasePlayer {
     } else if (this.expiry <= 60 * 60 * 2) {
       this.expiryColor = KickbaseGroup.color_green;
     }
-
   }
-
 
   private getPriceTmp() {
     let n = numeral(this.price);
@@ -255,21 +255,21 @@ export class KickbasePlayer {
   public offsetNumber = 0;
   private getOffsetNumberTmp() {
     if (this.stats !== null) {
-      return this.value - this.stats.buyPrice;
+      return (
+        (this.expectedSaleValue !== null ? this.expectedSaleValue : this.value) -
+        this.stats.buyPrice
+      );
     }
     return 0;
   }
 
   public static createArrayInstance(json: any, userID: string | number): KickbasePlayer[] {
-
     const retVal: KickbasePlayer[] = new Array<KickbasePlayer>();
     if (json != null) {
-
       for (let tmpitem of json as any) {
         const post: KickbasePlayer = new KickbasePlayer(tmpitem, userID);
         retVal.push(post);
       }
-
     }
 
     return retVal;
@@ -278,7 +278,10 @@ export class KickbasePlayer {
   loadStats = async (league: number, apiService: ApiService, force = false) => {
     if (this.stats === null || force) {
       this.stats = await apiService.getPlayerStats(league, this.id);
-      const marketValueStats = await apiService.getMarketValuePlayerStats(league, this.id) as unknown as Record<string, unknown>;
+      const marketValueStats = (await apiService.getMarketValuePlayerStats(
+        league,
+        this.id,
+      )) as unknown as Record<string, unknown>;
       this.stats.marketValues = (marketValueStats['it'] as unknown[]) ?? [];
       this.stats.buyPrice = Number(marketValueStats['trp']);
       // sometimes mv from stats differs from the real one which is one the player
@@ -287,7 +290,7 @@ export class KickbasePlayer {
         this.stats.mv = this.marketValue;
       }
     }
-  }
+  };
 
   copy(userId: string | number) {
     const retVal = new KickbasePlayer(null, userId);
@@ -311,7 +314,9 @@ export class KickbasePlayer {
     retVal.colorOffsetValue = this.colorOffsetValue;
     retVal.colorOfferValue = this.colorOfferValue;
     retVal.hasOfferFromAny = this.hasOfferFromAny;
-    retVal.isDeactivated = this.isDeactivated;
+    retVal.isKept = this.isKept;
+    retVal.isFixedSquad = this.isFixedSquad;
+    retVal.isDeleted = this.isDeleted;
 
     retVal.valueString = this.valueString;
     retVal.marketValueString = this.marketValueString;
@@ -319,6 +324,7 @@ export class KickbasePlayer {
     retVal.successValue = this.successValue;
     retVal.offsetNumber = this.offsetNumber;
     retVal.nameHash = this.nameHash;
+    retVal.expectedSaleValue = this.expectedSaleValue;
 
     return retVal;
   }
@@ -330,7 +336,6 @@ export class KickbasePlayer {
       value: this.value,
       marketValue: this.marketValue,
       realMarketValueChange: this.stats?.realMarketValueChange ?? 0,
-    }
+    };
   }
-
 }

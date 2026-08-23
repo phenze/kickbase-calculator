@@ -8,8 +8,8 @@ describe('KickbaseLeague', () => {
       lm: {
         teamValue: 50000000,
         budget: 10000000,
-        amd: true
-      }
+        amd: true,
+      },
     };
 
     const league = new KickbaseLeague(payload);
@@ -25,8 +25,8 @@ describe('KickbaseLeague', () => {
       lm: {
         teamValue: 50000000,
         budget: 10000000,
-        amd: false
-      }
+        amd: false,
+      },
     };
 
     const league = new KickbaseLeague(payload);
@@ -40,8 +40,8 @@ describe('KickbaseLeague', () => {
       name: 'Test Liga',
       lm: {
         teamValue: 50000000,
-        budget: 10000000
-      }
+        budget: 10000000,
+      },
     };
 
     const league = new KickbaseLeague(payload);

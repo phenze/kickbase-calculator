@@ -1,19 +1,15 @@
-
-
 import numeral from 'numeral';
 
 export interface NextOpponent {
   imageUrl: string;
   isHomeGame: boolean;
-  dayLabel: string;      // z. B. "Spieltag 1"
-  dateString?: string;    // z. B. "30.08." oder "30.08. 17:30"
-  resultString?: string;  // z. B. "3:3" oder "0:1"
-  isFinished: boolean;    // true, wenn Ergebnis feststeht
-} 
-
+  dayLabel: string; // z. B. "Spieltag 1"
+  dateString?: string; // z. B. "30.08." oder "30.08. 17:30"
+  resultString?: string; // z. B. "3:3" oder "0:1"
+  isFinished: boolean; // true, wenn Ergebnis feststeht
+}
 
 export class KickbasePlayerStats {
-
   // api fields
   public id!: string;
   public tid!: string;
@@ -40,7 +36,6 @@ export class KickbasePlayerStats {
 
   public nextThreeOpponents!: NextOpponent[];
 
-
   constructor(json: any) {
     Object.assign(this, json);
     this.threeDaysValues = new Array();
@@ -52,7 +47,7 @@ export class KickbasePlayerStats {
       this.realMarketValueChange = json['tfhmvt'];
 
       this.nextThreeOpponents = new Array();
-      
+
       if (json['mdsum'] && Array.isArray(json['mdsum'])) {
         const playerTeamId = String(json['tid']); // Team-ID des Spielers
 
@@ -61,21 +56,24 @@ export class KickbasePlayerStats {
           const opponentImgId = isHome ? match.t2 : match.t1;
 
           // Spiel abgeschlossen? (mdst === 2 bedeutet i.d.R. beendet / t1g & t2g vorhanden)
-          const isFinished = match.mdst === 2 || (match.t1g !== undefined && match.t1g !== 0) || (match.t2g !== undefined && match.t2g !== 0);
+          const isFinished =
+            match.mdst === 2 ||
+            (match.t1g !== undefined && match.t1g !== 0) ||
+            (match.t2g !== undefined && match.t2g !== 0);
 
           let dateStr = '';
           if (match.md) {
             const matchDate = new Date(match.md);
             dateStr = matchDate.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' });
           }
-          
+
           return {
             imageUrl: 'https://kickbase.b-cdn.net/pool/teams/' + opponentImgId + '.png',
             isHomeGame: isHome,
             dayLabel: match.mdln || `Spieltag ${match.day}`,
             resultString: `${match.t1g}:${match.t2g}`,
             dateString: dateStr,
-            isFinished: isFinished
+            isFinished: isFinished,
           } as NextOpponent;
         });
       }
@@ -91,12 +89,12 @@ export class KickbasePlayerStats {
   calcrealMarketValueChangeValue() {
     if (this.realMarketValueChange !== -1) {
       let n = numeral(this.realMarketValueChange);
-      let np = numeral((this.realMarketValueChange / this.mv));
+      let np = numeral(this.realMarketValueChange / this.mv);
       this.realMarketValueChangeValue = n.format('0,0 $');
 
       this.realMarketValueChangeValuePrecent = np.format('0.000%');
     } else {
-      this.realMarketValueChangeValue = 'Kann noch nicht berechnet werden'
+      this.realMarketValueChangeValue = 'Kann noch nicht berechnet werden';
     }
   }
 
@@ -128,13 +126,13 @@ export class KickbasePlayerStats {
           let n = numeral(change);
           this.threeDaysValues.push({
             key: i,
-            value: n.format('0,0 $')
+            value: n.format('0,0 $'),
           });
           let np = numeral(change / this.mv);
 
           this.threeDaysValuesPercent.push({
             key: i,
-            value: np.format('0.000%')
+            value: np.format('0.000%'),
           });
         }
       }
@@ -145,5 +143,4 @@ export class KickbasePlayerStats {
     let n = numeral(this.buyPrice);
     this.buyPriceValue = n.format('0,0 $');
   }
-
 }

@@ -1,202 +1,204 @@
-
-
 import { KickbasePlayer } from './kickbase-player';
 import numeral from 'numeral';
 
 export class KickbaseGroup {
+  public static readonly color_red = '#C10020';
+  public static readonly color_green = '#007D34';
 
+  public players: KickbasePlayer[];
+  public value = '';
+  public numberValue = 0;
+  public success = '';
+  public successValue = 0;
+  public difference = '';
+  public differenceValue = 0;
 
-	public static readonly color_red = '#C10020';
-	public static readonly color_green = '#007D34';
+  public differenceFriday = '';
+  public differenceValueFriday = 0;
 
-	public players: KickbasePlayer[]
-	public value = '';
-	public numberValue = 0;
-	public success = '';
-	public successValue = 0;
-	public difference = '';
-	public differenceValue = 0;
+  public trendValue = 0;
+  public trend = '';
+  public trendFriday = '';
+  public color = '';
+  public colorFriday = '';
 
-	public differenceFriday = '';
-	public differenceValueFriday = 0;
+  public profitValue = 0;
+  public profit = '';
 
-	public trendValue = 0;
-	public trend = '';
-	public trendFriday = '';
-	public color = '';
-	public colorFriday = '';
+  public lossValue = 0;
+  public loss = '';
 
+  public team = '';
+  public possibleMinus = '';
+  public possibleOffer = '';
+  public teamValue = 0;
 
-	public profitValue = 0;
-	public profit = '';
+  constructor() {
+    this.players = new Array();
 
-	public lossValue = 0;
-	public loss = '';
+    // let player = new KickbasePlayer();
+    // player.name = "Bakalorz";
+    // player.value = 12000435
+    // this.players.push(player)
 
-	public team = '';
-	public possibleMinus = '';
-	public possibleOffer = '';
-	public teamValue = 0;
+    // let player2 = new KickbasePlayer();
+    // player2.name = "Bakalorz";
+    // player2.value = 12000435
 
-	constructor() {
-		this.players = new Array();
+    // this.players.push(player2)
+  }
 
-		// let player = new KickbasePlayer();
-		// player.name = "Bakalorz";
-		// player.value = 12000435
-		// this.players.push(player)
+  public calcValues(
+    currentAmount: number,
+    includeMinusMarketValues: boolean,
+    dayUntilFriday: number,
+    achievementsDisabled: boolean = false,
+  ) {
+    for (const pl of this.players) {
+      pl.calcValues();
+    }
+    this.numberValue = this.getNumberValueTmp();
+    let n = numeral(this.numberValue);
+    this.value = n.format('0,0 $');
 
+    this.successValue = achievementsDisabled ? 0 : this.getSuccessValueTmp();
 
-		// let player2 = new KickbasePlayer();
-		// player2.name = "Bakalorz";
-		// player2.value = 12000435
+    this.teamValue = this.getTeamValueTmp(false);
+    this.differenceValue = currentAmount + this.numberValue;
+    this.trendValue = this.getTrend(includeMinusMarketValues);
+    this.lossValue = this.getLoss();
 
-		// this.players.push(player2)
+    this.profitValue = this.getTrend(false);
 
-	}
+    let di = numeral(this.differenceValue);
+    this.difference = di.format('0,0 $');
 
-	public calcValues(
-		currentAmount: number, 
-		includeMinusMarketValues: boolean, 
-		dayUntilFriday: number,
-		achievementsDisabled: boolean = false
-	) {
-		for (const pl of this.players) {
-			pl.calcValues();
-		}
-		this.numberValue = this.getNumberValueTmp();
-		let n = numeral(this.numberValue);
-		this.value = n.format('0,0 $');
+    let tm = numeral(this.teamValue);
 
-		// NEU: Wenn Erfolge deaktiviert sind (amd = true), setzen wir den Erfolgswert auf 0
-		this.successValue = achievementsDisabled ? 0 : this.getSuccessValueTmp();
+    let minusReferenceValue = this.teamValue;
+    if (this.differenceValue < 0 && this.teamValue > 0) {
+      minusReferenceValue += this.differenceValue;
+    }
+    minusReferenceValue *= 0.33;
+    minusReferenceValue = Math.floor(minusReferenceValue);
 
-		this.teamValue = this.getTeamValueTmp(false);
-		this.differenceValue = currentAmount + this.numberValue;
-		this.trendValue = this.getTrend(includeMinusMarketValues);
-		this.lossValue = this.getLoss();
+    let minus = numeral(minusReferenceValue);
+    this.team = tm.format('0,0 $');
+    this.possibleMinus = minus.format('0,0 $');
 
-		this.profitValue = this.getTrend(false);
+    let availOfferValue = numeral(minusReferenceValue + this.differenceValue);
+    this.possibleOffer = availOfferValue.format('0,0 $');
 
-		let di = numeral(this.differenceValue);
-		this.difference = di.format('0,0 $');
+    this.differenceValueFriday =
+      currentAmount + (this.numberValue + this.successValue + this.trendValue * dayUntilFriday);
 
-		let tm = numeral(this.teamValue);
+    let dif = numeral(this.differenceValueFriday);
+    this.differenceFriday = dif.format('0,0 $');
 
-		let minusReferenceValue = this.teamValue;
-		if (this.differenceValue < 0 && this.teamValue > 0) {
-			minusReferenceValue += this.differenceValue;
-		}
-		minusReferenceValue *= 0.33;
-		minusReferenceValue = Math.floor(minusReferenceValue);
+    let tv = numeral(this.trendValue);
+    this.trend = tv.format('0,0 $');
 
-		let minus = numeral(minusReferenceValue);
-		this.team = tm.format('0,0 $');
-		this.possibleMinus = minus.format('0,0 $');
+    let pf = numeral(this.profitValue);
+    this.profit = pf.format('0,0 $');
 
-		let availOfferValue = numeral(minusReferenceValue + this.differenceValue);
-		this.possibleOffer = availOfferValue.format('0,0 $');
+    let sv = numeral(this.successValue);
+    this.success = sv.format('0,0 $');
 
-		// successValue ist hier bereits 0, falls achievementsDisabled = true ist
-		this.differenceValueFriday = currentAmount +
-			(this.numberValue +
-				this.successValue +
-				(this.trendValue * dayUntilFriday));
+    let lv = numeral(this.lossValue);
+    this.loss = lv.format('0,0 $');
 
-		let dif = numeral(this.differenceValueFriday);
-		this.differenceFriday = dif.format('0,0 $');
+    let tvf = numeral(this.trendValue * dayUntilFriday);
+    this.trendFriday = tvf.format('0,0 $');
+    this.calcColors(currentAmount);
+  }
 
-		let tv = numeral(this.trendValue);
-		this.trend = tv.format('0,0 $');
+  public calcColors(currentAmount: number) {
+    for (const pl of this.players) {
+      // pl.calcColors(this.differenceValue * -1);
+      pl.calcColors(this.differenceValue);
+    }
+    if (currentAmount + this.numberValue < 0) {
+      this.color = KickbaseGroup.color_red;
+    } else {
+      this.color = KickbaseGroup.color_green;
+    }
+    if (this.differenceValueFriday > 0) {
+      this.colorFriday = '#007D34';
+    } else {
+      this.colorFriday = '#C10020';
+    }
+  }
 
-		let pf = numeral(this.profitValue);
-		this.profit = pf.format('0,0 $');
+  getTrend(includeMinusMarketValues: boolean) {
+    let value = 0;
+    for (let player of this.players) {
+      if (!player.isDeleted) {
+        // NEU: Hat der Spieler einen fixen Verkaufspreis?
+        const hasFixedSale = this.isSelling(player) && player.expectedSaleValue !== null;
 
-		let sv = numeral(this.successValue);
-		this.success = sv.format('0,0 $');
+        // Der Trend greift nur, wenn der Preis NICHT fix ist
+        if (!hasFixedSale && this.isSelling(player)) {
+          if (player.stats !== null) {
+            if (player.stats.realMarketValueChange > 0 || includeMinusMarketValues) {
+              value += player.stats.realMarketValueChange;
+            }
+          }
+        }
+      }
+    }
+    return value;
+  }
 
-		let lv = numeral(this.lossValue);
-		this.loss = lv.format('0,0 $');
+  getLoss() {
+    let value = 0;
+    for (let player of this.players) {
+      if (!player.isDeleted) {
+        // NEU: Wie beim Trend - ignorieren, wenn ein fixer Verkaufswert existiert
+        const hasFixedSale = this.isSelling(player) && player.expectedSaleValue !== null;
 
-		let tvf = numeral(this.trendValue * dayUntilFriday);
-		this.trendFriday = tvf.format('0,0 $');
-		this.calcColors(currentAmount);
-	}
+        if (!hasFixedSale && this.isSelling(player)) {
+          if (player.stats !== null && player.stats.realMarketValueChange < 0) {
+            value += player.stats.realMarketValueChange;
+          }
+        }
+      }
+    }
+    return value;
+  }
 
-	public calcColors(currentAmount: number) {
-		for (const pl of this.players) {
-			// pl.calcColors(this.differenceValue * -1);
-			pl.calcColors(this.differenceValue);
-		}
-		if (currentAmount + this.numberValue < 0) {
-			this.color = KickbaseGroup.color_red;
-		} else {
-			this.color = KickbaseGroup.color_green;
-		}
-		if (this.differenceValueFriday > 0) {
-			this.colorFriday = "#007D34";
-		} else {
-			this.colorFriday = "#C10020";
-		}
-	}
+  private getNumberValueTmp() {
+    let retVal = 0;
+    for (let p of this.players) {
+      if (this.isSelling(p)) {
+        // NEU: Nimm den fixen Erwartungswert, falls gesetzt. Sonst den normalen Wert.
+        const salePrice = p.expectedSaleValue !== null ? p.expectedSaleValue : p.value;
+        retVal += salePrice;
+      }
+    }
+    return retVal;
+  }
 
-	getTrend(includeMinusMarketValues: boolean) {
-		let value = 0;
-		for (let player of this.players) {
-			if (!player.isDeactivated && !player.isDeleted && !player.isPersitantDeleted) {
-				if (player.stats !== null) {
-					if (player.stats.realMarketValueChange > 0 || includeMinusMarketValues) {
-						value += player.stats.realMarketValueChange;
-					}
-				}
-			}
-		}
-		return value;
-	}
+  private getSuccessValueTmp() {
+    let retVal = 0;
+    for (let p of this.players) {
+      if (!p.isDeleted && this.isSelling(p)) {
+        retVal += p.successValue;
+      }
+    }
+    return retVal;
+  }
 
-	getLoss() {
-		let value = 0;
-		for (let player of this.players) {
-			if (!player.isDeactivated && !player.isDeleted && !player.isPersitantDeleted) {
-				if (player.stats !== null) {
-					if (player.stats.realMarketValueChange < 0) {
-						value += player.stats.realMarketValueChange;
-					}
-				}
-			}
-		}
-		return value;
-	}
+  private getTeamValueTmp(force: boolean) {
+    let retVal = 0;
+    for (let p of this.players) {
+      if (p.isKept || p.isFixedSquad || p.isDeleted || force) {
+        retVal += p.marketValue;
+      }
+    }
+    return retVal;
+  }
 
-
-	private getNumberValueTmp() {
-		let retVal = 0;
-		for (let p of this.players) {
-			if (!p.isDeactivated && !p.isDeleted && !p.isPersitantDeleted) {
-				retVal = retVal + p.value;
-			}
-		}
-		return retVal;
-	}
-
-	private getSuccessValueTmp() {
-		let retVal = 0;
-		for (let p of this.players) {
-			if (!p.isDeactivated && !p.isDeleted && !p.isPersitantDeleted) {
-				retVal = retVal + p.successValue;
-			}
-		}
-		return retVal;
-	}
-
-	private getTeamValueTmp(force: boolean) {
-		let retVal = 0;
-		for (let p of this.players) {
-			if (p.isDeactivated || p.isDeleted || p.isPersitantDeleted || force) {
-				retVal = retVal + p.marketValue;
-			}
-		}
-		return retVal;
-	}
-
+  private isSelling(p: KickbasePlayer): boolean {
+    return !p.isKept && !p.isFixedSquad && !p.isDeleted;
+  }
 }

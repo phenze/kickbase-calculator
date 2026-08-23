@@ -1,4 +1,11 @@
-import { Component, EventEmitter, Input, OnInit, Output, ChangeDetectionStrategy } from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  Input,
+  OnInit,
+  Output,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
 export interface LoginPayload {
@@ -7,18 +14,16 @@ export interface LoginPayload {
 }
 
 @Component({
-    selector: 'app-login',
-    templateUrl: './login.component.html',
-    styleUrls: ['./login.component.scss'],
-    changeDetection: ChangeDetectionStrategy.Eager,
-    standalone: true,
-    imports: [FormsModule]
+  selector: 'app-login',
+  templateUrl: './login.component.html',
+  styleUrls: ['./login.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: true,
+  imports: [FormsModule],
 })
 export class LoginComponent implements OnInit {
-
   @Output() login = new EventEmitter<LoginPayload>();
   @Input() doLogin: boolean = false;
-
 
   public username = '';
   public password = '';
@@ -29,16 +34,12 @@ export class LoginComponent implements OnInit {
     this.isAdminMode = true;
   }
 
-  ngOnInit(): void {
-  }
+  ngOnInit(): void {}
 
   loginPrivate() {
     this.login.emit({
       username: this.username,
-      password: this.password
+      password: this.password,
     });
   }
-
-
-
 }

@@ -1,9 +1,16 @@
-import { AfterViewInit, ChangeDetectorRef, Component, OnInit, ViewChild, ChangeDetectionStrategy } from '@angular/core';
+import {
+  AfterViewInit,
+  ChangeDetectorRef,
+  Component,
+  OnInit,
+  ViewChild,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 
 import { ApiService } from './services/api.service';
 
 import numeral from 'numeral';
-import 'numeral/locales/de'
+import 'numeral/locales/de';
 
 import { KickbaseGroup } from './model/kickbase-group';
 import { KickbasePlayer } from './model/kickbase-player';
@@ -35,17 +42,19 @@ interface PayPalNamespace {
 }
 
 declare global {
-  interface Window { PayPal?: PayPalNamespace; }
+  interface Window {
+    PayPal?: PayPalNamespace;
+  }
 }
 
 window.PayPal = window.PayPal || {};
 
 @Component({
-    selector: 'app-root',
-    templateUrl: './app.component.html',
-    styleUrls: ['./app.component.scss'],
-    changeDetection: ChangeDetectionStrategy.Eager,
-    standalone: false
+  selector: 'app-root',
+  templateUrl: './app.component.html',
+  styleUrls: ['./app.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: false,
 })
 export class AppComponent implements OnInit, AfterViewInit {
   title = 'app';
@@ -56,7 +65,6 @@ export class AppComponent implements OnInit, AfterViewInit {
   public minusValue: number = 0;
   public minusValueString: string = '0';
   public availableAmountString: string = '0';
-  public amountPlayers: number = 0;
   public offerOffset: string = '0';
   public includeAdditionalAmount = false;
   public loadStatsAlways = true;
@@ -67,14 +75,12 @@ export class AppComponent implements OnInit, AfterViewInit {
 
   public loadingData = false;
   public loadingAllDetailsManual = false;
-  // public token = ""
 
   public leagues: KickbaseLeague[] = [];
   public currentMarket: KickbaseMarket | null = null;
   public currentGift: KickbaseGift | null = null;
   public selectedLeague: number | null = null;
   public achievementsDisabled = false;
-
 
   public readonly sorting_default = -1;
   public readonly sorting_mw_desc = 1;
@@ -84,14 +90,13 @@ export class AppComponent implements OnInit, AfterViewInit {
 
   public selectedSorting: number = -1;
 
-  // public groups: KickbaseGroup[];
-
+  public isGroupedView: boolean = true;
+  public isCardExpanded: boolean = true;
 
   public newplayername = '';
   public newplayeramount = 0;
 
   public kickbaseGroup = new KickbaseGroup();
-
 
   public static readonly display_mode_calculator = 'calculator';
   public static readonly display_mode_market_overview = 'marketOverview';
@@ -109,10 +114,16 @@ export class AppComponent implements OnInit, AfterViewInit {
   constructor(
     public apiService: ApiService,
     private modalService: BsModalService,
-    public cdRef: ChangeDetectorRef) {
-    numeral.locale("de");
+    public cdRef: ChangeDetectorRef,
+  ) {
+    numeral.locale('de');
   }
 
+  get amountPlayers(): number {
+    if (!this.kickbaseGroup?.players) return 0;
+    return this.kickbaseGroup.players.filter((p) => !p.isDeleted && (p.isKept || p.isFixedSquad))
+      .length;
+  }
 
   ngAfterViewInit() {
     this.createPayPalButton();
@@ -122,6 +133,11 @@ export class AppComponent implements OnInit, AfterViewInit {
     let sorting = localStorage.getItem('sorting');
     if (sorting !== null && sorting !== undefined) {
       this.selectedSorting = Number.parseInt(sorting);
+    }
+
+    let groupedView = localStorage.getItem('groupedView');
+    if (groupedView !== null && groupedView !== undefined) {
+      this.isGroupedView = groupedView === 'true' ? true : false;
     }
 
     const loadStatsAlwaysTmp = localStorage.getItem('loadStatsAlways');
@@ -144,7 +160,6 @@ export class AppComponent implements OnInit, AfterViewInit {
     }
     this.displayMode = AppComponent.display_mode_calculator;
 
-
     const date = new Date();
     const dow = date.getDay();
     if (dow === 6) {
@@ -161,7 +176,6 @@ export class AppComponent implements OnInit, AfterViewInit {
       this.dayUntilFriday = 7;
       this.fridayDate = this.addDays(new Date(), this.dayUntilFriday);
     }
-
   }
 
   createPayPalButton() {
@@ -176,9 +190,9 @@ export class AppComponent implements OnInit, AfterViewInit {
         src: 'https://www.paypalobjects.com/de_DE/DE/i/btn/btn_donate_LG.gif',
         alt: 'Spenden mit dem PayPal-Button',
         title: 'PayPal - The safer, easier way to pay online!',
-      }
+      },
     });
-    donateButton.render('#donate-button')
+    donateButton.render('#donate-button');
   }
 
   reloadMarket = async (fullRefresh: boolean): Promise<void> => {
@@ -190,14 +204,11 @@ export class AppComponent implements OnInit, AfterViewInit {
 
     try {
       if (fullRefresh || this.currentMarket === null) {
-        this.currentMarket = await this.apiService.getMarket(
-            this.selectedLeague
-        );
+        this.currentMarket = await this.apiService.getMarket(this.selectedLeague);
       }
       if (this.currentMarket === null) {
         return;
       }
-
 
       for (const player of this.currentMarket.players) {
         if (this.loadStatsAlways) {
@@ -205,7 +216,7 @@ export class AppComponent implements OnInit, AfterViewInit {
         }
 
         player.calcValues();
-        player.isDeactivated = true;
+        player.isKept = true;
         player.calcColors(0);
       }
 
@@ -215,7 +226,6 @@ export class AppComponent implements OnInit, AfterViewInit {
       this.cdRef.detectChanges();
     }
   };
-
 
   reload() {
     this.loadLeagues();
@@ -227,47 +237,60 @@ export class AppComponent implements OnInit, AfterViewInit {
         this.doLogin = true;
         let result = await this.apiService.getToken(payload.username, payload.password);
         if (!result) {
-          alert('Bitte Username und Passwort überprüfen')
+          alert('Bitte Username und Passwort überprüfen');
         } else {
           this.displayMode = AppComponent.display_mode_calculator;
           this.loadLeagues();
         }
         this.doLogin = false;
       } catch {
-        alert('Bitte Username und Passwort überprüfen')
+        alert('Bitte Username und Passwort überprüfen');
         this.doLogin = false;
       }
     } else {
-      alert('Bitte Username und Password angeben')
+      alert('Bitte Username und Password angeben');
       this.doLogin = false;
     }
-
   }
 
   loadLeagues = async () => {
-    await this.apiService.getLeagues().then(
-      leagues => {
+    await this.apiService
+      .getLeagues()
+      .then(async (leagues) => {
         this.leagues = leagues;
         if (this.leagues.length > 0) {
-          if (this.apiService.data.lastLeagueId !== -1 && this.apiService.data.lastLeagueId !== undefined) {
-            this.selectedLeague = this.apiService.data.lastLeagueId;
-            this.onSelectedLeagueChanged(this.apiService.data.lastLeagueId);
+          const rawLastId = this.apiService.data?.lastLeagueId;
+          const parsedLastId =
+            rawLastId !== undefined && rawLastId !== null ? Number(rawLastId) : null;
+
+          const leagueExists = leagues.some((l) => Number(l.id) === parsedLastId);
+
+          if (
+            parsedLastId !== null &&
+            !isNaN(parsedLastId) &&
+            parsedLastId !== -1 &&
+            leagueExists
+          ) {
+            this.selectedLeague = parsedLastId;
+            await this.onSelectedLeagueChanged(parsedLastId);
           } else {
-            this.selectedLeague = leagues[0].id;
-            this.onSelectedLeagueChanged(leagues[0].id);
+            this.selectedLeague = null;
+            await this.onSelectedLeagueChanged(null);
           }
+        } else {
+          this.selectedLeague = null;
+          await this.onSelectedLeagueChanged(null);
         }
+      })
+      .catch((error) => {
+        console.error(error);
+      })
+      .finally(() => {
+        this.cdRef.detectChanges();
+      });
+  };
 
-      }
-    ).catch(error => {
-      console.log(error)
-    });
-  }
-
-
-  onSelectedLeagueChanged = async (
-      newValue: number | null
-  ): Promise<void> => {
+  onSelectedLeagueChanged = async (newValue: number | null): Promise<void> => {
     this.loadingData = true;
     this.kickbaseGroup = new KickbaseGroup();
 
@@ -283,13 +306,10 @@ export class AppComponent implements OnInit, AfterViewInit {
     this.apiService.setLastLeague(newValue);
 
     try {
-      // Markt der neu ausgewählten Liga laden
       this.currentMarket = await this.apiService.getMarket(newValue);
       this.currentGift = null;
 
-      const league = this.leagues.find(
-          item => Number(item.id) === newValue
-      );
+      const league = this.leagues.find((item) => Number(item.id) === newValue);
 
       if (league === undefined) {
         return;
@@ -304,34 +324,27 @@ export class AppComponent implements OnInit, AfterViewInit {
       this.minusValueString = budget.format('0,0');
 
       if (this.currentMarket !== null) {
-        this.extraAmount = Number(
-            this.currentMarket.offerAmountForUser
-        );
+        this.extraAmount = Number(this.currentMarket.offerAmountForUser);
 
         const extraAmountNumeral = numeral(this.extraAmount);
         this.extraAmountString = extraAmountNumeral.format('0,0');
       }
 
-      const deletedPlayersStorage = localStorage.getItem(
-          `permantDeletedPlayer_${newValue}`
-      );
+      const deletedPlayersStorage = localStorage.getItem(`permantDeletedPlayer_${newValue}`);
 
       let permanentlyDeletedPlayers: string[] = [];
 
       if (deletedPlayersStorage !== null) {
-        const parsedDeletedPlayers: unknown =
-            JSON.parse(deletedPlayersStorage);
+        const parsedDeletedPlayers: unknown = JSON.parse(deletedPlayersStorage);
 
         permanentlyDeletedPlayers = Array.isArray(parsedDeletedPlayers)
-            ? parsedDeletedPlayers.map(value => String(value))
-            : [];
+          ? parsedDeletedPlayers.map((value) => String(value))
+          : [];
       }
-
-      this.amountPlayers = 0;
 
       for (const player of lineUp.players) {
         const marketPlayer = this.currentMarket?.players.find(
-            marketItem => marketItem.id === player.id
+          (marketItem) => marketItem.id === player.id,
         );
 
         if (marketPlayer !== undefined) {
@@ -340,24 +353,16 @@ export class AppComponent implements OnInit, AfterViewInit {
         }
 
         player.leagueId = newValue;
-        player.isPersitantDeleted =
-            permanentlyDeletedPlayers.includes(String(player.id));
+        player.isFixedSquad = permanentlyDeletedPlayers.includes(String(player.id));
 
         this.kickbaseGroup.players.push(player);
-
-        if (player.isPersitantDeleted) {
-          this.amountPlayers++;
-        }
       }
 
-      // Nur zusätzliche Details laden, wenn aktiviert.
-      // Die Marktübersicht wurde bereits vorher aktualisiert.
       if (this.loadStatsAlways) {
         await this.onLoadAllDetails(false);
       }
 
       this.onIncludeAdditionalAmountChanged();
-
     } catch (error) {
       console.error('Fehler beim Wechseln der Liga:', error);
     } finally {
@@ -367,9 +372,8 @@ export class AppComponent implements OnInit, AfterViewInit {
   };
 
   onAmountChange(newValue: number | string) {
-    console.log(newValue)
+    console.log(newValue);
   }
-
 
   onLoadAllDetails = async (refresh: boolean) => {
     if (this.selectedLeague === null) {
@@ -385,7 +389,7 @@ export class AppComponent implements OnInit, AfterViewInit {
         await pl.loadStats(this.selectedLeague, this.apiService);
         if (refresh) {
           pl.calcValues();
-          pl.isDeactivated = true;
+          pl.isKept = true;
           pl.calcColors(0);
         }
       }
@@ -398,8 +402,7 @@ export class AppComponent implements OnInit, AfterViewInit {
       }
     }
     this.loadingAllDetailsManual = false;
-  }
-
+  };
 
   onLoadAllDetailsForPlayer = async (player: KickbasePlayer) => {
     if (this.selectedLeague === null) {
@@ -417,23 +420,16 @@ export class AppComponent implements OnInit, AfterViewInit {
     } else {
       this.onDeactivatePlayer(player);
     }
-  }
+  };
 
   onPlayerValueChanged(player: KickbasePlayer) {
-    if (player.isPersitantDeleted) {
-      this.amountPlayers++
-    } else {
-      this.amountPlayers--
-    }
     this.kickbaseGroup.calcValues(
       this.amountValue,
       this.includeMinusMarketValues,
       this.dayUntilFriday,
-      this.achievementsDisabled
+      this.achievementsDisabled,
     );
   }
-
-
 
   onMinusValueChanged(value: number | string) {
     try {
@@ -441,9 +437,7 @@ export class AppComponent implements OnInit, AfterViewInit {
       this.minusValue = di.value() ?? 0;
       this.minusValueString = di.format('0,0');
       this.onIncludeAdditionalAmountChanged();
-    } catch {
-
-    }
+    } catch {}
   }
 
   onIncludeAdditionalAmountChanged() {
@@ -456,7 +450,7 @@ export class AppComponent implements OnInit, AfterViewInit {
   }
 
   onLoadStatsAlwaysChanged() {
-    localStorage.setItem('loadStatsAlways', this.loadStatsAlways.toString())
+    localStorage.setItem('loadStatsAlways', this.loadStatsAlways.toString());
   }
 
   onExtraAmountChange(event: number | string) {
@@ -465,11 +459,7 @@ export class AppComponent implements OnInit, AfterViewInit {
       this.extraAmount = di.value() ?? 0;
       this.extraAmountString = di.format('0,0');
       this.onIncludeAdditionalAmountChanged();
-    } catch {
-
-    }
-
-
+    } catch {}
   }
 
   onOfferOffsetChange(event: string) {
@@ -478,50 +468,31 @@ export class AppComponent implements OnInit, AfterViewInit {
       this.offerOffset = value.replace(',', '.');
       localStorage.setItem('offerOffset', this.offerOffset.toString());
       this.kickbaseGroup.calcColors(this.amountValue);
-    } catch {
-
-    }
-
-
+    } catch {}
   }
-
-
-
 
   onAddPlayer() {
     let player = new KickbasePlayer(null, this.apiService.userID);
     player.name = this.newplayername;
     player.value = Number(this.newplayeramount);
 
-    this.kickbaseGroup.players.push(player)
+    this.kickbaseGroup.players.push(player);
     this.refreshGroups();
     this.newplayeramount = 0;
-    this.newplayername = "";
-
+    this.newplayername = '';
   }
 
   onRemovePlayer(player: KickbasePlayer) {
-    const index = this.kickbaseGroup.players.find(p => p.name == player.name);
+    const index = this.kickbaseGroup.players.find((p) => p.name == player.name);
     if (index === undefined) {
       return;
     }
     index.isDeleted = true;
-    if (!player.isPersitantDeleted) {
-      this.amountPlayers++
-    }
     this.refreshGroups();
   }
 
   onDeactivatePlayer(player: KickbasePlayer) {
-    if (!player.isPersitantDeleted) {
-      if (player.isDeactivated) {
-        this.amountPlayers--
-      } else {
-        this.amountPlayers++
-      }
-
-    }
-    player.isDeactivated = !player.isDeactivated;
+    player.isKept = !player.isKept;
     this.refreshGroups();
   }
 
@@ -530,7 +501,8 @@ export class AppComponent implements OnInit, AfterViewInit {
       this.amountValue,
       this.includeMinusMarketValues,
       this.dayUntilFriday,
-      this.achievementsDisabled);
+      this.achievementsDisabled,
+    );
     this.sortCurrentPlayers();
   }
 
@@ -545,26 +517,21 @@ export class AppComponent implements OnInit, AfterViewInit {
       console.log('cannot collect gift');
       console.log(error);
       const initialState = {
-        list: [
-          JSON.stringify(error)
-        ],
-        title: 'Geschenk bereits erhalten'
+        list: [JSON.stringify(error)],
+        title: 'Geschenk bereits erhalten',
       };
       this.bsModalRef = this.modalService.show(ModalComponent, { initialState });
       this.bsModalRef.content.closeBtnName = 'Close';
     }
-  }
-
-
+  };
 
   errorHandler(event: Event) {
     console.debug(event);
     const target = event.target as HTMLImageElement | null;
     if (target !== null) {
-      target.src = "https://cdn.browshot.com/static/images/not-found.png";
+      target.src = 'https://cdn.browshot.com/static/images/not-found.png';
     }
   }
-
 
   logout() {
     this.apiService.logout();
@@ -579,40 +546,36 @@ export class AppComponent implements OnInit, AfterViewInit {
   }
 
   sortCurrentPlayers(): void {
-    const isMarketOverview =
-        this.displayMode === AppComponent.display_mode_market_overview;
+    const isMarketOverview = this.displayMode === AppComponent.display_mode_market_overview;
 
     const sourcePlayers = isMarketOverview
-        ? this.currentMarket?.players ?? []
-        : this.kickbaseGroup.players;
+      ? (this.currentMarket?.players ?? [])
+      : this.kickbaseGroup.players;
 
     const playersToSort = [...sourcePlayers];
 
     if (
-        this.selectedSorting === this.sorting_mw_asc ||
-        this.selectedSorting === this.sorting_mw_desc
+      this.selectedSorting === this.sorting_mw_asc ||
+      this.selectedSorting === this.sorting_mw_desc
     ) {
-      const ascending =
-          this.selectedSorting === this.sorting_mw_asc;
+      const ascending = this.selectedSorting === this.sorting_mw_asc;
 
       playersToSort.sort((a, b) => {
         if (a.marketValue === b.marketValue) {
           return 0;
         }
 
-        const result =
-            a.marketValue < b.marketValue ? -1 : 1;
+        const result = a.marketValue < b.marketValue ? -1 : 1;
 
         return ascending ? result : -result;
       });
     }
 
     if (
-        this.selectedSorting === this.sorting_mw_change_asc ||
-        this.selectedSorting === this.sorting_mw_change_desc
+      this.selectedSorting === this.sorting_mw_change_asc ||
+      this.selectedSorting === this.sorting_mw_change_desc
     ) {
-      const ascending =
-          this.selectedSorting === this.sorting_mw_change_asc;
+      const ascending = this.selectedSorting === this.sorting_mw_change_asc;
 
       playersToSort.sort((a, b) => {
         const aChange = a.stats?.realMarketValueChange;
@@ -637,17 +600,12 @@ export class AppComponent implements OnInit, AfterViewInit {
         const aIsUserPlayer = a.username.length > 0;
         const bIsUserPlayer = b.username.length > 0;
 
-        // 1. Spieler von Mitspielern nach hinten stellen
         if (aIsUserPlayer && !bIsUserPlayer) {
-          return 1; // 'a' kommt nach 'b'
+          return 1;
         }
         if (!aIsUserPlayer && bIsUserPlayer) {
-          return -1; // 'a' kommt vor 'b'
+          return -1;
         }
-
-        // Falls Mitspieler-Spieler zuerst kommen sollen, kehre die Returns oben um (-1 statt 1 / 1 statt -1)
-
-        // 2. Innerhalb derselben Gruppe nach Ablaufzeit (expiry) aufsteigend sortieren
         const aExpiry = a.expiry ?? Number.MAX_SAFE_INTEGER;
         const bExpiry = b.expiry ?? Number.MAX_SAFE_INTEGER;
 
@@ -673,7 +631,6 @@ export class AppComponent implements OnInit, AfterViewInit {
   onFridayDateChanged(countDays: string) {
     const intValue = Number.parseInt(countDays);
     if (!isNaN(intValue)) {
-
       this.dayUntilFriday = Number.parseInt(countDays);
       this.fridayDate = this.addDays(new Date(), this.dayUntilFriday);
       this.refreshGroups();
@@ -690,7 +647,7 @@ export class AppComponent implements OnInit, AfterViewInit {
     if (player.isDeleted) {
       return false;
     }
-    if (player.isPersitantDeleted) {
+    if (player.isFixedSquad) {
       return this.showPermanentDeletedPlayers;
     }
     return true;
@@ -707,4 +664,21 @@ export class AppComponent implements OnInit, AfterViewInit {
     }
   };
 
+  getActivePlayersCount(): number {
+    if (!this.kickbaseGroup?.players) return 0;
+    return this.kickbaseGroup.players.filter((p) => !p.isFixedSquad).length;
+  }
+
+  getDisabledPlayersCount(): number {
+    if (!this.kickbaseGroup?.players) return 0;
+    return this.kickbaseGroup.players.filter((p) => p.isFixedSquad).length;
+  }
+
+  onGroupedViewChanged() {
+    localStorage.setItem('groupedView', this.isGroupedView.toString());
+    if (this.isGroupedView) {
+      this.showPermanentDeletedPlayers = true;
+    }
+    this.cdRef.detectChanges();
+  }
 }

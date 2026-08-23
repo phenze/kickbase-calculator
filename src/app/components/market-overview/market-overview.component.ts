@@ -5,7 +5,7 @@ import {
   Input,
   OnChanges,
   Output,
-  inject
+  inject,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { AngularSvgIconModule } from 'angular-svg-icon';
@@ -21,11 +21,7 @@ import { PlayerItemComponent } from '../player-item/player-item.component';
   styleUrls: ['./market-overview.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
-  imports: [
-    FormsModule,
-    AngularSvgIconModule,
-    PlayerItemComponent
-  ]
+  imports: [FormsModule, AngularSvgIconModule, PlayerItemComponent],
 })
 export class MarketOverviewComponent implements OnChanges {
   public apiService = inject(ApiService);
@@ -45,18 +41,12 @@ export class MarketOverviewComponent implements OnChanges {
   }
 
   onOnlyManualPricesChanges(): void {
-    localStorage.setItem(
-      'onlyManualPrices',
-      this.onlyManualPrices.toString()
-    );
+    localStorage.setItem('onlyManualPrices', this.onlyManualPrices.toString());
     this.filterPlayersToShow();
   }
 
   onOnlyKickbasePlayersChanged(): void {
-    localStorage.setItem(
-      'onlyKickbasePlayers',
-      this.onlyKickbasePlayers.toString()
-    );
+    localStorage.setItem('onlyKickbasePlayers', this.onlyKickbasePlayers.toString());
     this.filterPlayersToShow();
   }
 
@@ -73,18 +63,16 @@ export class MarketOverviewComponent implements OnChanges {
 
     if (this.onlyManualPrices) {
       filteredPlayers = filteredPlayers.filter(
-        player =>
+        (player) =>
           player.price % 100 === 0 &&
           player.price !== 500000 &&
           player.price !== player.marketValue &&
-          player.username.length > 0
+          player.username.length > 0,
       );
     }
 
     if (this.onlyKickbasePlayers) {
-      filteredPlayers = filteredPlayers.filter(
-        player => player.username === ''
-      );
+      filteredPlayers = filteredPlayers.filter((player) => player.username === '');
     }
 
     this.playersToShow = filteredPlayers;
