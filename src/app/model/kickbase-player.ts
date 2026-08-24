@@ -17,8 +17,7 @@ export class KickbasePlayer {
   public expiryDate!: string;
   public expiry!: number;
   public expiryColor!: string;
-  public priceString!: string;
-  public priceMarketValueDifferString!: string;
+  public priceMarketValueDiffer!: number;
   public price!: number;
 
   // custom fields
@@ -74,6 +73,8 @@ export class KickbasePlayer {
         this.price = json['uop'] ?? this.price;
       }
 
+      this.priceMarketValueDiffer = this.price - this.marketValue;
+
       if (json.hasOwnProperty('u') && json['u'] != null && json['u']['n']) {
         this.username = json['u']['n'];
       } else {
@@ -110,15 +111,6 @@ export class KickbasePlayer {
   }
 
   public calcValues() {
-    this.valueString = this.getValueTmp();
-    this.valuePercentString = this.getValuePercentTmp();
-    this.marketValueString = this.getMarketValueTmp();
-    this.offset = this.getOffsetTmp();
-    this.offsetNumber = this.getOffsetNumberTmp();
-    this.successValue = this.getSuccessValueTmp();
-    this.successValueString = this.getsuccessValueStringTmp();
-    this.priceString = this.getPriceTmp();
-    this.priceMarketValueDifferString = this.getPriceMarketValueDifferTmp();
     if (this.stats !== null) {
       this.stats.calcValues();
     }
@@ -153,9 +145,13 @@ export class KickbasePlayer {
         this.stats.realMarketValueChange > 0 ? KickbaseGroup.color_green : KickbaseGroup.color_red;
     }
     this.colorSuccessValue =
-      this.successValue > 0 ? KickbaseGroup.color_green : KickbaseGroup.color_red;
+      this.successValue !== null && this.successValue > 0
+        ? KickbaseGroup.color_green
+        : KickbaseGroup.color_red;
     this.colorOffsetValue =
-      this.offsetNumber > 0 ? KickbaseGroup.color_green : KickbaseGroup.color_red;
+      this.offsetNumber !== null && this.offsetNumber > 0
+        ? KickbaseGroup.color_green
+        : KickbaseGroup.color_red;
     // add percent when value should turn green
     let offerOffset = 0;
     const offerOffsetTmp = localStorage.getItem('offerOffset');
@@ -180,54 +176,37 @@ export class KickbasePlayer {
     }
   }
 
-  private getPriceTmp() {
-    let n = numeral(this.price);
-    return n.format('0,0 $');
+  get priceMarketValueDifferPercent(): string {
+    if (!this.price || this.price === 0) return '0,00%'; // Schutz vor Division durch 0
+
+    const ratio = (this.price - this.marketValue) / this.marketValue;
+
+    return new Intl.NumberFormat('de-DE', {
+      style: 'percent',
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(ratio);
   }
 
-  private getPriceMarketValueDifferTmp() {
-    let n = numeral(this.price - this.marketValue);
-    return n.format('0,0 $');
+  get valuePercentString(): string {
+    if (!this.marketValue) return '0,00%'; // Schutz vor Division durch 0
+
+    const ratio = (this.value - this.marketValue) / this.marketValue;
+
+    return new Intl.NumberFormat('de-DE', {
+      style: 'percent',
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(ratio);
   }
 
-  public valueString = '';
-  private getValueTmp() {
-    let n = numeral(this.value);
-    return n.format('0,0 $');
-  }
-
-  public valuePercentString = '';
-  private getValuePercentTmp() {
-    let n = numeral((this.value - this.marketValue) / this.marketValue);
-    return n.format('0.000%');
-  }
-
-  public marketValueString = '';
-  private getMarketValueTmp() {
-    let n = numeral(this.marketValue);
-    return n.format('0,0 $');
-  }
-
-  public offset = '';
-  private getOffsetTmp() {
-    if (this.stats !== null) {
-      let n = numeral(this.value - this.stats.buyPrice);
-      return n.format('0,0 $');
-    }
-    return '';
-  }
-
-  public successValueString = '';
-  private getsuccessValueStringTmp() {
-    let n = numeral(this.successValue);
-    return n.format('0,0 $');
-  }
-
-  public successValue = 0;
-  private getSuccessValueTmp() {
+  get successValue(): number {
     let retVal = 0;
     if (this.stats !== null) {
       let offset = this.offsetNumber;
+      if (offset === null) {
+        return 0;
+      }
       /*
       3000000	5000000	10000000	20000000
       250000	750000	1750000	3750000
@@ -252,15 +231,14 @@ export class KickbasePlayer {
     return retVal;
   }
 
-  public offsetNumber = 0;
-  private getOffsetNumberTmp() {
+  get offsetNumber(): number | null {
     if (this.stats !== null) {
       return (
         (this.expectedSaleValue !== null ? this.expectedSaleValue : this.value) -
         this.stats.buyPrice
       );
     }
-    return 0;
+    return null;
   }
 
   public static createArrayInstance(json: any, userID: string | number): KickbasePlayer[] {
@@ -317,12 +295,6 @@ export class KickbasePlayer {
     retVal.isKept = this.isKept;
     retVal.isFixedSquad = this.isFixedSquad;
     retVal.isDeleted = this.isDeleted;
-
-    retVal.valueString = this.valueString;
-    retVal.marketValueString = this.marketValueString;
-    retVal.offset = this.offset;
-    retVal.successValue = this.successValue;
-    retVal.offsetNumber = this.offsetNumber;
     retVal.nameHash = this.nameHash;
     retVal.expectedSaleValue = this.expectedSaleValue;
 

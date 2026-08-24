@@ -84,8 +84,8 @@ describe('KickbasePlayer', () => {
 
       player.calcValues();
 
-      expect(player.valueString).toContain('5 000 000 €');
-      expect(player.marketValueString).toContain('4 000 000 €');
+      expect(player.value).toBe(5000000);
+      expect(player.marketValue).toBe(4000000);
       expect(player.offsetNumber).toBe(3000000);
       expect(player.successValue).toBe(250000);
       expect(mockStats.calcValues).toHaveBeenCalled();

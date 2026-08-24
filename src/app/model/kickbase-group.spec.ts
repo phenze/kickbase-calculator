@@ -7,7 +7,6 @@ function makePlayer(overrides: Partial<KickbasePlayer> = {}): KickbasePlayer {
   const player = new KickbasePlayer(null, 1);
   player.value = 0;
   player.marketValue = 0;
-  player.successValue = 0;
   player.isKept = false;
   player.isDeleted = false;
   player.isFixedSquad = false;

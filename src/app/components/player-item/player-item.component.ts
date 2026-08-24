@@ -14,6 +14,8 @@ import { AngularSvgIconModule } from 'angular-svg-icon';
 
 import numeral from 'numeral';
 import 'numeral/locales/de';
+import { CurrencyPipe } from '@angular/common';
+import { EuroPipe } from 'src/app/no-decimals.pipe';
 
 @Component({
   selector: 'app-player-item',
@@ -21,7 +23,7 @@ import 'numeral/locales/de';
   styleUrls: ['./player-item.component.scss'],
   changeDetection: ChangeDetectionStrategy.Eager,
   standalone: true,
-  imports: [FormsModule, AngularSvgIconModule],
+  imports: [FormsModule, AngularSvgIconModule, EuroPipe],
 })
 export class PlayerItemComponent implements OnInit {
   @Input({ required: true }) player!: KickbasePlayer;

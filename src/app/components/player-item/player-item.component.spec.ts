@@ -5,6 +5,13 @@ import { KickbasePlayer } from 'src/app/model/kickbase-player';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { AngularSvgIconModule } from 'angular-svg-icon';
+import { CurrencyPipe, registerLocaleData } from '@angular/common';
+import { EuroPipe } from 'src/app/no-decimals.pipe';
+
+import localeDe from '@angular/common/locales/de';
+
+// Deutsche Sprachdaten für den Test registrieren
+registerLocaleData(localeDe, 'de-DE');
 
 describe('PlayerItemComponent', () => {
   let component: PlayerItemComponent;
@@ -16,11 +23,12 @@ describe('PlayerItemComponent', () => {
     mockApiService = jasmine.createSpyObj('ApiService', ['setPlayerPermanentDeleted']);
 
     await TestBed.configureTestingModule({
-      imports: [PlayerItemComponent, AngularSvgIconModule.forRoot()],
+      imports: [PlayerItemComponent, AngularSvgIconModule.forRoot(), CurrencyPipe, EuroPipe],
       providers: [
         { provide: ApiService, useValue: mockApiService },
         provideHttpClient(),
         provideHttpClientTesting(),
+        CurrencyPipe,
       ],
     }).compileComponents();
 
@@ -147,7 +155,9 @@ describe('PlayerItemComponent', () => {
           id: '1',
           firstName: 'Max',
           lastName: 'Mustermann',
-          marketValue: 10000000,
+          mv: 10000000,
+          value: 10000000,
+          expectedSaleValue: null,
         },
         'user123',
       );
@@ -160,8 +170,8 @@ describe('PlayerItemComponent', () => {
         points: 500,
         averagePoints: 50,
         nextThreeOpponents: [],
+        buyPrice: 5000000,
       } as any;
-      mockPlayer.successValueString = '50.000 €';
 
       component.player = mockPlayer;
       component.printMode = false;
@@ -177,7 +187,7 @@ describe('PlayerItemComponent', () => {
       const compiled = fixture.nativeElement as HTMLElement;
       // Label steht jetzt ohne Doppelpunkt in einer eigenen .metric-label-Box
       expect(compiled.textContent).toContain('Erfolge');
-      expect(compiled.textContent).toContain('50.000 €');
+      expect(compiled.textContent).toMatch(/750\.000\s*€/);
     });
 
     it('sollte "0 €" durchgestrichen anzeigen, wenn achievementsDisabled true ist', () => {

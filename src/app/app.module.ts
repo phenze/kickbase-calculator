@@ -1,5 +1,5 @@
 import { BrowserModule } from '@angular/platform-browser';
-import { NgModule } from '@angular/core';
+import { DEFAULT_CURRENCY_CODE, LOCALE_ID, NgModule } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { provideHttpClient, withFetch, withInterceptorsFromDi } from '@angular/common/http';
 import { provideRouter } from '@angular/router';
@@ -10,8 +10,6 @@ import { ApiService } from './services/api.service';
 
 import { BsDropdownModule } from 'ngx-bootstrap/dropdown';
 import { ModalModule } from 'ngx-bootstrap/modal';
-import { NumberformatterDirective } from './numberformatter.directive';
-import { MyCurrencyPipe } from './my-currency.pipe';
 import { AngularSvgIconModule } from 'angular-svg-icon';
 import { ModalComponent } from './components/modal/modal.component';
 
@@ -19,6 +17,12 @@ import { LoginComponent } from './components/login/login.component';
 import { HelpComponent } from './components/help/help.component';
 import { PlayerItemComponent } from './components/player-item/player-item.component';
 import { MarketOverviewComponent } from './components/market-overview/market-overview.component';
+
+import { CurrencyPipe, registerLocaleData } from '@angular/common';
+import localeDe from '@angular/common/locales/de';
+import { EuroPipe } from './no-decimals.pipe';
+
+registerLocaleData(localeDe, 'de-DE');
 
 @NgModule({
   declarations: [AppComponent],
@@ -29,20 +33,21 @@ import { MarketOverviewComponent } from './components/market-overview/market-ove
     BsDropdownModule,
     ModalModule,
     AngularSvgIconModule.forRoot(),
-    NumberformatterDirective,
-    MyCurrencyPipe,
     ModalComponent,
     LoginComponent,
     HelpComponent,
     PlayerItemComponent,
     MarketOverviewComponent,
+    EuroPipe,
     // ServiceWorkerModule.register('ngsw-worker.js', { enabled: environment.production }),
   ],
   providers: [
-    MyCurrencyPipe,
     ApiService,
     provideHttpClient(withFetch(), withInterceptorsFromDi()),
     provideRouter([]),
+    CurrencyPipe,
+    { provide: LOCALE_ID, useValue: 'de-DE' },
+    { provide: DEFAULT_CURRENCY_CODE, useValue: 'EUR' },
   ],
 })
 export class AppModule {}

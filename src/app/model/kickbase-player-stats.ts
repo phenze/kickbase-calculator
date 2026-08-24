@@ -30,10 +30,6 @@ export class KickbasePlayerStats {
   public threeDaysValuesPercent: any[];
   public threeDays = '';
 
-  public realMarketValueChangeValue = '';
-  public realMarketValueChangeValuePrecent = '';
-  public buyPriceValue = '';
-
   public nextThreeOpponents!: NextOpponent[];
 
   constructor(json: any) {
@@ -82,20 +78,19 @@ export class KickbasePlayerStats {
 
   public calcValues() {
     this.calcThreeDays();
-    this.calcrealMarketValueChangeValue();
-    this.calcbuyPriceValue();
   }
 
-  calcrealMarketValueChangeValue() {
-    if (this.realMarketValueChange !== -1) {
-      let n = numeral(this.realMarketValueChange);
-      let np = numeral(this.realMarketValueChange / this.mv);
-      this.realMarketValueChangeValue = n.format('0,0 $');
+  get realMarketValueChangePercent(): string {
+    if (!this.realMarketValueChange || this.realMarketValueChange === -1)
+      return 'Kann noch nicht berechnet werden'; // Schutz vor Division durch 0
 
-      this.realMarketValueChangeValuePrecent = np.format('0.000%');
-    } else {
-      this.realMarketValueChangeValue = 'Kann noch nicht berechnet werden';
-    }
+    const ratio = this.realMarketValueChange / this.mv;
+
+    return new Intl.NumberFormat('de-DE', {
+      style: 'percent',
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(ratio);
   }
 
   calcThreeDays() {
@@ -137,10 +132,5 @@ export class KickbasePlayerStats {
         }
       }
     }
-  }
-
-  calcbuyPriceValue() {
-    let n = numeral(this.buyPrice);
-    this.buyPriceValue = n.format('0,0 $');
   }
 }
