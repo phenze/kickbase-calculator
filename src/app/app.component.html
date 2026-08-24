@@ -27,7 +27,7 @@
           src="assets/card_giftcard-24px.svg"
         >
         </svg-icon>
-        <span class="gift-value">{{ currentGift.value }}</span>
+        <span class="gift-value">{{ currentGift.amount | euro }}</span>
       </div>
     }
     <button (click)="logout()" type="button" class="btn btn-outline-secondary btn-sm logout-btn">
@@ -179,7 +179,7 @@
             <span class="input-group-text">€</span>
             <input
               type="text"
-              [ngModel]="minusValueString"
+              [value]="minusValue | euro"
               readonly
               class="form-control currency"
               id="balanceValue"
@@ -189,15 +189,18 @@
           <label class="form-label" for="extraAmount">Erwarte Ausgaben/Ausstehende Angebote</label>
           <div class="input-group mb-3">
             <span class="input-group-text">€</span>
+
             <input
               type="text"
               min="0"
               inputmode="numeric"
               pattern="[0-9]*"
-              [ngModel]="extraAmountString"
-              (ngModelChange)="onExtraAmountChange($event)"
+              appFormattedNumber
               class="form-control currency"
               id="extraAmount"
+              [(ngModel)]="extraAmount"
+              (ngModelChange)="onExtraAmountChange($event)"
+              placeholder="0"
             />
           </div>
 
@@ -330,7 +333,7 @@
               <div class="kpi-box bg-light">
                 <span class="text-muted small">Konto:</span>
                 <span class="fw-bold fs-6" [style.color]="kickbaseGroup.color">
-                  {{ kickbaseGroup.difference }}
+                  {{ kickbaseGroup.differenceValue | euro }}
                 </span>
               </div>
 
@@ -338,7 +341,7 @@
               <div class="kpi-box bg-light">
                 <span class="text-muted small">+Einnahmen:</span>
                 <span class="fw-bold fs-6" [style.color]="kickbaseGroup.colorFriday">
-                  {{ kickbaseGroup.differenceFriday }}
+                  {{ kickbaseGroup.differenceFridayValue | euro }}
                 </span>
               </div>
             </div>
@@ -409,13 +412,14 @@
         </div>
 
         <div class="squad-title mt-3 mb-2">
-          <h4 class="squad-title-team">{{ kickbaseGroup.team }}</h4>
+          <h4 class="squad-title-team">{{ kickbaseGroup.teamValue | euro }}</h4>
           <div class="squad-title-meta">
             <span
-              >Mögliches Minus: <strong>{{ kickbaseGroup.possibleMinus }}</strong></span
+              >Mögliches Minus: <strong>{{ kickbaseGroup.possibleMinusValue | euro }}</strong></span
             >
             <span
-              >Maximales Angebot: <strong>{{ kickbaseGroup.possibleOffer }}</strong></span
+              >Maximales Angebot:
+              <strong>{{ kickbaseGroup.possibleOfferValue | euro }}</strong></span
             >
           </div>
         </div>
@@ -581,21 +585,21 @@
               <div class="mb-2 pb-2 border-bottom">
                 <div class="text-muted small">Einnahmen aus Verkäufen</div>
                 <div class="fs-6 fw-bold" [style.color]="kickbaseGroup.color">
-                  {{ kickbaseGroup.value }}
+                  {{ kickbaseGroup.numberValue | euro }}
                 </div>
               </div>
 
               <div class="mb-2 pb-2 border-bottom">
                 <div class="text-muted small">Kontostand nach Verkäufen</div>
                 <div class="fs-6 fw-bold" [style.color]="kickbaseGroup.color">
-                  {{ kickbaseGroup.difference }}
+                  {{ kickbaseGroup.differenceValue | euro }}
                 </div>
               </div>
 
               <div>
                 <div class="text-muted small">Kontostand (Verkäufe + Einnahmen Fr. + Erfolge)</div>
                 <div class="fs-6 fw-bold" [style.color]="kickbaseGroup.colorFriday">
-                  {{ kickbaseGroup.differenceFriday }}
+                  {{ kickbaseGroup.differenceFridayValue | euro }}
                 </div>
               </div>
             </div>
@@ -603,20 +607,22 @@
             <div class="d-flex flex-column gap-2 small text-secondary">
               <div class="d-flex justify-content-between align-items-center py-1 border-bottom">
                 <span><i class="bi bi-graph-up-arrow text-success me-2"></i>Täglicher Gewinn</span>
-                <span class="fw-semibold text-dark">{{ kickbaseGroup.profit }}</span>
+                <span class="fw-semibold text-dark">{{ kickbaseGroup.profitValue | euro }}</span>
               </div>
 
               <div class="d-flex justify-content-between align-items-center py-1 border-bottom">
                 <span
                   ><i class="bi bi-graph-down-arrow text-danger me-2"></i>Täglicher Verlust</span
                 >
-                <span class="fw-semibold text-dark">{{ kickbaseGroup.loss }}</span>
+                <span class="fw-semibold text-dark">{{ kickbaseGroup.lossValue | euro }}</span>
               </div>
 
               @if (includeMinusMarketValues) {
                 <div class="d-flex justify-content-between align-items-center py-1 border-bottom">
                   <span><i class="bi bi-calendar-event me-2"></i>Einnahmen bis Freitag</span>
-                  <span class="fw-semibold text-dark">{{ kickbaseGroup.trendFriday }}</span>
+                  <span class="fw-semibold text-dark">{{
+                    kickbaseGroup.trendFridayValue | euro
+                  }}</span>
                 </div>
               } @else {
                 <div class="d-flex justify-content-between align-items-center py-1 border-bottom">
@@ -624,7 +630,9 @@
                     ><i class="bi bi-calendar-event me-2"></i>Einnahmen bis Freitag (ohne
                     Verlust)</span
                   >
-                  <span class="fw-semibold text-dark">{{ kickbaseGroup.trendFriday }}</span>
+                  <span class="fw-semibold text-dark">{{
+                    kickbaseGroup.trendFridayValue | euro
+                  }}</span>
                 </div>
               }
 
@@ -643,13 +651,13 @@
                 @if (achievementsDisabled) {
                   <span class="badge bg-secondary">Deaktiviert</span>
                 } @else {
-                  <span class="fw-semibold text-dark">{{ kickbaseGroup.success }}</span>
+                  <span class="fw-semibold text-dark">{{ kickbaseGroup.successValue | euro }}</span>
                 }
               </div>
 
               <div class="d-flex justify-content-between align-items-center pt-1">
                 <span><i class="bi bi-people me-2"></i>Kaderwert</span>
-                <span class="fw-bold text-dark fs-6">{{ kickbaseGroup.team }}</span>
+                <span class="fw-bold text-dark fs-6">{{ kickbaseGroup.teamValue | euro }}</span>
               </div>
             </div>
           </div>

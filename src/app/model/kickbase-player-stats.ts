@@ -1,5 +1,3 @@
-import numeral from 'numeral';
-
 export interface NextOpponent {
   imageUrl: string;
   isHomeGame: boolean;
@@ -29,10 +27,6 @@ export class KickbasePlayerStats {
   public threeDaysValues: any[];
   public threeDaysValuesPercent: any[];
   public threeDays = '';
-
-  public realMarketValueChangeValue = '';
-  public realMarketValueChangeValuePrecent = '';
-  public buyPriceValue = '';
 
   public nextThreeOpponents!: NextOpponent[];
 
@@ -82,20 +76,19 @@ export class KickbasePlayerStats {
 
   public calcValues() {
     this.calcThreeDays();
-    this.calcrealMarketValueChangeValue();
-    this.calcbuyPriceValue();
   }
 
-  calcrealMarketValueChangeValue() {
-    if (this.realMarketValueChange !== -1) {
-      let n = numeral(this.realMarketValueChange);
-      let np = numeral(this.realMarketValueChange / this.mv);
-      this.realMarketValueChangeValue = n.format('0,0 $');
+  get realMarketValueChangePercent(): string {
+    if (!this.realMarketValueChange || this.realMarketValueChange === -1)
+      return 'Kann noch nicht berechnet werden'; // Schutz vor Division durch 0
 
-      this.realMarketValueChangeValuePrecent = np.format('0.000%');
-    } else {
-      this.realMarketValueChangeValue = 'Kann noch nicht berechnet werden';
-    }
+    const ratio = this.realMarketValueChange / this.mv;
+
+    return new Intl.NumberFormat('de-DE', {
+      style: 'percent',
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(ratio);
   }
 
   calcThreeDays() {
@@ -123,24 +116,26 @@ export class KickbasePlayerStats {
         if (i + 1 < tmp.length) {
           const nextValue = tmp[i + 1];
           const change = nextValue - value;
-          let n = numeral(change);
+
           this.threeDaysValues.push({
             key: i,
-            value: n.format('0,0 $'),
+            value: change,
           });
-          let np = numeral(change / this.mv);
+
+          const ratio = change / this.mv;
+
+          const percentFormat = new Intl.NumberFormat('de-DE', {
+            style: 'percent',
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+          });
 
           this.threeDaysValuesPercent.push({
             key: i,
-            value: np.format('0.000%'),
+            value: percentFormat.format(ratio),
           });
         }
       }
     }
-  }
-
-  calcbuyPriceValue() {
-    let n = numeral(this.buyPrice);
-    this.buyPriceValue = n.format('0,0 $');
   }
 }

@@ -1,12 +1,9 @@
 import { KickbasePlayerStats } from './kickbase-player-stats';
-import numeral from 'numeral';
 
 describe('KickbasePlayerStats', () => {
   let stats: KickbasePlayerStats;
 
-  beforeAll(() => {
-    numeral.locale('de');
-  });
+  beforeAll(() => {});
 
   beforeEach(() => {
     stats = new KickbasePlayerStats(null);
@@ -40,19 +37,13 @@ describe('KickbasePlayerStats', () => {
     it('formatiert Marktwerte und Prozentwerte korrekt, wenn Wert != -1', () => {
       stats.realMarketValueChange = 100000;
       stats.mv = 1000000;
-
-      stats.calcrealMarketValueChangeValue();
-
-      expect(stats.realMarketValueChangeValue).toContain('100 000 €');
-      expect(stats.realMarketValueChangeValuePrecent).toContain('10,000%');
+      expect(stats.realMarketValueChangePercent).toMatch(/10\,00\s*%/);
     });
 
     it('setzt Hinweistext, wenn realMarketValueChange den Wert -1 hat', () => {
       stats.realMarketValueChange = -1;
 
-      stats.calcrealMarketValueChangeValue();
-
-      expect(stats.realMarketValueChangeValue).toBe('Kann noch nicht berechnet werden');
+      expect(stats.realMarketValueChangePercent).toBe('Kann noch nicht berechnet werden');
     });
   });
 
@@ -73,16 +64,6 @@ describe('KickbasePlayerStats', () => {
       stats.calcThreeDays();
 
       expect(stats.threeDaysValues).toEqual([]);
-    });
-  });
-
-  describe('calcbuyPriceValue', () => {
-    it('formatiert den Einkaufspreis korrekt', () => {
-      stats.buyPrice = 1234567;
-
-      stats.calcbuyPriceValue();
-
-      expect(stats.buyPriceValue).toContain('1 234 567 €');
     });
   });
 

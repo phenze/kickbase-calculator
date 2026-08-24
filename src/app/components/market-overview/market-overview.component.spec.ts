@@ -6,6 +6,8 @@ import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { SimpleChange } from '@angular/core';
 import { AngularSvgIconModule } from 'angular-svg-icon';
+import { CurrencyPipe } from '@angular/common';
+import { EuroPipe } from 'src/app/no-decimals.pipe';
 
 describe('MarketOverviewComponent', () => {
   let component: MarketOverviewComponent;
@@ -26,11 +28,12 @@ describe('MarketOverviewComponent', () => {
     mockApiService = jasmine.createSpyObj('ApiService', ['getPlayerStats']);
 
     await TestBed.configureTestingModule({
-      imports: [MarketOverviewComponent, AngularSvgIconModule.forRoot()],
+      imports: [MarketOverviewComponent, AngularSvgIconModule.forRoot(), CurrencyPipe, EuroPipe],
       providers: [
         { provide: ApiService, useValue: mockApiService },
         provideHttpClient(),
         provideHttpClientTesting(),
+        CurrencyPipe,
       ],
     }).compileComponents();
   });

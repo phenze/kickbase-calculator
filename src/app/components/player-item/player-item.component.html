@@ -111,14 +111,17 @@
         <div class="stat-box d-flex flex-wrap align-items-center justify-content-between gap-2">
           <div>
             <span class="text-muted small">Marktwert: </span>
-            <span class="value-chip">{{ player.marketValueString }}</span>
+            <span class="value-chip">{{ player.marketValue | euro }}</span>
 
             <!-- Preis nur anzeigen, wenn er abweicht (z. B. Mitspieler-Angebot) -->
             @if (isMarketOverview && player.price !== 0 && player.price !== player.marketValue) {
               <span class="ms-2 small">
                 <span class="text-muted">Preis: </span>
-                <strong class="text-dark">{{ player.priceString }}</strong>
-                <span class="text-muted"> (+{{ player.priceMarketValueDifferString }})</span>
+                <strong class="text-dark">{{ player.price | euro }}</strong>
+                <span class="text-muted">
+                  (+{{ player.priceMarketValueDiffer | euro }} /
+                  {{ player.priceMarketValueDifferPercent }})</span
+                >
               </span>
             }
           </div>
@@ -141,7 +144,7 @@
             [style.color]="player.colorOfferValue"
           >
             <strong
-              >Angebot: {{ player.valueString }}&nbsp;({{ player.valuePercentString }})</strong
+              >Angebot: {{ player.value | euro }}&nbsp;({{ player.valuePercentString }})</strong
             >
           </div>
         </div>
@@ -157,14 +160,15 @@
             <!-- stopImmediatePropagation verhindert, dass die Karte sich öffnet, wenn man reinklickt -->
             <input
               type="text"
-              min="0"
               inputmode="numeric"
               pattern="[0-9]*"
+              min="0"
+              appFormattedNumber
               class="form-control currency form-control-sm border-0 bg-transparent text-end fw-bold p-0"
-              [ngModel]="onExpectedPriceString"
-              (ngModelChange)="onExpectedPriceChanged($event)"
+              [(ngModel)]="player.expectedSaleValue"
+              (ngModelChange)="playerChanged.emit()"
               (click)="$event.stopImmediatePropagation()"
-              placeholder="Optional (z.B. 100 000 000 €)"
+              placeholder="Optional (z.B. 100.000.000)"
             />
 
             <span class="text-muted small ms-1 me-2">€</span>
@@ -180,7 +184,7 @@
             @if (!isMarketOverview) {
               <div class="metric-chip">
                 <span class="metric-label">Gekauft</span>
-                <span class="metric-value text-dark">{{ player.stats.buyPriceValue }}</span>
+                <span class="metric-value text-dark">{{ player.stats.buyPrice | euro }}</span>
               </div>
             }
 
@@ -188,9 +192,9 @@
             <div class="metric-chip" [style.color]="player.colorMarketValue">
               <span class="metric-label">MW-Änderung</span>
               <span class="metric-value">
-                {{ player.stats.realMarketValueChangeValue }}
+                {{ player.stats.realMarketValueChange | euro }}
                 @if (!isMarketOverview) {
-                  ({{ player.stats.realMarketValueChangeValuePrecent }})
+                  ({{ player.stats.realMarketValueChangePercent }})
                 }
               </span>
             </div>
@@ -199,7 +203,7 @@
             @if (!isMarketOverview) {
               <div class="metric-chip" [style.color]="player.colorOffsetValue">
                 <span class="metric-label">Verlust/Gewinn</span>
-                <span class="metric-value fw-bold">{{ player.offset }}</span>
+                <span class="metric-value fw-bold">{{ player.offsetNumber | euro }}</span>
               </div>
 
               <div
@@ -215,7 +219,7 @@
                     >0 €</span
                   >
                 } @else {
-                  <span class="metric-value">{{ player.successValueString }}</span>
+                  <span class="metric-value">{{ player.successValue | euro }}</span>
                 }
               </div>
             }
@@ -235,7 +239,7 @@
               <tbody>
                 <tr>
                   @for (item of player.stats.threeDaysValues; track item.key) {
-                    <td class="px-2 py-1 small text-nowrap">{{ item.value }}</td>
+                    <td class="px-2 py-1 small text-nowrap">{{ item.value | euro }}</td>
                   }
                 </tr>
                 <tr>
