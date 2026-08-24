@@ -176,8 +176,8 @@ export class KickbasePlayer {
     // one hour
     if (this.expiry <= 60 * 60) {
       this.expiryColor = KickbaseGroup.color_red;
-    } else if (this.expiry <= 60 * 60 * 2) {
-      this.expiryColor = KickbaseGroup.color_green;
+    } else if (this.isUntilMarketValueUpdate) {
+      this.expiryColor = KickbaseGroup.color_yellow;
     }
   }
 
@@ -244,6 +244,19 @@ export class KickbasePlayer {
       );
     }
     return null;
+  }
+
+  get isUntilMarketValueUpdate(): boolean {
+    if (this.expiry <= 0) return false; // expiryDateRaw als Date-Objekt vorausgesetzt
+
+    const now = new Date();
+    const today22 = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 22, 0, 0);
+
+    const safeExpiry = Number(this.expiry) || 0;
+
+    const date = this.addSeconds(new Date(), safeExpiry);
+    // Ablauf liegt am heutigen Tag vor oder genau um 22:00 Uhr
+    return date <= today22;
   }
 
   public static createArrayInstance(json: any, userID: string | number): KickbasePlayer[] {

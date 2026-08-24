@@ -29,6 +29,7 @@ export class MarketOverviewComponent implements OnChanges {
   public playersToShow: KickbasePlayer[] = [];
   public onlyManualPrices = localStorage.getItem('onlyManualPrices') === 'true';
   public onlyKickbasePlayers = localStorage.getItem('onlyKickbasePlayers') === 'true';
+  public onlyUntilMwUpdate = localStorage.getItem('onlyUntilMwUpdate') === 'true';
 
   @Input() sortedPlayers: KickbasePlayer[] = [];
   @Input() selectedLeague: number | null = null;
@@ -47,6 +48,11 @@ export class MarketOverviewComponent implements OnChanges {
 
   onOnlyKickbasePlayersChanged(): void {
     localStorage.setItem('onlyKickbasePlayers', this.onlyKickbasePlayers.toString());
+    this.filterPlayersToShow();
+  }
+
+  onOnlyUntilMwUpdateChanged(): void {
+    localStorage.setItem('onlyUntilMwUpdate', this.onlyUntilMwUpdate.toString());
     this.filterPlayersToShow();
   }
 
@@ -73,6 +79,10 @@ export class MarketOverviewComponent implements OnChanges {
 
     if (this.onlyKickbasePlayers) {
       filteredPlayers = filteredPlayers.filter((player) => player.username === '');
+    }
+
+    if (this.onlyUntilMwUpdate) {
+      filteredPlayers = filteredPlayers.filter((player) => player.isUntilMarketValueUpdate);
     }
 
     this.playersToShow = filteredPlayers;

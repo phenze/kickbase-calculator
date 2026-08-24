@@ -15,6 +15,21 @@
         >
       </div>
     </div>
+    <div class="col-12 mt-2">
+      <div class="form-check form-switch">
+        <input
+          type="checkbox"
+          class="form-check-input"
+          role="switch"
+          [(ngModel)]="onlyUntilMwUpdate"
+          (ngModelChange)="onOnlyUntilMwUpdateChanged()"
+          id="customSwitchOnlyUntilMwUpdate"
+        />
+        <label class="form-check-label" for="customSwitchOnlyUntilMwUpdate"
+          >Nur Spieler bis MW Update anzeigen</label
+        >
+      </div>
+    </div>
     <div class="col-8 mb-4 mt-2">
       <div class="form-check form-switch">
         <input
