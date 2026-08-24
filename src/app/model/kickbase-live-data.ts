@@ -1,5 +1,4 @@
 import { KickbasePlayer } from './kickbase-player';
-import numeral from 'numeral';
 
 export class KickbaseLivePlayer {
   public name = '';

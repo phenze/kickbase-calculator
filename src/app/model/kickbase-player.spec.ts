@@ -1,15 +1,11 @@
 import { KickbasePlayer } from './kickbase-player';
 import { KickbasePlayerStats } from './kickbase-player-stats';
 import { KickbaseGroup } from './kickbase-group';
-import { ApiService } from '../services/api.service';
-import numeral from 'numeral';
 
 describe('KickbasePlayer', () => {
   let player: KickbasePlayer;
 
-  beforeAll(() => {
-    numeral.locale('de');
-  });
+  beforeAll(() => {});
 
   beforeEach(() => {
     localStorage.clear();

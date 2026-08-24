@@ -1,12 +1,9 @@
 import { KickbasePlayerStats } from './kickbase-player-stats';
-import numeral from 'numeral';
 
 describe('KickbasePlayerStats', () => {
   let stats: KickbasePlayerStats;
 
-  beforeAll(() => {
-    numeral.locale('de');
-  });
+  beforeAll(() => {});
 
   beforeEach(() => {
     stats = new KickbasePlayerStats(null);

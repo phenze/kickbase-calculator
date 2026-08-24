@@ -1,5 +1,4 @@
 import { KickbasePlayer } from './kickbase-player';
-import numeral from 'numeral';
 
 export class KickbaseMarket {
   public players: KickbasePlayer[];
@@ -31,11 +30,6 @@ export class KickbaseMarket {
         return 0;
       }
     });
-  }
-
-  getValue() {
-    let n = numeral(this.getNumberValue());
-    return n.format('0,0 $');
   }
 
   getNumberValue() {

@@ -7,7 +7,6 @@ import { KickbasePlayer } from './model/kickbase-player';
 import { KickbaseLeague } from './model/kickbase-league';
 import { KickbaseMarket } from './model/kickbase-market';
 import { KickbasePlayerStats } from './model/kickbase-player-stats';
-import numeral from 'numeral';
 import { CurrencyPipe } from '@angular/common';
 import { EuroPipe } from './no-decimals.pipe';
 
@@ -35,7 +34,6 @@ describe('AppComponent', () => {
 
   beforeEach(async () => {
     localStorage.clear();
-    numeral.locale('de');
 
     mockApiService = jasmine.createSpyObj(
       'ApiService',
@@ -547,20 +545,6 @@ describe('AppComponent', () => {
   });
 
   describe('Eingabefelder & Numeral-Berechnungen', () => {
-    it('sollte onMinusValueChanged verarbeiten', () => {
-      component.onMinusValueChanged('1.500.000');
-
-      expect(component.minusValue).toBe(1500000);
-      expect(component.minusValueString).toBe('1 500 000');
-    });
-
-    it('sollte onExtraAmountChange verarbeiten', () => {
-      component.onExtraAmountChange('250.000');
-
-      expect(component.extraAmount).toBe(250000);
-      expect(component.extraAmountString).toBe('250 000');
-    });
-
     it('sollte onIncludeAdditionalAmountChanged mit und ohne ExtraAmount berechnen', () => {
       component.minusValue = 1000000;
       component.extraAmount = 200000;

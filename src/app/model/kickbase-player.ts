@@ -1,4 +1,3 @@
-import numeral from 'numeral';
 import { ApiService } from '../services/api.service';
 import { KickbasePlayerStats } from './kickbase-player-stats';
 import { KickbaseGroup } from './kickbase-group';

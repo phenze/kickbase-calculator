@@ -1,6 +1,5 @@
 import { KickbaseGroup } from './kickbase-group';
 import { KickbasePlayer } from './kickbase-player';
-import numeral from 'numeral';
 import { KickbasePlayerStats } from './kickbase-player-stats';
 
 function makePlayer(overrides: Partial<KickbasePlayer> = {}): KickbasePlayer {
@@ -22,9 +21,7 @@ describe('KickbaseGroup', () => {
     group = new KickbaseGroup();
   });
 
-  beforeAll(() => {
-    numeral.locale('de');
-  });
+  beforeAll(() => {});
 
   it('sollte mit einem leeren players-Array erzeugt werden', () => {
     expect(group.players).toEqual([]);

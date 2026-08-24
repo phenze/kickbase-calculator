@@ -9,9 +9,6 @@ import {
 
 import { ApiService } from './services/api.service';
 
-import numeral from 'numeral';
-import 'numeral/locales/de';
-
 import { KickbaseGroup } from './model/kickbase-group';
 import { KickbasePlayer } from './model/kickbase-player';
 
@@ -20,8 +17,8 @@ import { KickbaseMarket } from './model/kickbase-market';
 import { KickbaseGift } from './model/kickbase-gift';
 import { BsModalService, BsModalRef } from 'ngx-bootstrap/modal';
 import { ModalComponent } from './components/modal/modal.component';
-import { MarketOverviewComponent } from './components/market-overview/market-overview.component';
 import { LoginPayload } from './components/login/login.component';
+import { FormattedNumberDirective } from './formatted-number.directive';
 
 interface PayPalDonationButton {
   render(selector: string): void;
@@ -63,7 +60,6 @@ export class AppComponent implements OnInit, AfterViewInit {
 
   public AppComponent = AppComponent;
   public minusValue: number = 0;
-  public minusValueString: string = '0';
   public availableAmountString: string = '0';
   public offerOffset: string = '0';
   public includeAdditionalAmount = false;
@@ -115,9 +111,7 @@ export class AppComponent implements OnInit, AfterViewInit {
     public apiService: ApiService,
     private modalService: BsModalService,
     public cdRef: ChangeDetectorRef,
-  ) {
-    numeral.locale('de');
-  }
+  ) {}
 
   get amountPlayers(): number {
     if (!this.kickbaseGroup?.players) return 0;
@@ -319,15 +313,10 @@ export class AppComponent implements OnInit, AfterViewInit {
 
       const lineUp = await this.apiService.getLineup(newValue);
 
-      const budget = numeral(league.budget);
-      this.minusValue = budget.value() ?? 0;
-      this.minusValueString = budget.format('0,0');
+      this.minusValue = league.budget ?? 0;
 
       if (this.currentMarket !== null) {
         this.extraAmount = Number(this.currentMarket.offerAmountForUser);
-
-        const extraAmountNumeral = numeral(this.extraAmount);
-        this.extraAmountString = extraAmountNumeral.format('0,0');
       }
 
       const deletedPlayersStorage = localStorage.getItem(`permantDeletedPlayer_${newValue}`);
@@ -433,9 +422,6 @@ export class AppComponent implements OnInit, AfterViewInit {
 
   onMinusValueChanged(value: number | string) {
     try {
-      const di = numeral(value);
-      this.minusValue = di.value() ?? 0;
-      this.minusValueString = di.format('0,0');
       this.onIncludeAdditionalAmountChanged();
     } catch {}
   }
@@ -455,9 +441,6 @@ export class AppComponent implements OnInit, AfterViewInit {
 
   onExtraAmountChange(event: number | string) {
     try {
-      const di = numeral(event);
-      this.extraAmount = di.value() ?? 0;
-      this.extraAmountString = di.format('0,0');
       this.onIncludeAdditionalAmountChanged();
     } catch {}
   }
