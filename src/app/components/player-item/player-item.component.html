@@ -177,57 +177,59 @@
       }
 
       <!-- Finanz-Metriken: jede Kennzahl als eigene, klar abgesetzte Chip-Box -->
-      <div class="col-12">
-        <div class="d-flex flex-wrap gap-2">
-          @if (player.stats !== null) {
-            <!-- Gekauft (nur im Rechner sinnvoll) -->
-            @if (!isMarketOverview) {
-              <div class="metric-chip">
-                <span class="metric-label">Gekauft</span>
-                <span class="metric-value text-dark">{{ player.stats.buyPrice | euro }}</span>
+      @if (!printMode) {
+        <div class="col-12">
+          <div class="d-flex flex-wrap gap-2">
+            @if (player.stats !== null) {
+              <!-- Gekauft (nur im Rechner sinnvoll) -->
+              @if (!isMarketOverview) {
+                <div class="metric-chip">
+                  <span class="metric-label">Gekauft</span>
+                  <span class="metric-value text-dark">{{ player.stats.buyPrice | euro }}</span>
+                </div>
+              }
+
+              <!-- MW-Änderung (Überall sichtbar) -->
+              <div class="metric-chip" [style.color]="player.colorMarketValue">
+                <span class="metric-label">MW-Änderung</span>
+                <span class="metric-value">
+                  {{ player.stats.realMarketValueChange | euro }}
+                  @if (!isMarketOverview) {
+                    ({{ player.stats.realMarketValueChangePercent }})
+                  }
+                </span>
               </div>
+
+              <!-- Gewinn/Verlust & Erfolge (nur im Rechner) -->
+              @if (!isMarketOverview) {
+                <div class="metric-chip" [style.color]="player.colorOffsetValue">
+                  <span class="metric-label">Verlust/Gewinn</span>
+                  <span class="metric-value fw-bold">{{ player.offsetNumber | euro }}</span>
+                </div>
+
+                <div
+                  class="metric-chip"
+                  [class.opacity-50]="achievementsDisabled"
+                  [style.color]="achievementsDisabled ? 'inherit' : player.colorSuccessValue"
+                >
+                  <span class="metric-label">Erfolge</span>
+                  @if (achievementsDisabled) {
+                    <span
+                      class="metric-value text-muted text-decoration-line-through"
+                      title="In dieser Liga deaktiviert"
+                      >0 €</span
+                    >
+                  } @else {
+                    <span class="metric-value">{{ player.successValue | euro }}</span>
+                  }
+                </div>
+              }
+            } @else {
+              <div class="text-muted extra-small py-1">Tippen, um Details zu laden...</div>
             }
-
-            <!-- MW-Änderung (Überall sichtbar) -->
-            <div class="metric-chip" [style.color]="player.colorMarketValue">
-              <span class="metric-label">MW-Änderung</span>
-              <span class="metric-value">
-                {{ player.stats.realMarketValueChange | euro }}
-                @if (!isMarketOverview) {
-                  ({{ player.stats.realMarketValueChangePercent }})
-                }
-              </span>
-            </div>
-
-            <!-- Gewinn/Verlust & Erfolge (nur im Rechner) -->
-            @if (!isMarketOverview) {
-              <div class="metric-chip" [style.color]="player.colorOffsetValue">
-                <span class="metric-label">Verlust/Gewinn</span>
-                <span class="metric-value fw-bold">{{ player.offsetNumber | euro }}</span>
-              </div>
-
-              <div
-                class="metric-chip"
-                [class.opacity-50]="achievementsDisabled"
-                [style.color]="achievementsDisabled ? 'inherit' : player.colorSuccessValue"
-              >
-                <span class="metric-label">Erfolge</span>
-                @if (achievementsDisabled) {
-                  <span
-                    class="metric-value text-muted text-decoration-line-through"
-                    title="In dieser Liga deaktiviert"
-                    >0 €</span
-                  >
-                } @else {
-                  <span class="metric-value">{{ player.successValue | euro }}</span>
-                }
-              </div>
-            }
-          } @else {
-            <div class="text-muted extra-small py-1">Tippen, um Details zu laden...</div>
-          }
+          </div>
         </div>
-      </div>
+      }
 
       <!-- Vollständige Stats-Details (Gleiche Logik für Markt & Rechner sobald player.stats geladen ist) -->
       @if (player.stats !== null && !printMode) {
@@ -277,9 +279,10 @@
                 <!-- Gegner Logo -->
                 <img
                   [src]="match.imageUrl"
-                  class="team-picture"
+                  class="team-picture img-fluid align-middle"
                   (error)="errorHandler($event)"
-                  style="width: 20px; height: 20px; object-fit: contain"
+                  style="max-width: 30px; max-height: 30px"
+                  alt="Team Logo"
                 />
 
                 <!-- Heim / Auswärts -->

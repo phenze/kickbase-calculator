@@ -203,4 +203,90 @@ describe('PlayerItemComponent', () => {
       expect(strikeElement?.textContent).toContain('0 €');
     });
   });
+  describe('Print Mode', () => {
+    beforeEach(() => {
+      component.player = {
+        name: 'Max Mustermann',
+        marketValue: 15000000,
+        color: '#ffffff',
+        status: 0,
+        imageUrl: 'assets/player.jpg',
+        hasOfferFromAny: true,
+        value: 16000000,
+        valuePercentString: '+6.6%',
+        colorOfferValue: '#00ff00',
+        isFixedSquad: false,
+        isKept: false,
+        offsetNumber: 5000000,
+        successValue: 750000,
+        stats: {
+          buyPrice: 10000000,
+          realMarketValueChange: 500000,
+          realMarketValueChangePercent: '+3.3%',
+          threeDaysValues: [{ key: '1', value: 15000000 }],
+          threeDaysValuesPercent: [{ key: '1', value: '0%' }],
+          points: 1200,
+          averagePoints: 120,
+          nextThreeOpponents: [
+            {
+              imageUrl: 'assets/team.png',
+              isHomeGame: true,
+              dayLabel: 'Spieltag 1',
+              dateString: '30.08.',
+              resultString: '2:1',
+              isFinished: false,
+            },
+          ],
+        },
+      } as any;
+
+      component.printMode = true;
+      fixture.detectChanges();
+    });
+
+    it('sollte Spielername und Marktwert im Print Mode anzeigen', () => {
+      const compiled = fixture.nativeElement as HTMLElement;
+
+      // Name prüfen
+      expect(compiled.textContent).toContain('Max Mustermann');
+
+      // Marktwert prüfen (mit Euro-Pipe formatiert)
+      expect(compiled.textContent).toContain('Marktwert:');
+      expect(compiled.textContent).toMatch(/15\.000\.000\s*€/);
+    });
+
+    it('sollte keine Finanz-Metriken (Gekauft, MW-Änderung, Gewinn/Verlust, Erfolge) anzeigen', () => {
+      const compiled = fixture.nativeElement as HTMLElement;
+
+      expect(compiled.querySelector('.metric-chip')).toBeNull();
+      expect(compiled.textContent).not.toContain('Gekauft');
+      expect(compiled.textContent).not.toContain('MW-Änderung');
+      expect(compiled.textContent).not.toContain('Verlust/Gewinn');
+      expect(compiled.textContent).not.toContain('Erfolge');
+    });
+
+    it('sollte Angebote, Fixpreis-Eingabe, 3-Tage-Trend, Punkte und Spiele ausblenden', () => {
+      const compiled = fixture.nativeElement as HTMLElement;
+
+      // Angebot-Box
+      expect(compiled.querySelector('.offer-box')).toBeNull();
+      expect(compiled.textContent).not.toContain('Angebot:');
+
+      // Fixpreis-Input
+      expect(compiled.querySelector('input[appFormattedNumber]')).toBeNull();
+      expect(compiled.textContent).not.toContain('Fixpreis:');
+
+      // Trend-Tabelle
+      expect(compiled.querySelector('.trend-box')).toBeNull();
+      expect(compiled.textContent).not.toContain('3 Tage Trend');
+
+      // Punkte & Schnitt
+      expect(compiled.textContent).not.toContain('Punkte');
+      expect(compiled.textContent).not.toContain('Schnitt');
+
+      // Nächste / Vergangene Spiele
+      expect(compiled.querySelector('.match-chip')).toBeNull();
+      expect(compiled.textContent).not.toContain('Spiele / Gegner');
+    });
+  });
 });

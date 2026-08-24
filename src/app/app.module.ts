@@ -23,6 +23,9 @@ import localeDe from '@angular/common/locales/de';
 import { EuroPipe } from './no-decimals.pipe';
 import { FormattedNumberDirective } from './formatted-number.directive';
 
+import { ServiceWorkerModule } from '@angular/service-worker';
+import { environment } from 'src/environments/environment';
+
 registerLocaleData(localeDe, 'de-DE');
 
 @NgModule({
@@ -41,7 +44,11 @@ registerLocaleData(localeDe, 'de-DE');
     MarketOverviewComponent,
     EuroPipe,
     FormattedNumberDirective,
-    // ServiceWorkerModule.register('ngsw-worker.js', { enabled: environment.production }),
+    ServiceWorkerModule.register('ngsw-worker.js', {
+      enabled: environment.production,
+      // Prüft die Registrierung erst, wenn die App stabil gelaufen ist
+      registrationStrategy: 'registerWhenStable:30000',
+    }),
   ],
   providers: [
     ApiService,

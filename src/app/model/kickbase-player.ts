@@ -8,6 +8,7 @@ export class KickbasePlayer {
   public value!: number;
   public marketValue!: number;
   public uoid!: string;
+  public pim!: string;
 
   // local api fields
   public nameHash!: string;
@@ -54,6 +55,7 @@ export class KickbasePlayer {
     this.nameHash = '';
     this.leagueId = -1;
     this.username = '';
+    this.pim = '';
     Object.assign(this, json);
     if (json != null) {
       this.id = json['i'];
@@ -104,7 +106,11 @@ export class KickbasePlayer {
       this.expiryDate = this.formatGermanDateTime(date);
     }
 
-    this.imageUrl = 'https://kickbase.b-cdn.net/pool/playersbig/' + this.id + '.png';
+    if (this.pim.length === 0) {
+      this.imageUrl = 'https://kickbase.b-cdn.net/pool/playersbig/' + this.id + '.png';
+    } else {
+      this.imageUrl = 'https://kickbase.b-cdn.net/' + this.pim;
+    }
 
     this.calcValues();
   }

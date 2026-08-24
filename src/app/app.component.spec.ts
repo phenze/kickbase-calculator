@@ -9,6 +9,7 @@ import { KickbaseMarket } from './model/kickbase-market';
 import { KickbasePlayerStats } from './model/kickbase-player-stats';
 import { CurrencyPipe } from '@angular/common';
 import { EuroPipe } from './no-decimals.pipe';
+import { UpdateService } from './services/update.service';
 
 describe('AppComponent', () => {
   let component: AppComponent;
@@ -70,12 +71,18 @@ describe('AppComponent', () => {
 
     mockModalService = jasmine.createSpyObj('BsModalService', ['show']);
 
+    const mockUpdateService = {
+      isUpdateAvailable: jasmine.createSpy('isUpdateAvailable').and.returnValue(false),
+      reloadPage: jasmine.createSpy('reloadPage'),
+    };
+
     await TestBed.configureTestingModule({
       declarations: [AppComponent],
       imports: [EuroPipe],
       providers: [
         { provide: ApiService, useValue: mockApiService },
         { provide: BsModalService, useValue: mockModalService },
+        { provide: UpdateService, useValue: mockUpdateService }, // Mock injizieren
         ChangeDetectorRef,
         CurrencyPipe,
       ],
