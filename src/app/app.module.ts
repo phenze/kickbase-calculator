@@ -21,6 +21,7 @@ import { MarketOverviewComponent } from './components/market-overview/market-ove
 import { CurrencyPipe, registerLocaleData } from '@angular/common';
 import localeDe from '@angular/common/locales/de';
 import { EuroPipe } from './no-decimals.pipe';
+import { FormattedNumberDirective } from './formatted-number.directive';
 
 registerLocaleData(localeDe, 'de-DE');
 
@@ -39,6 +40,7 @@ registerLocaleData(localeDe, 'de-DE');
     PlayerItemComponent,
     MarketOverviewComponent,
     EuroPipe,
+    FormattedNumberDirective,
     // ServiceWorkerModule.register('ngsw-worker.js', { enabled: environment.production }),
   ],
   providers: [

@@ -160,14 +160,15 @@
             <!-- stopImmediatePropagation verhindert, dass die Karte sich öffnet, wenn man reinklickt -->
             <input
               type="text"
-              min="0"
               inputmode="numeric"
               pattern="[0-9]*"
+              min="0"
+              appFormattedNumber
               class="form-control currency form-control-sm border-0 bg-transparent text-end fw-bold p-0"
-              [ngModel]="onExpectedPriceString"
-              (ngModelChange)="onExpectedPriceChanged($event)"
+              [(ngModel)]="player.expectedSaleValue"
+              (ngModelChange)="playerChanged.emit()"
               (click)="$event.stopImmediatePropagation()"
-              placeholder="Optional (z.B. 100 000 000 €)"
+              placeholder="Optional (z.B. 100.000.000)"
             />
 
             <span class="text-muted small ms-1 me-2">€</span>

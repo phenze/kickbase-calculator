@@ -7,15 +7,12 @@ import {
   ChangeDetectionStrategy,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { KickbaseGroup } from 'src/app/model/kickbase-group';
 import { KickbasePlayer } from 'src/app/model/kickbase-player';
 import { ApiService } from 'src/app/services/api.service';
 import { AngularSvgIconModule } from 'angular-svg-icon';
-
-import numeral from 'numeral';
-import 'numeral/locales/de';
 import { CurrencyPipe } from '@angular/common';
 import { EuroPipe } from 'src/app/no-decimals.pipe';
+import { FormattedNumberDirective } from 'src/app/formatted-number.directive';
 
 @Component({
   selector: 'app-player-item',
@@ -23,7 +20,7 @@ import { EuroPipe } from 'src/app/no-decimals.pipe';
   styleUrls: ['./player-item.component.scss'],
   changeDetection: ChangeDetectionStrategy.Eager,
   standalone: true,
-  imports: [FormsModule, AngularSvgIconModule, EuroPipe],
+  imports: [FormsModule, AngularSvgIconModule, EuroPipe, FormattedNumberDirective],
 })
 export class PlayerItemComponent implements OnInit {
   @Input({ required: true }) player!: KickbasePlayer;
@@ -35,13 +32,9 @@ export class PlayerItemComponent implements OnInit {
   @Output() loadDetails = new EventEmitter();
 
   @Output() playerChanged = new EventEmitter();
-
-  public onExpectedPriceString = '';
   constructor(public apiService: ApiService) {}
 
-  ngOnInit(): void {
-    this.onExpectedPriceString = this.formatExpectedPrice(this.player.expectedSaleValue);
-  }
+  ngOnInit(): void {}
 
   onLoadAllDetailsForPlayer = async () => {
     this.loadDetails.emit();
@@ -64,29 +57,6 @@ export class PlayerItemComponent implements OnInit {
     event.preventDefault();
     player.isFixedSquad = deleted;
     this.apiService.setPlayerPermanentDeleted(player.leagueId, player.id, deleted);
-    this.playerChanged.emit();
-  }
-
-  formatExpectedPrice(value: number | null): string {
-    if (value !== null && value > 0) {
-      const di = numeral(value);
-      return di.format('0,0');
-    } else {
-      return '';
-    }
-  }
-
-  onExpectedPriceChanged(event: number | string) {
-    try {
-      let price = Number(event.toString().replace(/\s/g, ''));
-      if (price !== null && price > 0) {
-        this.player.expectedSaleValue = price;
-      } else {
-        this.player.expectedSaleValue = null;
-      }
-      this.onExpectedPriceString = this.formatExpectedPrice(this.player.expectedSaleValue);
-    } catch {}
-
     this.playerChanged.emit();
   }
 }
