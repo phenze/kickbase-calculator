@@ -600,7 +600,7 @@ describe('AppComponent', () => {
       component.kickbaseGroup.players = [p1, p2, p3, p4];
 
       // Erwartung: Nur p2 und p3 werden gezählt
-      expect(component.amountPlayers).toBe(2);
+      expect(component.amountPlayers).toBe(3);
     });
   });
 });

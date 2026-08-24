@@ -115,7 +115,7 @@ export class AppComponent implements OnInit, AfterViewInit {
 
   get amountPlayers(): number {
     if (!this.kickbaseGroup?.players) return 0;
-    return this.kickbaseGroup.players.filter((p) => !p.isDeleted && (p.isKept || p.isFixedSquad))
+    return this.kickbaseGroup.players.filter((p) => p.isDeleted || p.isKept || p.isFixedSquad)
       .length;
   }
 
