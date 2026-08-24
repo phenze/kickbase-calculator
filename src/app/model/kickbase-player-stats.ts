@@ -47,7 +47,7 @@ export class KickbasePlayerStats {
 
         this.nextThreeOpponents = json['mdsum'].map((match: any) => {
           const isHome = String(match.t1) === playerTeamId;
-          const opponentImgId = isHome ? match.t2 : match.t1;
+          const opponentImgId = isHome ? match.t2im : match.t1im;
 
           // Spiel abgeschlossen? (mdst === 2 bedeutet i.d.R. beendet / t1g & t2g vorhanden)
           const isFinished =
@@ -62,7 +62,7 @@ export class KickbasePlayerStats {
           }
 
           return {
-            imageUrl: 'https://kickbase.b-cdn.net/pool/teams/' + opponentImgId + '.png',
+            imageUrl: 'https://kickbase.b-cdn.net/' + opponentImgId,
             isHomeGame: isHome,
             dayLabel: match.mdln || `Spieltag ${match.day}`,
             resultString: `${match.t1g}:${match.t2g}`,

@@ -279,9 +279,10 @@
                 <!-- Gegner Logo -->
                 <img
                   [src]="match.imageUrl"
-                  class="team-picture"
+                  class="team-picture img-fluid align-middle"
                   (error)="errorHandler($event)"
-                  style="width: 20px; height: 20px; object-fit: contain"
+                  style="max-width: 30px; max-height: 30px"
+                  alt="Team Logo"
                 />
 
                 <!-- Heim / Auswärts -->
