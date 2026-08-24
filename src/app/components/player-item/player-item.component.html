@@ -238,7 +238,7 @@
               <tbody>
                 <tr>
                   @for (item of player.stats.threeDaysValues; track item.key) {
-                    <td class="px-2 py-1 small text-nowrap">{{ item.value }}</td>
+                    <td class="px-2 py-1 small text-nowrap">{{ item.value | euro }}</td>
                   }
                 </tr>
                 <tr>

@@ -8,6 +8,8 @@ import { KickbaseLeague } from './model/kickbase-league';
 import { KickbaseMarket } from './model/kickbase-market';
 import { KickbasePlayerStats } from './model/kickbase-player-stats';
 import numeral from 'numeral';
+import { CurrencyPipe } from '@angular/common';
+import { EuroPipe } from './no-decimals.pipe';
 
 describe('AppComponent', () => {
   let component: AppComponent;
@@ -72,10 +74,12 @@ describe('AppComponent', () => {
 
     await TestBed.configureTestingModule({
       declarations: [AppComponent],
+      imports: [EuroPipe],
       providers: [
         { provide: ApiService, useValue: mockApiService },
         { provide: BsModalService, useValue: mockModalService },
         ChangeDetectorRef,
+        CurrencyPipe,
       ],
       schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();

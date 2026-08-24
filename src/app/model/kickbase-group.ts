@@ -1,36 +1,26 @@
 import { KickbasePlayer } from './kickbase-player';
-import numeral from 'numeral';
 
 export class KickbaseGroup {
   public static readonly color_red = '#C10020';
   public static readonly color_green = '#007D34';
 
   public players: KickbasePlayer[];
-  public value = '';
   public numberValue = 0;
-  public success = '';
   public successValue = 0;
-  public difference = '';
   public differenceValue = 0;
-
-  public differenceFriday = '';
-  public differenceValueFriday = 0;
+  public differenceFridayValue = 0;
 
   public trendValue = 0;
-  public trend = '';
-  public trendFriday = '';
+  public trendFridayValue = 0;
   public color = '';
   public colorFriday = '';
 
   public profitValue = 0;
-  public profit = '';
 
   public lossValue = 0;
-  public loss = '';
 
-  public team = '';
-  public possibleMinus = '';
-  public possibleOffer = '';
+  public possibleMinusValue = 0;
+  public possibleOfferValue = 0;
   public teamValue = 0;
 
   constructor() {
@@ -57,23 +47,16 @@ export class KickbaseGroup {
     for (const pl of this.players) {
       pl.calcValues();
     }
-    this.numberValue = this.getNumberValueTmp();
-    let n = numeral(this.numberValue);
-    this.value = n.format('0,0 $');
+    this.numberValue = this.calcNumberValue();
 
-    this.successValue = achievementsDisabled ? 0 : this.getSuccessValueTmp();
+    this.successValue = achievementsDisabled ? 0 : this.calcSuccessValue();
 
-    this.teamValue = this.getTeamValueTmp(false);
+    this.teamValue = this.calcTeamValue();
     this.differenceValue = currentAmount + this.numberValue;
-    this.trendValue = this.getTrend(includeMinusMarketValues);
-    this.lossValue = this.getLoss();
+    this.trendValue = this.calcTrend(includeMinusMarketValues);
+    this.lossValue = this.calcLoss();
 
-    this.profitValue = this.getTrend(false);
-
-    let di = numeral(this.differenceValue);
-    this.difference = di.format('0,0 $');
-
-    let tm = numeral(this.teamValue);
+    this.profitValue = this.calcTrend(false);
 
     let minusReferenceValue = this.teamValue;
     if (this.differenceValue < 0 && this.teamValue > 0) {
@@ -82,33 +65,15 @@ export class KickbaseGroup {
     minusReferenceValue *= 0.33;
     minusReferenceValue = Math.floor(minusReferenceValue);
 
-    let minus = numeral(minusReferenceValue);
-    this.team = tm.format('0,0 $');
-    this.possibleMinus = minus.format('0,0 $');
+    this.possibleMinusValue = minusReferenceValue;
 
-    let availOfferValue = numeral(minusReferenceValue + this.differenceValue);
-    this.possibleOffer = availOfferValue.format('0,0 $');
+    let availOfferValue = minusReferenceValue + this.differenceValue;
+    this.possibleOfferValue = availOfferValue;
 
-    this.differenceValueFriday =
+    this.differenceFridayValue =
       currentAmount + (this.numberValue + this.successValue + this.trendValue * dayUntilFriday);
 
-    let dif = numeral(this.differenceValueFriday);
-    this.differenceFriday = dif.format('0,0 $');
-
-    let tv = numeral(this.trendValue);
-    this.trend = tv.format('0,0 $');
-
-    let pf = numeral(this.profitValue);
-    this.profit = pf.format('0,0 $');
-
-    let sv = numeral(this.successValue);
-    this.success = sv.format('0,0 $');
-
-    let lv = numeral(this.lossValue);
-    this.loss = lv.format('0,0 $');
-
-    let tvf = numeral(this.trendValue * dayUntilFriday);
-    this.trendFriday = tvf.format('0,0 $');
+    this.trendFridayValue = this.trendValue * dayUntilFriday;
     this.calcColors(currentAmount);
   }
 
@@ -122,14 +87,14 @@ export class KickbaseGroup {
     } else {
       this.color = KickbaseGroup.color_green;
     }
-    if (this.differenceValueFriday > 0) {
+    if (this.differenceFridayValue > 0) {
       this.colorFriday = '#007D34';
     } else {
       this.colorFriday = '#C10020';
     }
   }
 
-  getTrend(includeMinusMarketValues: boolean) {
+  calcTrend(includeMinusMarketValues: boolean) {
     let value = 0;
     for (let player of this.players) {
       if (!player.isDeleted) {
@@ -149,7 +114,7 @@ export class KickbaseGroup {
     return value;
   }
 
-  getLoss() {
+  calcLoss() {
     let value = 0;
     for (let player of this.players) {
       if (!player.isDeleted) {
@@ -166,7 +131,7 @@ export class KickbaseGroup {
     return value;
   }
 
-  private getNumberValueTmp() {
+  private calcNumberValue() {
     let retVal = 0;
     for (let p of this.players) {
       if (this.isSelling(p)) {
@@ -178,7 +143,7 @@ export class KickbaseGroup {
     return retVal;
   }
 
-  private getSuccessValueTmp() {
+  private calcSuccessValue() {
     let retVal = 0;
     for (let p of this.players) {
       if (!p.isDeleted && this.isSelling(p)) {
@@ -188,10 +153,10 @@ export class KickbaseGroup {
     return retVal;
   }
 
-  private getTeamValueTmp(force: boolean) {
+  private calcTeamValue() {
     let retVal = 0;
     for (let p of this.players) {
-      if (p.isKept || p.isFixedSquad || p.isDeleted || force) {
+      if (p.isKept || p.isFixedSquad || p.isDeleted) {
         retVal += p.marketValue;
       }
     }

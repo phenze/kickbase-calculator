@@ -1,5 +1,3 @@
-import numeral from 'numeral';
-
 export interface NextOpponent {
   imageUrl: string;
   isHomeGame: boolean;
@@ -118,16 +116,23 @@ export class KickbasePlayerStats {
         if (i + 1 < tmp.length) {
           const nextValue = tmp[i + 1];
           const change = nextValue - value;
-          let n = numeral(change);
+
           this.threeDaysValues.push({
             key: i,
-            value: n.format('0,0 $'),
+            value: change,
           });
-          let np = numeral(change / this.mv);
+
+          const ratio = change / this.mv;
+
+          const percentFormat = new Intl.NumberFormat('de-DE', {
+            style: 'percent',
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+          });
 
           this.threeDaysValuesPercent.push({
             key: i,
-            value: np.format('0.000%'),
+            value: percentFormat.format(ratio),
           });
         }
       }

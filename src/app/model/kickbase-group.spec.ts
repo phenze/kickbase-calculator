@@ -143,7 +143,7 @@ describe('KickbaseGroup', () => {
       const expectedSuccessValue = player.successValue; // 250.000
       const expectedValue = 6000000 + expectedSuccessValue + 50 * 3;
 
-      expect(group.differenceValueFriday).toBe(expectedValue);
+      expect(group.differenceFridayValue).toBe(expectedValue);
     });
   });
 
@@ -197,11 +197,11 @@ describe('KickbaseGroup', () => {
 
     it('sollte successValue berechnen, wenn achievementsDisabled false ist', () => {
       // Private/Protected Methoden über spyOn<any> mocken:
-      spyOn<any>(group, 'getSuccessValueTmp').and.returnValue(500000);
-      spyOn<any>(group, 'getNumberValueTmp').and.returnValue(1000000);
-      spyOn<any>(group, 'getTeamValueTmp').and.returnValue(20000000);
-      spyOn<any>(group, 'getTrend').and.returnValue(100000);
-      spyOn<any>(group, 'getLoss').and.returnValue(0);
+      spyOn<any>(group, 'calcSuccessValue').and.returnValue(500000);
+      spyOn<any>(group, 'calcNumberValue').and.returnValue(1000000);
+      spyOn<any>(group, 'calcTeamValue').and.returnValue(20000000);
+      spyOn<any>(group, 'calcTrend').and.returnValue(100000);
+      spyOn<any>(group, 'calcLoss').and.returnValue(0);
 
       group.calcValues(5000000, true, 3, false);
 
@@ -210,16 +210,16 @@ describe('KickbaseGroup', () => {
 
     it('sollte successValue auf 0 setzen, wenn achievementsDisabled true ist', () => {
       // Private/Protected Methoden über spyOn<any> mocken:
-      spyOn<any>(group, 'getSuccessValueTmp').and.returnValue(500000);
-      spyOn<any>(group, 'getNumberValueTmp').and.returnValue(1000000);
-      spyOn<any>(group, 'getTeamValueTmp').and.returnValue(20000000);
-      spyOn<any>(group, 'getTrend').and.returnValue(100000);
-      spyOn<any>(group, 'getLoss').and.returnValue(0);
+      spyOn<any>(group, 'calcSuccessValue').and.returnValue(500000);
+      spyOn<any>(group, 'calcNumberValue').and.returnValue(1000000);
+      spyOn<any>(group, 'calcTeamValue').and.returnValue(20000000);
+      spyOn<any>(group, 'calcTrend').and.returnValue(100000);
+      spyOn<any>(group, 'calcLoss').and.returnValue(0);
 
       group.calcValues(5000000, true, 3, true);
 
       expect(group.successValue).toBe(0);
-      expect(group.differenceValueFriday).toBe(6300000);
+      expect(group.differenceFridayValue).toBe(6300000);
     });
   });
 
