@@ -18,7 +18,7 @@ import { KickbaseGift } from './model/kickbase-gift';
 import { BsModalService, BsModalRef } from 'ngx-bootstrap/modal';
 import { ModalComponent } from './components/modal/modal.component';
 import { LoginPayload } from './components/login/login.component';
-import { FormattedNumberDirective } from './formatted-number.directive';
+import { UpdateService } from './services/update.service';
 
 interface PayPalDonationButton {
   render(selector: string): void;
@@ -111,12 +111,17 @@ export class AppComponent implements OnInit, AfterViewInit {
     public apiService: ApiService,
     private modalService: BsModalService,
     public cdRef: ChangeDetectorRef,
+    public updateService: UpdateService,
   ) {}
 
   get amountPlayers(): number {
     if (!this.kickbaseGroup?.players) return 0;
     return this.kickbaseGroup.players.filter((p) => p.isDeleted || p.isKept || p.isFixedSquad)
       .length;
+  }
+
+  reloadPage(): void {
+    document.location.reload();
   }
 
   ngAfterViewInit() {

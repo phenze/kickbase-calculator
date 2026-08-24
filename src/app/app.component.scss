@@ -1,0 +1,43 @@
+.update-banner {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: #fff3cd; // Entspricht Bootstrap 'alert-warning'
+  border-top: 1px solid #ffe69c;
+  z-index: 1050; // Damit es immer über anderen Elementen (wie der Bottom-Card) liegt
+  animation: slideUp 0.3s ease-out forwards;
+
+  // Optionale Beschränkung für große Bildschirme
+  @media (min-width: 768px) {
+    bottom: 20px;
+    left: 50%;
+    right: auto;
+    transform: translateX(-50%);
+    border-radius: 8px;
+    border: 1px solid #ffe69c;
+    min-width: 350px;
+    animation: slideUpCenter 0.3s ease-out forwards;
+  }
+}
+
+// Kleine Animation für das Einblenden von unten
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideUpCenter {
+  from {
+    transform: translate(-50%, 100%);
+    opacity: 0;
+  }
+  to {
+    transform: translate(-50%, 0);
+    opacity: 1;
+  }
+}
