@@ -27,7 +27,13 @@
 
 @if (apiService.isLoggedIn) {
   <div class="app-topbar">
-    <div class="text-muted extra-small fw-semibold">v6.6.2</div>
+    <span
+      class="cursor-pointer text-muted extra-small fw-semibold"
+      (click)="openReleaseNotes()"
+      title="Release Notes anzeigen"
+    >
+      v{{ currentVersion }} ℹ️
+    </span>
 
     @if (currentGift !== null) {
       <div class="gift-chip" title="Geschenk">
@@ -699,3 +705,53 @@
     }
   }
 }
+
+<!-- Modal für Release Notes / Changelog -->
+<ng-template #releaseNotesModal>
+  <div class="modal-header">
+    <h5 class="modal-title fw-bold">🚀 What's New / Release Notes</h5>
+    <button type="button" class="btn-close" (click)="modalRef?.hide()"></button>
+  </div>
+  <div class="modal-body">
+    @for (release of changelog; track release.version; let first = $first) {
+      <div class="mb-4" [class.border-bottom]="!$last" [class.pb-3]="!$last">
+        <div class="d-flex align-items-center justify-content-between mb-2">
+          <h6 class="fw-bold mb-0">
+            v{{ release.version }}
+            @if (first) {
+              <span class="badge bg-success ms-1">Aktuell</span>
+            }
+          </h6>
+          <small class="text-muted">{{ release.date }}</small>
+        </div>
+
+        @if (release.features && release.features.length > 0) {
+          <div class="mb-2">
+            <strong class="extra-small text-uppercase text-muted">Neue Features:</strong>
+            <ul class="mb-0 ps-3 extra-small">
+              @for (feature of release.features; track feature) {
+                <li>{{ feature }}</li>
+              }
+            </ul>
+          </div>
+        }
+
+        @if (release.bugfixes && release.bugfixes.length > 0) {
+          <div>
+            <strong class="extra-small text-uppercase text-muted">Bugfixes:</strong>
+            <ul class="mb-0 ps-3 extra-small">
+              @for (fix of release.bugfixes; track fix) {
+                <li>{{ fix }}</li>
+              }
+            </ul>
+          </div>
+        }
+      </div>
+    }
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-secondary btn-sm" (click)="modalRef?.hide()">
+      Schließen
+    </button>
+  </div>
+</ng-template>

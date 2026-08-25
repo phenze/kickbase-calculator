@@ -656,4 +656,43 @@ describe('AppComponent', () => {
       expect(component.shouldShowPositionDivider(players, 1)).toBeFalse();
     });
   });
+  describe('Release Notes / Changelog Modal', () => {
+    beforeEach(() => {
+      // Component-Setup für Modal-Tests vorbereiten
+      component.modalRef = undefined;
+    });
+
+    it('sollte das Release Notes Modal öffnen (openReleaseNotes)', () => {
+      const mockModalRef = { content: {} } as BsModalRef;
+      mockModalService.show.and.returnValue(mockModalRef);
+
+      component.openReleaseNotes();
+
+      expect(mockModalService.show).toHaveBeenCalledWith(
+        component.releaseNotesModal,
+        jasmine.objectContaining({ class: 'modal-md' }),
+      );
+      expect(component.modalRef).toBe(mockModalRef);
+    });
+
+    it('sollte das Modal automatisch öffnen, wenn eine neue Version erkannt wird (checkAutoShowReleaseNotes)', () => {
+      spyOn(component, 'openReleaseNotes');
+      localStorage.removeItem('last_seen_version');
+
+      // Methode aufrufen (oder ngOnInit ausführen)
+      (component as any).checkAutoShowReleaseNotes();
+
+      expect(component.openReleaseNotes).toHaveBeenCalled();
+      expect(localStorage.getItem('last_seen_version')).toBe(component.currentVersion);
+    });
+
+    it('sollte das Modal NICHT automatisch öffnen, wenn die Version bereits gesehen wurde', () => {
+      spyOn(component, 'openReleaseNotes');
+      localStorage.setItem('last_seen_version', component.currentVersion);
+
+      (component as any).checkAutoShowReleaseNotes();
+
+      expect(component.openReleaseNotes).not.toHaveBeenCalled();
+    });
+  });
 });

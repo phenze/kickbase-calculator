@@ -5,6 +5,7 @@ import {
   OnInit,
   ViewChild,
   ChangeDetectionStrategy,
+  TemplateRef,
 } from '@angular/core';
 
 import { ApiService } from './services/api.service';
@@ -19,6 +20,7 @@ import { BsModalService, BsModalRef } from 'ngx-bootstrap/modal';
 import { ModalComponent } from './components/modal/modal.component';
 import { LoginPayload } from './components/login/login.component';
 import { UpdateService } from './services/update.service';
+import { CHANGELOG, ReleaseNote } from './config/changelog.config';
 
 interface PayPalDonationButton {
   render(selector: string): void;
@@ -108,6 +110,12 @@ export class AppComponent implements OnInit, AfterViewInit {
 
   public marketOverviewPlayers: KickbasePlayer[] = [];
 
+  public readonly currentVersion = '6.6.2'; // Deine hardcodierte Version
+  public readonly changelog: ReleaseNote[] = CHANGELOG;
+
+  @ViewChild('releaseNotesModal') releaseNotesModal!: TemplateRef<any>;
+  public modalRef?: BsModalRef;
+
   constructor(
     public apiService: ApiService,
     private modalService: BsModalService,
@@ -127,6 +135,7 @@ export class AppComponent implements OnInit, AfterViewInit {
 
   ngAfterViewInit() {
     this.createPayPalButton();
+    this.checkAutoShowReleaseNotes();
   }
 
   ngOnInit() {
@@ -678,5 +687,18 @@ export class AppComponent implements OnInit, AfterViewInit {
   shouldShowPositionDivider(players: KickbasePlayer[], currentIndex: number): boolean {
     if (currentIndex === 0) return true;
     return players[currentIndex].position !== players[currentIndex - 1].position;
+  }
+
+  public openReleaseNotes(): void {
+    this.modalRef = this.modalService.show(this.releaseNotesModal, { class: 'modal-md' });
+  }
+
+  // Bonus: Automatisch bei neuer Version einmalig anzeigen
+  private checkAutoShowReleaseNotes(): void {
+    const lastSeenVersion = localStorage.getItem('last_seen_version');
+    if (lastSeenVersion !== this.currentVersion) {
+      this.openReleaseNotes();
+      localStorage.setItem('last_seen_version', this.currentVersion);
+    }
   }
 }
