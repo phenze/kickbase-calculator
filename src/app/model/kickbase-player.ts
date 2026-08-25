@@ -9,6 +9,7 @@ export class KickbasePlayer {
   public marketValue!: number;
   public uoid!: string;
   public pim!: string;
+  public position!: number;
 
   // local api fields
   public nameHash!: string;
@@ -63,6 +64,7 @@ export class KickbasePlayer {
       this.marketValue = json['mv'];
       this.status = json['st'];
       this.price = json['prc'];
+      this.position = json['pos'] ?? 0;
       if (json.hasOwnProperty('n')) {
         this.name = json['n'];
       }
@@ -259,6 +261,36 @@ export class KickbasePlayer {
     return date <= today22;
   }
 
+  get positionLabel(): string {
+    switch (this.position) {
+      case 1:
+        return 'TW';
+      case 2:
+        return 'ABW';
+      case 3:
+        return 'MF';
+      case 4:
+        return 'ST';
+      default:
+        return '';
+    }
+  }
+
+  get positionBadgeClass(): string {
+    switch (this.position) {
+      case 1:
+        return 'bg-warning text-dark'; // Torwart (Gelb)
+      case 2:
+        return 'bg-primary'; // Abwehr (Blau)
+      case 3:
+        return 'bg-success'; // Mittelfeld (Grün)
+      case 4:
+        return 'bg-danger'; // Sturm (Rot)
+      default:
+        return 'bg-secondary';
+    }
+  }
+
   public static createArrayInstance(json: any, userID: string | number): KickbasePlayer[] {
     const retVal: KickbasePlayer[] = new Array<KickbasePlayer>();
     if (json != null) {
@@ -315,6 +347,7 @@ export class KickbasePlayer {
     retVal.isDeleted = this.isDeleted;
     retVal.nameHash = this.nameHash;
     retVal.expectedSaleValue = this.expectedSaleValue;
+    retVal.position = this.position;
 
     return retVal;
   }

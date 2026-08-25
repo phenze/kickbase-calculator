@@ -17,7 +17,13 @@ describe('AppComponent', () => {
   let mockApiService: jasmine.SpyObj<ApiService>;
   let mockModalService: jasmine.SpyObj<BsModalService>;
 
-  function makePlayer(id: number, name: string, marketValue: number, change = 0): KickbasePlayer {
+  function makePlayer(
+    id: number,
+    name: string,
+    marketValue: number,
+    change = 0,
+    position = 0,
+  ): KickbasePlayer {
     const player = new KickbasePlayer(null, 'user123');
     player.id = id;
     player.name = name;
@@ -25,6 +31,7 @@ describe('AppComponent', () => {
     player.value = marketValue;
     player.price = marketValue;
     player.expiry = id * 100;
+    player.position = position; // Neue Zuweisung der Position
 
     const stats = new KickbasePlayerStats(null);
     stats.realMarketValueChange = change;
@@ -349,6 +356,25 @@ describe('AppComponent', () => {
       component.kickbaseGroup.players = [p1, p2];
     });
 
+    it('sollte Spieler nach Position sortieren (TW -> ABW -> MF -> ST)', () => {
+      // Setup: Spieler mit verschiedenen Positionen (1=TW, 2=ABW, 3=MF, 4=ST)
+      const pTW = makePlayer(1, 'Neuer', 1000, 0, 1);
+      const pST = makePlayer(2, 'Kane', 1000, 0, 4);
+      const pMF = makePlayer(3, 'Musiala', 1000, 0, 3);
+      const pABW = makePlayer(4, 'Davies', 1000, 0, 2);
+
+      component.kickbaseGroup.players = [pST, pTW, pMF, pABW];
+
+      // sorting_position auf den Wert setzen, den du in der AppComponent vergeben hast (z.B. 5)
+      component.selectedSorting = component.sorting_position || 5;
+      component.sortCurrentPlayers();
+
+      expect(component.kickbaseGroup.players[0].name).toBe('Neuer'); // 1
+      expect(component.kickbaseGroup.players[1].name).toBe('Davies'); // 2
+      expect(component.kickbaseGroup.players[2].name).toBe('Musiala'); // 3
+      expect(component.kickbaseGroup.players[3].name).toBe('Kane'); // 4
+    });
+
     it('should sort Kickbase players by expiry and move user-offered players to the end', () => {
       component.displayMode = AppComponent.display_mode_market_overview;
       component.selectedSorting = component.sorting_default;
@@ -608,6 +634,26 @@ describe('AppComponent', () => {
 
       // Erwartung: Nur p2 und p3 werden gezählt
       expect(component.amountPlayers).toBe(3);
+    });
+  });
+
+  describe('Positions-Trenner (shouldShowPositionDivider)', () => {
+    it('sollte true für das erste Element zurückgeben', () => {
+      const players = [makePlayer(1, 'A', 1000, 0, 1)];
+      expect(component.shouldShowPositionDivider(players, 0)).toBeTrue();
+    });
+
+    it('sollte true zurückgeben, wenn sich die Position zum Vorgänger ändert', () => {
+      const players = [
+        makePlayer(1, 'A', 1000, 0, 1), // TW
+        makePlayer(2, 'B', 1000, 0, 2), // ABW
+      ];
+      expect(component.shouldShowPositionDivider(players, 1)).toBeTrue();
+    });
+
+    it('sollte false zurückgeben, wenn die Position gleich bleibt', () => {
+      const players = [makePlayer(1, 'A', 1000, 0, 1), makePlayer(2, 'B', 1000, 0, 1)];
+      expect(component.shouldShowPositionDivider(players, 1)).toBeFalse();
     });
   });
 });

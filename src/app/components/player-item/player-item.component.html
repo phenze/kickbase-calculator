@@ -17,6 +17,12 @@
         (click)="onRemovePlayer()"
       />
 
+      @if (player.positionLabel) {
+        <span class="badge {{ player.positionBadgeClass }} fw-bold extra-small flex-shrink-0">
+          {{ player.positionLabel }}
+        </span>
+      }
+
       <div class="d-flex align-items-center gap-1 text-truncate">
         <strong class="fs-6 text-dark lh-1 text-truncate">{{ player.name }}</strong>
 

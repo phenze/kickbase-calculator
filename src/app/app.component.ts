@@ -83,6 +83,7 @@ export class AppComponent implements OnInit, AfterViewInit {
   public readonly sorting_mw_asc = 2;
   public readonly sorting_mw_change_asc = 3;
   public readonly sorting_mw_change_desc = 4;
+  public readonly sorting_position = 5;
 
   public selectedSorting: number = -1;
 
@@ -542,6 +543,10 @@ export class AppComponent implements OnInit, AfterViewInit {
 
     const playersToSort = [...sourcePlayers];
 
+    if (this.selectedSorting === this.sorting_position) {
+      playersToSort.sort((a, b) => (a.position || 99) - (b.position || 99));
+    }
+
     if (
       this.selectedSorting === this.sorting_mw_asc ||
       this.selectedSorting === this.sorting_mw_desc
@@ -668,5 +673,10 @@ export class AppComponent implements OnInit, AfterViewInit {
       this.showPermanentDeletedPlayers = true;
     }
     this.cdRef.detectChanges();
+  }
+
+  shouldShowPositionDivider(players: KickbasePlayer[], currentIndex: number): boolean {
+    if (currentIndex === 0) return true;
+    return players[currentIndex].position !== players[currentIndex - 1].position;
   }
 }

@@ -27,7 +27,7 @@
 
 @if (apiService.isLoggedIn) {
   <div class="app-topbar">
-    <div class="text-muted extra-small fw-semibold">v6.6.1</div>
+    <div class="text-muted extra-small fw-semibold">v6.6.2</div>
 
     @if (currentGift !== null) {
       <div class="gift-chip" title="Geschenk">
@@ -171,6 +171,7 @@
               <option [ngValue]="2">MW &uarr;</option>
               <option [ngValue]="3">MW Änderung &darr;</option>
               <option [ngValue]="4">MW Änderung &uarr;</option>
+              <option [ngValue]="5">Position (TW &rarr; ST)</option>
             </select>
           </div>
         </div>
@@ -317,6 +318,7 @@
             <option [ngValue]="2">MW &uarr;</option>
             <option [ngValue]="3">MW Änderung &darr;</option>
             <option [ngValue]="4">MW Änderung &uarr;</option>
+            <option [ngValue]="5">Position (TW &rarr; ST)</option>
           </select>
 
           <label class="form-label fw-semibold mb-1"
@@ -482,8 +484,18 @@
               </p>
 
               <div class="d-flex flex-column gap-2">
-                @for (player of kickbaseGroup.players; track player.id) {
+                @for (player of kickbaseGroup.players; track player.id; let i = $index) {
                   @if (showPlayer(player) && !player.isFixedSquad) {
+                    @if (
+                      selectedSorting === sorting_position &&
+                      shouldShowPositionDivider(kickbaseGroup.players, i)
+                    ) {
+                      <div
+                        class="position-divider text-muted fw-bold extra-small text-uppercase mt-2 mb-1 border-bottom pb-1"
+                      >
+                        {{ player.positionLabel }}
+                      </div>
+                    }
                     <app-player-item
                       [player]="player"
                       [printMode]="printMode"
@@ -530,8 +542,18 @@
                   </p>
 
                   <div class="d-flex flex-column gap-2">
-                    @for (player of kickbaseGroup.players; track player.id) {
+                    @for (player of kickbaseGroup.players; track player.id; let i = $index) {
                       @if (player.isFixedSquad) {
+                        @if (
+                          selectedSorting === sorting_position &&
+                          shouldShowPositionDivider(kickbaseGroup.players, i)
+                        ) {
+                          <div
+                            class="position-divider text-muted fw-bold extra-small text-uppercase mt-2 mb-1 border-bottom pb-1"
+                          >
+                            {{ player.positionLabel }}
+                          </div>
+                        }
                         <app-player-item
                           [player]="player"
                           [printMode]="printMode"
