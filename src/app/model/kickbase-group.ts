@@ -3,6 +3,7 @@ import { KickbasePlayer } from './kickbase-player';
 export class KickbaseGroup {
   public static readonly color_red = '#C10020';
   public static readonly color_green = '#007D34';
+  public static readonly color_yellow = '#ffc107';
 
   public players: KickbasePlayer[];
   public numberValue = 0;

@@ -146,7 +146,7 @@ describe('KickbasePlayer', () => {
 
       player.expiry = 5400;
       player.calcColors(0);
-      expect(player.expiryColor).toBe(KickbaseGroup.color_green);
+      expect(player.expiryColor).toBe(KickbaseGroup.color_yellow);
     });
   });
 
