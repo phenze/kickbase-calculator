@@ -494,7 +494,7 @@
                   @if (showPlayer(player) && !player.isFixedSquad) {
                     @if (
                       selectedSorting === sorting_position &&
-                      shouldShowPositionDivider(kickbaseGroup.players, i)
+                      shouldShowPositionDivider(kickbaseGroup.players, i, false)
                     ) {
                       <div
                         class="position-divider text-muted fw-bold extra-small text-uppercase mt-2 mb-1 border-bottom pb-1"
@@ -552,7 +552,7 @@
                       @if (player.isFixedSquad) {
                         @if (
                           selectedSorting === sorting_position &&
-                          shouldShowPositionDivider(kickbaseGroup.players, i)
+                          shouldShowPositionDivider(kickbaseGroup.players, i, true)
                         ) {
                           <div
                             class="position-divider text-muted fw-bold extra-small text-uppercase mt-2 mb-1 border-bottom pb-1"

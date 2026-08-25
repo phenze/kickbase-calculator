@@ -110,7 +110,7 @@ export class AppComponent implements OnInit, AfterViewInit {
 
   public marketOverviewPlayers: KickbasePlayer[] = [];
 
-  public readonly currentVersion = '6.6.2'; // Deine hardcodierte Version
+  public readonly currentVersion = '6.6.3';
   public readonly changelog: ReleaseNote[] = CHANGELOG;
 
   @ViewChild('releaseNotesModal') releaseNotesModal!: TemplateRef<any>;
@@ -684,9 +684,34 @@ export class AppComponent implements OnInit, AfterViewInit {
     this.cdRef.detectChanges();
   }
 
-  shouldShowPositionDivider(players: KickbasePlayer[], currentIndex: number): boolean {
-    if (currentIndex === 0) return true;
-    return players[currentIndex].position !== players[currentIndex - 1].position;
+  shouldShowPositionDivider(
+    players: KickbasePlayer[],
+    currentIndex: number,
+    isFixedSquadSection: boolean,
+  ): boolean {
+    if (this.selectedSorting !== this.sorting_position) {
+      return false;
+    }
+
+    const currentPlayer = players[currentIndex];
+
+    // Finde den vorherigen Spieler, der in DIESER Sektion angezeigt wird
+    let previousPlayer: KickbasePlayer | null = null;
+    for (let i = currentIndex - 1; i >= 0; i--) {
+      const p = players[i];
+      if (this.showPlayer(p) && p.isFixedSquad === isFixedSquadSection) {
+        previousPlayer = p;
+        break;
+      }
+    }
+
+    // Wenn es keinen vorherigen sichtbaren Spieler in dieser Sektion gibt -> Header anzeigen
+    if (!previousPlayer) {
+      return true;
+    }
+
+    // Header nur anzeigen, wenn sich die Position zum vorherigen sichtbaren Spieler unterscheidet
+    return currentPlayer.position !== previousPlayer.position;
   }
 
   public openReleaseNotes(): void {

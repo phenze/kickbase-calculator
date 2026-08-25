@@ -638,24 +638,74 @@ describe('AppComponent', () => {
   });
 
   describe('Positions-Trenner (shouldShowPositionDivider)', () => {
-    it('sollte true für das erste Element zurückgeben', () => {
-      const players = [makePlayer(1, 'A', 1000, 0, 1)];
-      expect(component.shouldShowPositionDivider(players, 0)).toBeTrue();
+    beforeEach(() => {
+      component.selectedSorting = component.sorting_position || 5;
+      spyOn(component, 'showPlayer').and.returnValue(true);
     });
 
-    it('sollte true zurückgeben, wenn sich die Position zum Vorgänger ändert', () => {
+    it('sollte false zurückgeben, wenn nicht nach Position sortiert wird', () => {
+      component.selectedSorting = component.sorting_mw_desc;
+      const players = [makePlayer(1, 'Neuer', 1000, 0, 1)];
+
+      expect(component.shouldShowPositionDivider(players, 0, false)).toBeFalse();
+    });
+
+    it('sollte true für den ersten Spieler einer Position in der Verkaufskandidaten-Sektion zurückgeben', () => {
       const players = [
-        makePlayer(1, 'A', 1000, 0, 1), // TW
-        makePlayer(2, 'B', 1000, 0, 2), // ABW
+        makePlayer(1, 'Neuer', 1000, 0, 1), // TW (Verkauf)
+        makePlayer(2, 'Davies', 1000, 0, 2), // ABW (Verkauf)
       ];
-      expect(component.shouldShowPositionDivider(players, 1)).toBeTrue();
+
+      expect(component.shouldShowPositionDivider(players, 0, false)).toBeTrue();
+      expect(component.shouldShowPositionDivider(players, 1, false)).toBeTrue();
     });
 
-    it('sollte false zurückgeben, wenn die Position gleich bleibt', () => {
-      const players = [makePlayer(1, 'A', 1000, 0, 1), makePlayer(2, 'B', 1000, 0, 1)];
-      expect(component.shouldShowPositionDivider(players, 1)).toBeFalse();
+    it('sollte false für aufeinanderfolgende Spieler derselben Position in der gleichen Sektion zurückgeben', () => {
+      const players = [
+        makePlayer(1, 'Davies', 1000, 0, 2), // ABW (Verkauf)
+        makePlayer(2, 'Upamecano', 1000, 0, 2), // ABW (Verkauf)
+      ];
+
+      expect(component.shouldShowPositionDivider(players, 0, false)).toBeTrue();
+      expect(component.shouldShowPositionDivider(players, 1, false)).toBeFalse();
+    });
+
+    it('sollte Spieler des festen Kaders bei der Trenner-Berechnung der Verkaufskandidaten ignorieren', () => {
+      const pFixed = makePlayer(1, 'Davies', 1000, 0, 2);
+      pFixed.isFixedSquad = true;
+      const pSale = makePlayer(2, 'Upamecano', 1000, 0, 2);
+
+      const players = [pFixed, pSale];
+
+      // pSale an Index 1 ist der erste sichtbare Spieler in der Verkauf-Sektion -> Trenner muss true sein
+      expect(component.shouldShowPositionDivider(players, 1, false)).toBeTrue();
+    });
+
+    it('sollte sich auf den vorherigen sichtbaren Spieler derselben Sektion beziehen', () => {
+      const p1 = makePlayer(1, 'Neuer', 1000, 0, 1); // TW (Verkauf)
+      const p2 = makePlayer(2, 'Davies', 1000, 0, 2); // ABW (Fest)
+      p2.isFixedSquad = true;
+      const p3 = makePlayer(3, 'Nübel', 1000, 0, 1); // TW (Verkauf)
+
+      const players = [p1, p2, p3];
+
+      // Für Sektion Verkauf (false) ist p3 an Index 2 der zweite TW -> kein Trenner
+      expect(component.shouldShowPositionDivider(players, 2, false)).toBeFalse();
+    });
+
+    it('sollte die Filterlogik von showPlayer berücksichtigen', () => {
+      const p1 = makePlayer(1, 'Neuer', 1000, 0, 1); // TW (unsichtbar)
+      const p2 = makePlayer(2, 'Nübel', 1000, 0, 1); // TW (sichtbar)
+
+      (component.showPlayer as jasmine.Spy).and.callFake((p: KickbasePlayer) => p.id !== 1);
+
+      const players = [p1, p2];
+
+      // Index 1 muss true liefern, da p1 ausgeblendet ist und p2 damit der erste sichtbare Spieler ist
+      expect(component.shouldShowPositionDivider(players, 1, false)).toBeTrue();
     });
   });
+
   describe('Release Notes / Changelog Modal', () => {
     beforeEach(() => {
       // Component-Setup für Modal-Tests vorbereiten
