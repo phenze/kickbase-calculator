@@ -289,4 +289,36 @@ describe('PlayerItemComponent', () => {
       expect(compiled.textContent).not.toContain('Spiele / Gegner');
     });
   });
+
+  describe('Positions-Badge', () => {
+    it('sollte das Positions-Badge (z.B. TW) korrekt rendern, wenn eine Position vorhanden ist', () => {
+      // Getter überschreiben, um die Logik des Models für diesen Test zu simulieren
+      Object.defineProperty(component.player, 'positionLabel', { get: () => 'TW' });
+      Object.defineProperty(component.player, 'positionBadgeClass', {
+        get: () => 'bg-warning text-dark',
+      });
+
+      fixture.detectChanges();
+
+      const compiled = fixture.nativeElement as HTMLElement;
+      const badge = compiled.querySelector('.badge');
+
+      expect(badge).not.toBeNull();
+      expect(badge?.textContent?.trim()).toBe('TW');
+      expect(badge?.classList.contains('bg-warning')).toBeTrue();
+    });
+
+    it('sollte kein Positions-Badge rendern, wenn keine Position (bzw. kein Label) vorhanden ist', () => {
+      Object.defineProperty(component.player, 'positionLabel', { get: () => '' });
+
+      fixture.detectChanges();
+
+      const compiled = fixture.nativeElement as HTMLElement;
+      // Sucht spezifisch nach einem Badge, das durch die Position erzeugt wird
+      // (Achte darauf, ob andere Badges im DOM existieren)
+      const badgeText = compiled.textContent || '';
+      expect(badgeText).not.toContain('TW');
+      expect(badgeText).not.toContain('ABW');
+    });
+  });
 });

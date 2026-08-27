@@ -27,7 +27,13 @@
 
 @if (apiService.isLoggedIn) {
   <div class="app-topbar">
-    <div class="text-muted extra-small fw-semibold">v6.6.1</div>
+    <span
+      class="cursor-pointer text-muted extra-small fw-semibold"
+      (click)="openReleaseNotes()"
+      title="Release Notes anzeigen"
+    >
+      v{{ currentVersion }} ℹ️
+    </span>
 
     @if (currentGift !== null) {
       <div class="gift-chip" title="Geschenk">
@@ -171,6 +177,7 @@
               <option [ngValue]="2">MW &uarr;</option>
               <option [ngValue]="3">MW Änderung &darr;</option>
               <option [ngValue]="4">MW Änderung &uarr;</option>
+              <option [ngValue]="5">Position (TW &rarr; ST)</option>
             </select>
           </div>
         </div>
@@ -317,6 +324,7 @@
             <option [ngValue]="2">MW &uarr;</option>
             <option [ngValue]="3">MW Änderung &darr;</option>
             <option [ngValue]="4">MW Änderung &uarr;</option>
+            <option [ngValue]="5">Position (TW &rarr; ST)</option>
           </select>
 
           <label class="form-label fw-semibold mb-1"
@@ -482,8 +490,18 @@
               </p>
 
               <div class="d-flex flex-column gap-2">
-                @for (player of kickbaseGroup.players; track player.id) {
+                @for (player of kickbaseGroup.players; track player.id; let i = $index) {
                   @if (showPlayer(player) && !player.isFixedSquad) {
+                    @if (
+                      selectedSorting === sorting_position &&
+                      shouldShowPositionDivider(kickbaseGroup.players, i, false)
+                    ) {
+                      <div
+                        class="position-divider text-muted fw-bold extra-small text-uppercase mt-2 mb-1 border-bottom pb-1"
+                      >
+                        {{ player.positionLabel }}
+                      </div>
+                    }
                     <app-player-item
                       [player]="player"
                       [printMode]="printMode"
@@ -530,8 +548,18 @@
                   </p>
 
                   <div class="d-flex flex-column gap-2">
-                    @for (player of kickbaseGroup.players; track player.id) {
+                    @for (player of kickbaseGroup.players; track player.id; let i = $index) {
                       @if (player.isFixedSquad) {
+                        @if (
+                          selectedSorting === sorting_position &&
+                          shouldShowPositionDivider(kickbaseGroup.players, i, true)
+                        ) {
+                          <div
+                            class="position-divider text-muted fw-bold extra-small text-uppercase mt-2 mb-1 border-bottom pb-1"
+                          >
+                            {{ player.positionLabel }}
+                          </div>
+                        }
                         <app-player-item
                           [player]="player"
                           [printMode]="printMode"
@@ -677,3 +705,53 @@
     }
   }
 }
+
+<!-- Modal für Release Notes / Changelog -->
+<ng-template #releaseNotesModal>
+  <div class="modal-header">
+    <h5 class="modal-title fw-bold">🚀 What's New / Release Notes</h5>
+    <button type="button" class="btn-close" (click)="modalRef?.hide()"></button>
+  </div>
+  <div class="modal-body">
+    @for (release of changelog; track release.version; let first = $first) {
+      <div class="mb-4" [class.border-bottom]="!$last" [class.pb-3]="!$last">
+        <div class="d-flex align-items-center justify-content-between mb-2">
+          <h6 class="fw-bold mb-0">
+            v{{ release.version }}
+            @if (first) {
+              <span class="badge bg-success ms-1">Aktuell</span>
+            }
+          </h6>
+          <small class="text-muted">{{ release.date }}</small>
+        </div>
+
+        @if (release.features && release.features.length > 0) {
+          <div class="mb-2">
+            <strong class="extra-small text-uppercase text-muted">Neue Features:</strong>
+            <ul class="mb-0 ps-3 extra-small">
+              @for (feature of release.features; track feature) {
+                <li>{{ feature }}</li>
+              }
+            </ul>
+          </div>
+        }
+
+        @if (release.bugfixes && release.bugfixes.length > 0) {
+          <div>
+            <strong class="extra-small text-uppercase text-muted">Bugfixes:</strong>
+            <ul class="mb-0 ps-3 extra-small">
+              @for (fix of release.bugfixes; track fix) {
+                <li>{{ fix }}</li>
+              }
+            </ul>
+          </div>
+        }
+      </div>
+    }
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-secondary btn-sm" (click)="modalRef?.hide()">
+      Schließen
+    </button>
+  </div>
+</ng-template>

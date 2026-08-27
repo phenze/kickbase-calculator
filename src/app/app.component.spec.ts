@@ -17,7 +17,13 @@ describe('AppComponent', () => {
   let mockApiService: jasmine.SpyObj<ApiService>;
   let mockModalService: jasmine.SpyObj<BsModalService>;
 
-  function makePlayer(id: number, name: string, marketValue: number, change = 0): KickbasePlayer {
+  function makePlayer(
+    id: number,
+    name: string,
+    marketValue: number,
+    change = 0,
+    position = 0,
+  ): KickbasePlayer {
     const player = new KickbasePlayer(null, 'user123');
     player.id = id;
     player.name = name;
@@ -25,6 +31,7 @@ describe('AppComponent', () => {
     player.value = marketValue;
     player.price = marketValue;
     player.expiry = id * 100;
+    player.position = position; // Neue Zuweisung der Position
 
     const stats = new KickbasePlayerStats(null);
     stats.realMarketValueChange = change;
@@ -349,6 +356,25 @@ describe('AppComponent', () => {
       component.kickbaseGroup.players = [p1, p2];
     });
 
+    it('sollte Spieler nach Position sortieren (TW -> ABW -> MF -> ST)', () => {
+      // Setup: Spieler mit verschiedenen Positionen (1=TW, 2=ABW, 3=MF, 4=ST)
+      const pTW = makePlayer(1, 'Neuer', 1000, 0, 1);
+      const pST = makePlayer(2, 'Kane', 1000, 0, 4);
+      const pMF = makePlayer(3, 'Musiala', 1000, 0, 3);
+      const pABW = makePlayer(4, 'Davies', 1000, 0, 2);
+
+      component.kickbaseGroup.players = [pST, pTW, pMF, pABW];
+
+      // sorting_position auf den Wert setzen, den du in der AppComponent vergeben hast (z.B. 5)
+      component.selectedSorting = component.sorting_position || 5;
+      component.sortCurrentPlayers();
+
+      expect(component.kickbaseGroup.players[0].name).toBe('Neuer'); // 1
+      expect(component.kickbaseGroup.players[1].name).toBe('Davies'); // 2
+      expect(component.kickbaseGroup.players[2].name).toBe('Musiala'); // 3
+      expect(component.kickbaseGroup.players[3].name).toBe('Kane'); // 4
+    });
+
     it('should sort Kickbase players by expiry and move user-offered players to the end', () => {
       component.displayMode = AppComponent.display_mode_market_overview;
       component.selectedSorting = component.sorting_default;
@@ -608,6 +634,115 @@ describe('AppComponent', () => {
 
       // Erwartung: Nur p2 und p3 werden gezählt
       expect(component.amountPlayers).toBe(3);
+    });
+  });
+
+  describe('Positions-Trenner (shouldShowPositionDivider)', () => {
+    beforeEach(() => {
+      component.selectedSorting = component.sorting_position || 5;
+      spyOn(component, 'showPlayer').and.returnValue(true);
+    });
+
+    it('sollte false zurückgeben, wenn nicht nach Position sortiert wird', () => {
+      component.selectedSorting = component.sorting_mw_desc;
+      const players = [makePlayer(1, 'Neuer', 1000, 0, 1)];
+
+      expect(component.shouldShowPositionDivider(players, 0, false)).toBeFalse();
+    });
+
+    it('sollte true für den ersten Spieler einer Position in der Verkaufskandidaten-Sektion zurückgeben', () => {
+      const players = [
+        makePlayer(1, 'Neuer', 1000, 0, 1), // TW (Verkauf)
+        makePlayer(2, 'Davies', 1000, 0, 2), // ABW (Verkauf)
+      ];
+
+      expect(component.shouldShowPositionDivider(players, 0, false)).toBeTrue();
+      expect(component.shouldShowPositionDivider(players, 1, false)).toBeTrue();
+    });
+
+    it('sollte false für aufeinanderfolgende Spieler derselben Position in der gleichen Sektion zurückgeben', () => {
+      const players = [
+        makePlayer(1, 'Davies', 1000, 0, 2), // ABW (Verkauf)
+        makePlayer(2, 'Upamecano', 1000, 0, 2), // ABW (Verkauf)
+      ];
+
+      expect(component.shouldShowPositionDivider(players, 0, false)).toBeTrue();
+      expect(component.shouldShowPositionDivider(players, 1, false)).toBeFalse();
+    });
+
+    it('sollte Spieler des festen Kaders bei der Trenner-Berechnung der Verkaufskandidaten ignorieren', () => {
+      const pFixed = makePlayer(1, 'Davies', 1000, 0, 2);
+      pFixed.isFixedSquad = true;
+      const pSale = makePlayer(2, 'Upamecano', 1000, 0, 2);
+
+      const players = [pFixed, pSale];
+
+      // pSale an Index 1 ist der erste sichtbare Spieler in der Verkauf-Sektion -> Trenner muss true sein
+      expect(component.shouldShowPositionDivider(players, 1, false)).toBeTrue();
+    });
+
+    it('sollte sich auf den vorherigen sichtbaren Spieler derselben Sektion beziehen', () => {
+      const p1 = makePlayer(1, 'Neuer', 1000, 0, 1); // TW (Verkauf)
+      const p2 = makePlayer(2, 'Davies', 1000, 0, 2); // ABW (Fest)
+      p2.isFixedSquad = true;
+      const p3 = makePlayer(3, 'Nübel', 1000, 0, 1); // TW (Verkauf)
+
+      const players = [p1, p2, p3];
+
+      // Für Sektion Verkauf (false) ist p3 an Index 2 der zweite TW -> kein Trenner
+      expect(component.shouldShowPositionDivider(players, 2, false)).toBeFalse();
+    });
+
+    it('sollte die Filterlogik von showPlayer berücksichtigen', () => {
+      const p1 = makePlayer(1, 'Neuer', 1000, 0, 1); // TW (unsichtbar)
+      const p2 = makePlayer(2, 'Nübel', 1000, 0, 1); // TW (sichtbar)
+
+      (component.showPlayer as jasmine.Spy).and.callFake((p: KickbasePlayer) => p.id !== 1);
+
+      const players = [p1, p2];
+
+      // Index 1 muss true liefern, da p1 ausgeblendet ist und p2 damit der erste sichtbare Spieler ist
+      expect(component.shouldShowPositionDivider(players, 1, false)).toBeTrue();
+    });
+  });
+
+  describe('Release Notes / Changelog Modal', () => {
+    beforeEach(() => {
+      // Component-Setup für Modal-Tests vorbereiten
+      component.modalRef = undefined;
+    });
+
+    it('sollte das Release Notes Modal öffnen (openReleaseNotes)', () => {
+      const mockModalRef = { content: {} } as BsModalRef;
+      mockModalService.show.and.returnValue(mockModalRef);
+
+      component.openReleaseNotes();
+
+      expect(mockModalService.show).toHaveBeenCalledWith(
+        component.releaseNotesModal,
+        jasmine.objectContaining({ class: 'modal-md' }),
+      );
+      expect(component.modalRef).toBe(mockModalRef);
+    });
+
+    it('sollte das Modal automatisch öffnen, wenn eine neue Version erkannt wird (checkAutoShowReleaseNotes)', () => {
+      spyOn(component, 'openReleaseNotes');
+      localStorage.removeItem('last_seen_version');
+
+      // Methode aufrufen (oder ngOnInit ausführen)
+      (component as any).checkAutoShowReleaseNotes();
+
+      expect(component.openReleaseNotes).toHaveBeenCalled();
+      expect(localStorage.getItem('last_seen_version')).toBe(component.currentVersion);
+    });
+
+    it('sollte das Modal NICHT automatisch öffnen, wenn die Version bereits gesehen wurde', () => {
+      spyOn(component, 'openReleaseNotes');
+      localStorage.setItem('last_seen_version', component.currentVersion);
+
+      (component as any).checkAutoShowReleaseNotes();
+
+      expect(component.openReleaseNotes).not.toHaveBeenCalled();
     });
   });
 });

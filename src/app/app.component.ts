@@ -5,6 +5,7 @@ import {
   OnInit,
   ViewChild,
   ChangeDetectionStrategy,
+  TemplateRef,
 } from '@angular/core';
 
 import { ApiService } from './services/api.service';
@@ -19,6 +20,7 @@ import { BsModalService, BsModalRef } from 'ngx-bootstrap/modal';
 import { ModalComponent } from './components/modal/modal.component';
 import { LoginPayload } from './components/login/login.component';
 import { UpdateService } from './services/update.service';
+import { CHANGELOG, ReleaseNote } from './config/changelog.config';
 
 interface PayPalDonationButton {
   render(selector: string): void;
@@ -83,6 +85,7 @@ export class AppComponent implements OnInit, AfterViewInit {
   public readonly sorting_mw_asc = 2;
   public readonly sorting_mw_change_asc = 3;
   public readonly sorting_mw_change_desc = 4;
+  public readonly sorting_position = 5;
 
   public selectedSorting: number = -1;
 
@@ -107,6 +110,12 @@ export class AppComponent implements OnInit, AfterViewInit {
 
   public marketOverviewPlayers: KickbasePlayer[] = [];
 
+  public readonly currentVersion = '6.6.3';
+  public readonly changelog: ReleaseNote[] = CHANGELOG;
+
+  @ViewChild('releaseNotesModal') releaseNotesModal!: TemplateRef<any>;
+  public modalRef?: BsModalRef;
+
   constructor(
     public apiService: ApiService,
     private modalService: BsModalService,
@@ -126,6 +135,7 @@ export class AppComponent implements OnInit, AfterViewInit {
 
   ngAfterViewInit() {
     this.createPayPalButton();
+    this.checkAutoShowReleaseNotes();
   }
 
   ngOnInit() {
@@ -542,6 +552,10 @@ export class AppComponent implements OnInit, AfterViewInit {
 
     const playersToSort = [...sourcePlayers];
 
+    if (this.selectedSorting === this.sorting_position) {
+      playersToSort.sort((a, b) => (a.position || 99) - (b.position || 99));
+    }
+
     if (
       this.selectedSorting === this.sorting_mw_asc ||
       this.selectedSorting === this.sorting_mw_desc
@@ -668,5 +682,48 @@ export class AppComponent implements OnInit, AfterViewInit {
       this.showPermanentDeletedPlayers = true;
     }
     this.cdRef.detectChanges();
+  }
+
+  shouldShowPositionDivider(
+    players: KickbasePlayer[],
+    currentIndex: number,
+    isFixedSquadSection: boolean,
+  ): boolean {
+    if (this.selectedSorting !== this.sorting_position) {
+      return false;
+    }
+
+    const currentPlayer = players[currentIndex];
+
+    // Finde den vorherigen Spieler, der in DIESER Sektion angezeigt wird
+    let previousPlayer: KickbasePlayer | null = null;
+    for (let i = currentIndex - 1; i >= 0; i--) {
+      const p = players[i];
+      if (this.showPlayer(p) && p.isFixedSquad === isFixedSquadSection) {
+        previousPlayer = p;
+        break;
+      }
+    }
+
+    // Wenn es keinen vorherigen sichtbaren Spieler in dieser Sektion gibt -> Header anzeigen
+    if (!previousPlayer) {
+      return true;
+    }
+
+    // Header nur anzeigen, wenn sich die Position zum vorherigen sichtbaren Spieler unterscheidet
+    return currentPlayer.position !== previousPlayer.position;
+  }
+
+  public openReleaseNotes(): void {
+    this.modalRef = this.modalService.show(this.releaseNotesModal, { class: 'modal-md' });
+  }
+
+  // Bonus: Automatisch bei neuer Version einmalig anzeigen
+  private checkAutoShowReleaseNotes(): void {
+    const lastSeenVersion = localStorage.getItem('last_seen_version');
+    if (lastSeenVersion !== this.currentVersion) {
+      this.openReleaseNotes();
+      localStorage.setItem('last_seen_version', this.currentVersion);
+    }
   }
 }
