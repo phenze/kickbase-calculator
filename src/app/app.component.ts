@@ -7,12 +7,12 @@ import {
   ChangeDetectionStrategy,
   TemplateRef,
 } from '@angular/core';
+import { firstValueFrom } from 'rxjs';
 
 import { ApiService } from './services/api.service';
 
 import { KickbaseGroup } from './model/kickbase-group';
 import { KickbasePlayer } from './model/kickbase-player';
-
 import { KickbaseLeague } from './model/kickbase-league';
 import { KickbaseMarket } from './model/kickbase-market';
 import { KickbaseGift } from './model/kickbase-gift';
@@ -21,6 +21,7 @@ import { ModalComponent } from './components/modal/modal.component';
 import { LoginPayload } from './components/login/login.component';
 import { UpdateService } from './services/update.service';
 import { CHANGELOG, ReleaseNote } from './config/changelog.config';
+import { ErrorService } from './services/error.service';
 
 interface PayPalDonationButton {
   render(selector: string): void;
@@ -122,6 +123,7 @@ export class AppComponent implements OnInit, AfterViewInit {
     private modalService: BsModalService,
     public cdRef: ChangeDetectorRef,
     public updateService: UpdateService,
+    public errorService: ErrorService,
   ) {}
 
   get amountPlayers(): number {
@@ -142,17 +144,17 @@ export class AppComponent implements OnInit, AfterViewInit {
   ngOnInit() {
     let sorting = localStorage.getItem('sorting');
     if (sorting !== null && sorting !== undefined) {
-      this.selectedSorting = Number.parseInt(sorting);
+      this.selectedSorting = Number.parseInt(sorting, 10);
     }
 
     let groupedView = localStorage.getItem('groupedView');
     if (groupedView !== null && groupedView !== undefined) {
-      this.isGroupedView = groupedView === 'true' ? true : false;
+      this.isGroupedView = groupedView === 'true';
     }
 
     const loadStatsAlwaysTmp = localStorage.getItem('loadStatsAlways');
     if (loadStatsAlwaysTmp !== null && loadStatsAlwaysTmp !== undefined) {
-      this.loadStatsAlways = loadStatsAlwaysTmp === 'true' ? true : false;
+      this.loadStatsAlways = loadStatsAlwaysTmp === 'true';
     }
 
     const keepPlayersInitiallyTmp = localStorage.getItem('keepPlayersInitially');
@@ -165,12 +167,7 @@ export class AppComponent implements OnInit, AfterViewInit {
       this.offerOffset = offerOffsetTmp;
     }
 
-    if (this.apiService.data !== null) {
-      // old style
-      this.displayMode = AppComponent.display_mode_calculator;
-    }
-
-    if (this.apiService.isLoggedIn) {
+    if (this.apiService.isLoggedIn()) {
       this.loadLeagues();
     }
     this.displayMode = AppComponent.display_mode_calculator;
@@ -219,7 +216,7 @@ export class AppComponent implements OnInit, AfterViewInit {
 
     try {
       if (fullRefresh || this.currentMarket === null) {
-        this.currentMarket = await this.apiService.getMarket(this.selectedLeague);
+        this.currentMarket = await firstValueFrom(this.apiService.getMarket(this.selectedLeague));
       }
       if (this.currentMarket === null) {
         return;
@@ -250,59 +247,56 @@ export class AppComponent implements OnInit, AfterViewInit {
     if (payload.username.length > 0 && payload.password.length > 0) {
       try {
         this.doLogin = true;
-        let result = await this.apiService.getToken(payload.username, payload.password);
+        const result = await firstValueFrom(
+          this.apiService.login(payload.username, payload.password),
+        );
         if (!result) {
           alert('Bitte Username und Passwort überprüfen');
         } else {
           this.displayMode = AppComponent.display_mode_calculator;
-          this.loadLeagues();
+          await this.loadLeagues();
         }
-        this.doLogin = false;
       } catch {
-        alert('Bitte Username und Passwort überprüfen');
+        this.errorService.showError('Fehler beim Login. Bitte überprüfen Sie Ihre Zugangsdaten.');
+      } finally {
         this.doLogin = false;
       }
     } else {
-      alert('Bitte Username und Password angeben');
+      this.errorService.showError('Bitte Username und Password angeben');
       this.doLogin = false;
     }
   }
 
-  loadLeagues = async () => {
-    await this.apiService
-      .getLeagues()
-      .then(async (leagues) => {
-        this.leagues = leagues;
-        if (this.leagues.length > 0) {
-          const rawLastId = this.apiService.data?.lastLeagueId;
-          const parsedLastId =
-            rawLastId !== undefined && rawLastId !== null ? Number(rawLastId) : null;
+  loadLeagues = async (): Promise<void> => {
+    this.loadingData = true;
+    try {
+      const leagues = await firstValueFrom(this.apiService.getLeagues());
+      this.leagues = leagues;
 
-          const leagueExists = leagues.some((l) => Number(l.id) === parsedLastId);
+      if (this.leagues.length > 0) {
+        const rawLastId = this.apiService.appSettings().lastLeagueId;
+        const parsedLastId =
+          rawLastId !== undefined && rawLastId !== null ? Number(rawLastId) : null;
 
-          if (
-            parsedLastId !== null &&
-            !isNaN(parsedLastId) &&
-            parsedLastId !== -1 &&
-            leagueExists
-          ) {
-            this.selectedLeague = parsedLastId;
-            await this.onSelectedLeagueChanged(parsedLastId);
-          } else {
-            this.selectedLeague = null;
-            await this.onSelectedLeagueChanged(null);
-          }
+        const leagueExists = leagues.some((l: KickbaseLeague) => Number(l.id) === parsedLastId);
+
+        if (parsedLastId !== null && !isNaN(parsedLastId) && parsedLastId !== -1 && leagueExists) {
+          this.selectedLeague = parsedLastId;
+          await this.onSelectedLeagueChanged(parsedLastId);
         } else {
           this.selectedLeague = null;
           await this.onSelectedLeagueChanged(null);
         }
-      })
-      .catch((error) => {
-        console.error(error);
-      })
-      .finally(() => {
-        this.cdRef.detectChanges();
-      });
+      } else {
+        this.selectedLeague = null;
+        await this.onSelectedLeagueChanged(null);
+      }
+    } catch (error) {
+      console.error(error);
+    } finally {
+      this.loadingData = false;
+      this.cdRef.detectChanges();
+    }
   };
 
   onSelectedLeagueChanged = async (newValue: number | null): Promise<void> => {
@@ -321,7 +315,7 @@ export class AppComponent implements OnInit, AfterViewInit {
     this.apiService.setLastLeague(newValue);
 
     try {
-      this.currentMarket = await this.apiService.getMarket(newValue);
+      this.currentMarket = await firstValueFrom(this.apiService.getMarket(newValue));
       this.currentGift = null;
 
       const league = this.leagues.find((item) => Number(item.id) === newValue);
@@ -332,7 +326,7 @@ export class AppComponent implements OnInit, AfterViewInit {
 
       this.achievementsDisabled = league.amd ?? false;
 
-      const lineUp = await this.apiService.getLineup(newValue);
+      const lineUp = await firstValueFrom(this.apiService.getLineup(newValue));
 
       this.minusValue = league.budget ?? 0;
 
@@ -354,7 +348,7 @@ export class AppComponent implements OnInit, AfterViewInit {
 
       for (const player of lineUp.players) {
         const marketPlayer = this.currentMarket?.players.find(
-          (marketItem) => marketItem.id === player.id,
+          (marketItem) => marketPlayerKey(marketItem) === String(player.id),
         );
 
         if (marketPlayer !== undefined) {
@@ -488,19 +482,20 @@ export class AppComponent implements OnInit, AfterViewInit {
     } catch {}
   }
 
-  onAddPlayer() {
-    let player = new KickbasePlayer(null, this.apiService.userID);
-    player.name = this.newplayername;
-    player.value = Number(this.newplayeramount);
+  // onAddPlayer() {
+  //   // apiService.userID() liefert string | null
+  //   let player = new KickbasePlayer(null, this.apiService.userID() ?? undefined);
+  //   player.name = this.newplayername;
+  //   player.value = Number(this.newplayeramount);
 
-    this.kickbaseGroup.players.push(player);
-    this.refreshGroups();
-    this.newplayeramount = 0;
-    this.newplayername = '';
-  }
+  //   this.kickbaseGroup.players.push(player);
+  //   this.refreshGroups();
+  //   this.newplayeramount = 0;
+  //   this.newplayername = '';
+  // }
 
   onRemovePlayer(player: KickbasePlayer) {
-    const index = this.kickbaseGroup.players.find((p) => p.name == player.name);
+    const index = this.kickbaseGroup.players.find((p) => p.name === player.name);
     if (index === undefined) {
       return;
     }
@@ -528,7 +523,7 @@ export class AppComponent implements OnInit, AfterViewInit {
       return;
     }
     try {
-      await this.apiService.collectGift(this.selectedLeague);
+      await firstValueFrom(this.apiService.collectGift(this.selectedLeague));
       this.reload();
     } catch (error) {
       console.log('cannot collect gift');
@@ -538,7 +533,9 @@ export class AppComponent implements OnInit, AfterViewInit {
         title: 'Geschenk bereits erhalten',
       };
       this.bsModalRef = this.modalService.show(ModalComponent, { initialState });
-      this.bsModalRef.content.closeBtnName = 'Close';
+      if (this.bsModalRef.content) {
+        this.bsModalRef.content.closeBtnName = 'Close';
+      }
     }
   };
 
@@ -558,7 +555,7 @@ export class AppComponent implements OnInit, AfterViewInit {
 
   onSelectedSortingChanged(sorting: number) {
     localStorage.setItem('sorting', sorting.toString());
-
+    this.selectedSorting = sorting;
     this.sortCurrentPlayers();
   }
 
@@ -624,8 +621,8 @@ export class AppComponent implements OnInit, AfterViewInit {
 
     if (this.selectedSorting === this.sorting_default) {
       playersToSort.sort((a, b) => {
-        const aIsUserPlayer = a.username.length > 0;
-        const bIsUserPlayer = b.username.length > 0;
+        const aIsUserPlayer = (a.username || '').length > 0;
+        const bIsUserPlayer = (b.username || '').length > 0;
 
         if (aIsUserPlayer && !bIsUserPlayer) {
           return 1;
@@ -656,9 +653,9 @@ export class AppComponent implements OnInit, AfterViewInit {
   }
 
   onFridayDateChanged(countDays: string) {
-    const intValue = Number.parseInt(countDays);
+    const intValue = Number.parseInt(countDays, 10);
     if (!isNaN(intValue)) {
-      this.dayUntilFriday = Number.parseInt(countDays);
+      this.dayUntilFriday = intValue;
       this.fridayDate = this.addDays(new Date(), this.dayUntilFriday);
       this.refreshGroups();
     }
@@ -743,7 +740,6 @@ export class AppComponent implements OnInit, AfterViewInit {
     this.modalRef = this.modalService.show(this.releaseNotesModal, { class: 'modal-md' });
   }
 
-  // Bonus: Automatisch bei neuer Version einmalig anzeigen
   private checkAutoShowReleaseNotes(): void {
     const lastSeenVersion = localStorage.getItem('last_seen_version');
     if (lastSeenVersion !== this.currentVersion) {
@@ -751,4 +747,9 @@ export class AppComponent implements OnInit, AfterViewInit {
       localStorage.setItem('last_seen_version', this.currentVersion);
     }
   }
+}
+
+// Hilfsfunktion zur sicheren ID-Ermittlung beim Vergleich
+function marketPlayerKey(player: KickbasePlayer): string {
+  return String(player.id);
 }

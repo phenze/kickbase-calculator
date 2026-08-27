@@ -3,13 +3,11 @@ import { KickbaseLeague } from './kickbase-league';
 describe('KickbaseLeague', () => {
   it('sollte amd = true aus dem lm-Objekt korrekt auslesen', () => {
     const payload = {
-      id: 123,
-      name: 'Test Liga',
-      lm: {
-        teamValue: 50000000,
-        budget: 10000000,
-        amd: true,
-      },
+      i: 123,
+      n: 'Test Liga',
+      amd: true,
+      tv: 50000000,
+      b: 10000000,
     };
 
     const league = new KickbaseLeague(payload);
@@ -36,12 +34,10 @@ describe('KickbaseLeague', () => {
 
   it('sollte amd = false als Standard setzen, wenn amd fehlt', () => {
     const payload = {
-      id: 123,
-      name: 'Test Liga',
-      lm: {
-        teamValue: 50000000,
-        budget: 10000000,
-      },
+      i: 123,
+      n: 'Test Liga',
+      tv: 50000000,
+      b: 10000000,
     };
 
     const league = new KickbaseLeague(payload);

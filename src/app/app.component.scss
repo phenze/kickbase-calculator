@@ -45,3 +45,13 @@
 .cursor-pointer {
   cursor: pointer !important;
 }
+
+.error-banner {
+  position: fixed;
+  top: 15px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1060; /* Über normalen UI-Elementen */
+  width: 90%;
+  max-width: 600px;
+}

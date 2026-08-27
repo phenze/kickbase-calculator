@@ -1,336 +1,298 @@
-import { Injectable } from '@angular/core';
+import { Injectable, signal } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable, map, catchError, throwError } from 'rxjs';
 
 import { KickbaseLeague } from '../model/kickbase-league';
 import { KickbaseMarket } from '../model/kickbase-market';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { KickbasePlayerStats } from '../model/kickbase-player-stats';
-import { KickbaseLiveData } from '../model/kickbase-live-data';
 import { KickbaseGift } from '../model/kickbase-gift';
 import { AppComponent } from '../app.component';
 
-export class Data {
-  public userID!: number;
-  public token!: string;
-  public username!: string;
-  public password!: string;
-  public calculatorActive!: string;
-  public lastLeagueId!: number;
-  public leagues!: KickbaseLeague[];
+export interface AppSettings {
+  calculatorActive: string;
+  lastLeagueId: number;
 }
 
-@Injectable()
+@Injectable({
+  providedIn: 'root',
+})
 export class ApiService {
-  private baseUrl = 'https://api.kickbase.com/v4/';
+  /**
+   * ARCHITEKTUR-HINWEIS: API-Proxy-Routing & User-Agent
+   *
+   * Alle Anfragen an die API müssen zwingend über das eigene Proxy-Skript geroutet werden.
+   *
+   * Gründe:
+   * 1. User-Agent Header (Kritisch): Die Ziel-API verweigert ohne einen spezifischen
+   *    `User-Agent` die Ausgabe des Refresh-Tokens. Da moderne Browser das manuelle
+   *    Überschreiben des `User-Agent`-Headers aus Sicherheitsgründen verbieten,
+   *    muss dieser serverseitig im Proxy gesetzt werden.
+   * 2. CORS-Bypass: Umgeht die Same-Origin-Policy (SOP) des Browsers und fehlende CORS-Header.
+   * 3. Datensicherheit: Verhindert das Preisgeben von API-Keys und Secrets im Browser-Netzwerk-Tab.
+   * 4.
+   *  The Proxy file can be shown any time at: https://pascalhenze.de/kickbase-proxy/proxy.php
+   *  https://github.com/phenze/kickbase-calculator/blob/main/proxy/proxy.php
+   * 5. I dont steal your passwords !
+   */
+  private readonly baseUrl = 'https://pascalhenze.de/kickbase-proxy/api/v4/';
 
-  public token = '';
-  public userID: any = null;
-  public data: any = null;
-  public isLoggedIn = false;
+  // Reactive State via Signals
+  public isLoggedIn = signal<boolean>(false);
+  public userID = signal<string | null>(null);
+  public leagues = signal<KickbaseLeague[]>([]);
+  public appSettings = signal<AppSettings>({
+    calculatorActive: AppComponent.display_mode_calculator,
+    lastLeagueId: -1,
+  });
 
   constructor(private http: HttpClient) {
-    let data = localStorage.getItem('data');
-    if (data !== null) {
-      this.data = JSON.parse(data);
-      if (this.data !== null) {
-        this.token = `Bearer ${this.data.token}`;
-        this.userID = this.data.userID;
-        this.isLoggedIn = true;
-        console.log(this.userID);
-        if (this.userID === undefined || this.userID === null) {
-          this.refreshToken();
+    // 1. Einmalige Migration alter localStorage-Daten ausführen
+    this.migrateLegacyData();
+
+    // 2. Initialen State aus den neuen Speichern laden
+    const token = sessionStorage.getItem('kb_token');
+    const storedUserId = sessionStorage.getItem('kb_user_id');
+
+    if (token && storedUserId) {
+      this.userID.set(storedUserId);
+      this.isLoggedIn.set(true);
+    }
+
+    this.appSettings.set(this.loadSettings());
+  }
+
+  /**
+   * Liest die alte `data`-Struktur aus dem localStorage aus, überführt sie
+   * in die neue Struktur und löscht das alte Objekt (inkl. Passwort).
+   */
+  private migrateLegacyData(): void {
+    const rawLegacyData = localStorage.getItem('data');
+    if (!rawLegacyData) {
+      return;
+    }
+
+    try {
+      const legacy = JSON.parse(rawLegacyData);
+
+      if (legacy) {
+        // Session-Daten in den sessionStorage übertragen (falls vorhanden)
+        if (legacy.token) {
+          // Token ohne "Bearer "-Präfix speichern, falls noch enthalten
+          const cleanToken = legacy.token.replace(/^Bearer\s+/i, '');
+          sessionStorage.setItem('kb_token', cleanToken);
+        }
+        if (legacy.userID !== undefined && legacy.userID !== null) {
+          sessionStorage.setItem('kb_user_id', String(legacy.userID));
+        }
+
+        // Unkritische App-Einstellungen in neuen localStorage-Key überführen
+        const migratedSettings: AppSettings = {
+          calculatorActive: legacy.calculatorActive ?? AppComponent.display_mode_calculator,
+          lastLeagueId: legacy.lastLeagueId ?? -1,
+        };
+        localStorage.setItem('app_settings', JSON.stringify(migratedSettings));
+
+        // Ligen-Cache sichern (falls vorhanden)
+        if (Array.isArray(legacy.leagues) && legacy.leagues.length > 0) {
+          this.leagues.set(KickbaseLeague.createArrayInstance(legacy.leagues));
         }
       }
-    }
-  }
-
-  private customApiHeaders() {
-    return new HttpHeaders().set('Accept', 'application/json').set('Authorization', this.token);
-  }
-
-  async getLeagues(): Promise<KickbaseLeague[]> {
-    // let url = this.baseUrl + 'leagues';
-    try {
-      // if ((this.data.leagues === undefined || this.data.leagues.length === 0) && this.data.loggedInWithoutApi === false) {
-      // }
-      await this.refreshToken();
-      return this.data.leagues;
     } catch (e) {
-      const error = e as any;
-      console.log(error);
-      if (error.status === 401 || error.status === 403) {
-        await this.refreshToken();
-        return this.getLeagues();
-      } else {
-        // TODO : Handle Api Errors
-        return Promise.reject('error');
-      }
+      console.error('Fehler bei der Migration der alten Kickbase-Daten:', e);
+    } finally {
+      // Altes data-Objekt (inkl. Passwort im Klartext) unwiderruflich löschen
+      localStorage.removeItem('data');
     }
   }
 
-  async getMarket(league: number): Promise<KickbaseMarket> {
-    let url = this.baseUrl + 'leagues/' + league + '/market?sort=expiry';
-    try {
-      const result = await this.http
-        .get(url, {
-          headers: this.customApiHeaders(),
-          responseType: 'json',
-        })
-        .toPromise();
-      return new KickbaseMarket(result, this.userID);
-    } catch (e) {
-      const error = e as any;
-      console.log(error);
-      if (error.status === 401 || error.status === 403) {
-        await this.refreshToken();
-        return this.getMarket(league);
-      } else {
-        // TODO : Handle Api Errors
-        return Promise.reject('error');
-      }
-    }
+  public getToken(): string | null {
+    return sessionStorage.getItem('kb_token');
   }
 
-  logout() {
-    this.data = null;
-    this.isLoggedIn = false;
-    localStorage.removeItem('data');
-  }
+  // --- Auth API ---
 
-  refreshToken(): Promise<boolean> {
-    const url = this.baseUrl + 'user/login';
-
-    const payload = {
-      ext: true,
-      em: this.data.username,
-      loy: false,
-      pass: this.data.password,
-      rep: {},
-    };
-    return this.http
-      .post(url, payload, {
-        responseType: 'json',
-      })
-      .toPromise()
-      .then((response: any) => {
-        if (!response) {
-          return Promise.reject('error');
-        }
-        const user = response['u'];
-        const userId = user['id'];
-        this.userID = userId;
-        this.data.userID = userId;
-        this.data.token = response['tkn'];
-        this.data.leagues = KickbaseLeague.createArrayInstance(response['srvl']);
-        localStorage.setItem('data', JSON.stringify(this.data));
-        this.token = `Bearer ${response['tkn']}`;
-        return true;
-      })
-      .catch((e) => {
-        console.log(e);
-        this.logout();
-        return Promise.reject('error');
-      });
-  }
-
-  getToken(username: string, password: string): Promise<boolean> {
-    const url = this.baseUrl + 'user/login';
-    // const payload = {
-    //   'email': username,
-    //   'password': password
-    // };
-
+  login(username: string, pass: string): Observable<boolean> {
+    const url = `${this.baseUrl}user/login`;
     const payload = {
       ext: true,
       em: username,
       loy: false,
-      pass: password,
+      pass: pass,
+      rep: {},
     };
-    return this.http
-      .post(url, payload, {
-        responseType: 'json',
-      })
-      .toPromise()
-      .then((response: any) => {
-        if (!response) {
-          return Promise.reject('error');
+
+    return this.http.post<any>(url, payload).pipe(
+      map((response) => {
+        if (!response || !response.tkn) {
+          throw new Error('Invalid login response');
         }
-        const user = response['u'];
-        const userId = user['id'];
-        this.userID = userId;
-        this.data = {
-          username: username,
-          password: password,
-          token: response['tkn'],
-          userID: userId,
-          calculatorActive:
-            this.data !== null ? this.data.calculatorActive : AppComponent.display_mode_calculator,
-          lastLeagueId: this.data !== null ? this.data.lastLeagueId : -1,
-          leagues: KickbaseLeague.createArrayInstance(response['srvl']),
-        };
-        localStorage.setItem('data', JSON.stringify(this.data));
-        this.token = `Bearer ${response['tkn']}`;
-        this.isLoggedIn = true;
+
+        const userIdStr = String(response.u?.id);
+        const leagues = KickbaseLeague.createArrayInstance(response.srvl);
+
+        // Token & User-ID im sessionStorage speichern
+        sessionStorage.setItem('kb_token', response.tkn);
+        sessionStorage.setItem('kb_user_id', userIdStr);
+        sessionStorage.setItem('kb_refresh_token', response.rtkn);
+
+        // Signals aktualisieren
+        this.userID.set(userIdStr);
+        this.leagues.set(leagues);
+        this.isLoggedIn.set(true);
+
         return true;
-      })
-      .catch((e) => {
-        console.log(e);
+      }),
+      catchError((err) => {
         this.logout();
-        return Promise.reject('error');
+        return throwError(() => err);
+      }),
+    );
+  }
+
+  refreshToken(): Observable<string> {
+    const refreshToken = sessionStorage.getItem('kb_refresh_token');
+    if (!refreshToken) {
+      this.logout();
+      return throwError(() => new Error('No refresh token available'));
+    }
+
+    // Kickbase v4 Token Refresh Request
+    return this.http.post<any>(`${this.baseUrl}user/refreshtokens`, { rtkn: refreshToken }).pipe(
+      map((response) => {
+        if (!response || !response.tkn) {
+          throw new Error('Invalid refresh response');
+        }
+        sessionStorage.setItem('kb_token', response.tkn);
+        if (response.rtkn) {
+          sessionStorage.setItem('kb_refresh_token', response.rtkn);
+        }
+        return response.tkn;
+      }),
+      catchError((err) => {
+        this.logout();
+        return throwError(() => err);
+      }),
+    );
+  }
+
+  logout(): void {
+    sessionStorage.removeItem('kb_token');
+    sessionStorage.removeItem('kb_refresh_token');
+    sessionStorage.removeItem('kb_user_id');
+    this.userID.set(null);
+    this.leagues.set([]);
+    this.isLoggedIn.set(false);
+  }
+
+  // --- Kickbase API Methods ---
+
+  getLeagues(): Observable<KickbaseLeague[]> {
+    if (this.leagues().length > 0) {
+      return new Observable((subscriber) => {
+        subscriber.next(this.leagues());
+        subscriber.complete();
       });
+    }
+
+    return this.http.get<any>(`${this.baseUrl}leagues/selection`).pipe(
+      map((response) => {
+        const leagues = KickbaseLeague.createArrayInstance(response.it || response);
+        this.leagues.set(leagues);
+        return leagues;
+      }),
+    );
   }
 
-  async getLineup(league: number): Promise<KickbaseMarket> {
-    let url = this.baseUrl + 'leagues/' + league + '/squad';
+  getMarket(leagueId: number): Observable<KickbaseMarket> {
+    const url = `${this.baseUrl}leagues/${leagueId}/market?sort=expiry`;
+    return this.http.get<any>(url).pipe(
+      // userID() wird garantiert als string übergeben (oder '' als Fallback)
+      map((result) => new KickbaseMarket(result, this.userID() ?? '')),
+    );
+  }
+
+  getLineup(leagueId: number): Observable<KickbaseMarket> {
+    const url = `${this.baseUrl}leagues/${leagueId}/squad`;
+    return this.http
+      .get<any>(url)
+      .pipe(map((result) => new KickbaseMarket(result, this.userID() ?? '')));
+  }
+
+  getGiftStatus(leagueId: number): Observable<KickbaseGift> {
+    const url = `${this.baseUrl}leagues/${leagueId}/currentgift`;
+    return this.http.get<any>(url).pipe(map((result) => new KickbaseGift(result)));
+  }
+
+  collectGift(leagueId: number): Observable<any> {
+    const url = `${this.baseUrl}leagues/${leagueId}/collectgift`;
+    return this.http.post<any>(url, {});
+  }
+
+  getPlayerStats(leagueId: number, playerId: number): Observable<KickbasePlayerStats> {
+    const url = `${this.baseUrl}leagues/${leagueId}/players/${playerId}`;
+    return this.http.get<any>(url).pipe(map((result) => new KickbasePlayerStats(result)));
+  }
+
+  getMarketValuePlayerStats(leagueId: number, playerId: number): Observable<KickbasePlayerStats> {
+    const url = `${this.baseUrl}competitions/1/players/${playerId}/marketValue/92?leagueId=${leagueId}`;
+    return this.http.get<any>(url).pipe(map((result) => new KickbasePlayerStats(result)));
+  }
+
+  // --- LocalStorage Management (Einstellungen & gelöschte Spieler) ---
+
+  private loadSettings(): AppSettings {
+    const saved = localStorage.getItem('app_settings');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch {
+        // Fallback bei Fehler
+      }
+    }
+    return {
+      calculatorActive: AppComponent.display_mode_calculator,
+      lastLeagueId: -1,
+    };
+  }
+
+  private saveSettings(settings: AppSettings): void {
+    this.appSettings.set(settings);
+    localStorage.setItem('app_settings', JSON.stringify(settings));
+  }
+
+  public setLastDisplay(displayMode: string): void {
+    const current = this.appSettings();
+    this.saveSettings({ ...current, calculatorActive: displayMode });
+  }
+
+  public setLastLeague(leagueId: number): void {
+    const current = this.appSettings();
+    this.saveSettings({ ...current, lastLeagueId: leagueId });
+  }
+
+  public setPlayerPermanentDeleted(leagueId: number, playerId: number, deleted: boolean): void {
+    const key = `permantDeletedPlayer_${leagueId}`;
+    const rawData = localStorage.getItem(key);
+
+    // Parsing & Absicherung auf Array-Typ
+    let parsedPlayers: unknown;
     try {
-      const result = await this.http
-        .get(url, {
-          headers: this.customApiHeaders(),
-          responseType: 'json',
-        })
-        .toPromise();
-      return new KickbaseMarket(result, this.userID);
-    } catch (e) {
-      const error = e as any;
-      console.log(error);
-      if (error.status === 401 || error.status === 403) {
-        await this.refreshToken();
-        return this.getLineup(league);
-      } else {
-        // TODO : Handle Api Errors
-        return Promise.reject('error');
-      }
+      parsedPlayers = rawData ? JSON.parse(rawData) : [];
+    } catch {
+      parsedPlayers = [];
     }
-  }
 
-  async getGiftStatus(league: number): Promise<KickbaseGift> {
-    let url = this.baseUrl + 'leagues/' + league + '/currentgift';
-    try {
-      const result = await this.http
-        .get(url, {
-          headers: this.customApiHeaders(),
-          responseType: 'json',
-        })
-        .toPromise();
-      return new KickbaseGift(result);
-    } catch (e) {
-      const error = e as any;
-      console.log(error);
-      if (error.status === 401 || error.status === 403) {
-        await this.refreshToken();
-        return this.getGiftStatus(league);
-      } else {
-        // TODO : Handle Api Errors
-        return Promise.reject('error');
-      }
+    const tmpArray = Array.isArray(parsedPlayers) ? parsedPlayers.map((id) => String(id)) : [];
+
+    const playerIdStr = playerId.toString();
+    const playerIndex = tmpArray.indexOf(playerIdStr);
+
+    if (deleted && playerIndex === -1) {
+      tmpArray.push(playerIdStr);
+    } else if (!deleted && playerIndex !== -1) {
+      tmpArray.splice(playerIndex, 1);
     }
-  }
 
-  async collectGift(league: number): Promise<any> {
-    let url = this.baseUrl + 'leagues/' + league + '/collectgift';
-    try {
-      const result = await this.http
-        .post(
-          url,
-          {},
-          {
-            headers: this.customApiHeaders(),
-            responseType: 'json',
-          },
-        )
-        .toPromise();
-      return result;
-    } catch (e) {
-      const error = e as any;
-      console.log(error);
-      if (error.status === 401 || error.status === 403) {
-        await this.refreshToken();
-        return this.collectGift(league);
-      } else {
-        // TODO : Handle Api Errors
-        return Promise.reject(error.error);
-      }
-    }
-  }
-
-  async getPlayerStats(league: number, playerID: number): Promise<KickbasePlayerStats> {
-    // https://api.kickbase.com/leagues/868390/players/2322/stats
-    // let url = this.baseUrl + 'competitions/1/players/' + playerID + '?leagueId=' + league;
-    let url = this.baseUrl + `leagues/${league}/players/${playerID}`;
-    try {
-      const result = await this.http
-        .get(url, {
-          headers: this.customApiHeaders(),
-          responseType: 'json',
-        })
-        .toPromise();
-      return new KickbasePlayerStats(result);
-    } catch (e) {
-      const error = e as any;
-      console.log(error);
-      if (error.status === 401 || error.status === 403) {
-        await this.refreshToken();
-        return this.getPlayerStats(league, playerID);
-      } else {
-        // TODO : Handle Api Errors
-        return Promise.reject('error');
-      }
-    }
-  }
-
-  async getMarketValuePlayerStats(league: number, playerID: number): Promise<KickbasePlayerStats> {
-    // https://api.kickbase.com/leagues/868390/players/2322/stats
-    let url =
-      this.baseUrl + 'competitions/1/players/' + playerID + '/marketValue/92?leagueId=' + league;
-    try {
-      const result = await this.http
-        .get(url, {
-          headers: this.customApiHeaders(),
-          responseType: 'json',
-        })
-        .toPromise();
-      return new KickbasePlayerStats(result);
-    } catch (e) {
-      const error = e as any;
-      console.log(error);
-      if (error.status === 401 || error.status === 403) {
-        await this.refreshToken();
-        return this.getPlayerStats(league, playerID);
-      } else {
-        // TODO : Handle Api Errors
-        return Promise.reject('error');
-      }
-    }
-  }
-
-  public setLastDisplay(displayMode: string) {
-    this.data.calculatorActive = displayMode;
-    localStorage.setItem('data', JSON.stringify(this.data));
-  }
-
-  public setLastLeague(leagueId: number) {
-    this.data.lastLeagueId = leagueId;
-    localStorage.setItem('data', JSON.stringify(this.data));
-  }
-
-  public setPlayerPermanentDeleted(leagueId: number, playerId: number, deleted: boolean) {
-    const key = 'permantDeletedPlayer_' + leagueId.toString();
-    const permantDeletedPlayer = localStorage.getItem(key);
-    if ((permantDeletedPlayer === null || permantDeletedPlayer === undefined) && deleted) {
-      localStorage.setItem(key, JSON.stringify([String(playerId)]));
-    } else {
-      const parsedPlayers = JSON.parse(permantDeletedPlayer ?? '[]') as unknown;
-      const tmpArray = Array.isArray(parsedPlayers)
-        ? parsedPlayers.map((player) => String(player))
-        : [];
-      const playerIdAsString = playerId.toString();
-      const playerIndex = tmpArray.findIndex((player) => player === playerIdAsString);
-      if (deleted && playerIndex === -1) {
-        tmpArray.push(playerIdAsString);
-      }
-      if (!deleted && playerIndex !== -1) {
-        tmpArray.splice(playerIndex, 1);
-      }
-      localStorage.setItem(key, JSON.stringify(tmpArray));
-    }
+    localStorage.setItem(key, JSON.stringify(tmpArray));
   }
 }

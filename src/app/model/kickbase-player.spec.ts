@@ -1,6 +1,7 @@
 import { KickbasePlayer } from './kickbase-player';
 import { KickbasePlayerStats } from './kickbase-player-stats';
 import { KickbaseGroup } from './kickbase-group';
+import { of } from 'rxjs';
 
 describe('KickbasePlayer', () => {
   let player: KickbasePlayer;
@@ -192,8 +193,11 @@ describe('KickbasePlayer', () => {
       const mockStats = new KickbasePlayerStats(null);
       mockStats.mv = 1000000;
 
-      mockApiService.getPlayerStats.and.resolveTo(mockStats);
-      mockApiService.getMarketValuePlayerStats.and.resolveTo({ it: [100, 200], trp: '500000' });
+      // Statt resolveTo(...) jetzt RxJS Observables mittels of(...) zurückgeben
+      mockApiService.getPlayerStats.and.returnValue(of(mockStats));
+      mockApiService.getMarketValuePlayerStats.and.returnValue(
+        of({ it: [100, 200], trp: '500000' } as any),
+      );
 
       await player.loadStats(1, mockApiService);
 

@@ -1,7 +1,7 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { DEFAULT_CURRENCY_CODE, LOCALE_ID, NgModule } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { provideHttpClient, withFetch, withInterceptorsFromDi } from '@angular/common/http';
+import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { provideRouter } from '@angular/router';
 
 import { AppComponent } from './app.component';
@@ -26,6 +26,7 @@ import { FormattedNumberDirective } from './formatted-number.directive';
 
 import { ServiceWorkerModule } from '@angular/service-worker';
 import { environment } from 'src/environments/environment';
+import { authInterceptor } from './services/auth.interceptor';
 
 registerLocaleData(localeDe, 'de-DE');
 
@@ -54,7 +55,7 @@ registerLocaleData(localeDe, 'de-DE');
   ],
   providers: [
     ApiService,
-    provideHttpClient(withFetch(), withInterceptorsFromDi()),
+    provideHttpClient(withInterceptors([authInterceptor])),
     provideRouter([]),
     CurrencyPipe,
     { provide: LOCALE_ID, useValue: 'de-DE' },
