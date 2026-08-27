@@ -91,11 +91,6 @@ export class ApiService {
           lastLeagueId: legacy.lastLeagueId ?? -1,
         };
         localStorage.setItem('app_settings', JSON.stringify(migratedSettings));
-
-        // Ligen-Cache sichern (falls vorhanden)
-        if (Array.isArray(legacy.leagues) && legacy.leagues.length > 0) {
-          this.leagues.set(KickbaseLeague.createArrayInstance(legacy.leagues));
-        }
       }
     } catch (e) {
       console.error('Fehler bei der Migration der alten Kickbase-Daten:', e);

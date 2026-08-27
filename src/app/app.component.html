@@ -763,49 +763,46 @@
 }
 
 <!-- Modal für Release Notes / Changelog -->
+<!-- Modal für Release Notes / Changelog -->
 <ng-template #releaseNotesModal>
-  <div class="modal-header">
-    <h5 class="modal-title fw-bold">🚀 What's New / Release Notes</h5>
-    <button type="button" class="btn-close" (click)="modalRef?.hide()"></button>
+  <div class="modal-header d-flex justify-content-between align-items-center">
+    <h5 class="modal-title fw-bold mb-0">🚀 What's New / Release Notes</h5>
+
+    <!-- Button-Gruppe oben rechts -->
+    <div class="d-flex align-items-center gap-2">
+      <a
+        href="https://github.com/phenze/kickbase-calculator/blob/main/CHANGELOG.md"
+        target="_blank"
+        class="btn btn-outline-secondary btn-sm d-flex align-items-center gap-1 text-decoration-none"
+      >
+        <i class="bi bi-github"></i>
+        <span>Auf GitHub ansehen ↗</span>
+      </a>
+      <button type="button" class="btn-close" (click)="modalRef?.hide()"></button>
+    </div>
   </div>
-  <div class="modal-body">
-    @for (release of changelog; track release.version; let first = $first) {
-      <div class="mb-4" [class.border-bottom]="!$last" [class.pb-3]="!$last">
-        <div class="d-flex align-items-center justify-content-between mb-2">
-          <h6 class="fw-bold mb-0">
-            v{{ release.version }}
-            @if (first) {
-              <span class="badge bg-success ms-1">Aktuell</span>
-            }
-          </h6>
-          <small class="text-muted">{{ release.date }}</small>
+
+  <div class="modal-body extra-small">
+    @if (isLoadingChangelog) {
+      <div class="d-flex justify-content-center my-4">
+        <div class="spinner-border spinner-border-sm text-primary" role="status">
+          <span class="visually-hidden">Lade Changelog...</span>
         </div>
-
-        @if (release.features && release.features.length > 0) {
-          <div class="mb-2">
-            <strong class="extra-small text-uppercase text-muted">Neue Features:</strong>
-            <ul class="mb-0 ps-3 extra-small">
-              @for (feature of release.features; track feature) {
-                <li>{{ feature }}</li>
-              }
-            </ul>
-          </div>
-        }
-
-        @if (release.bugfixes && release.bugfixes.length > 0) {
-          <div>
-            <strong class="extra-small text-uppercase text-muted">Bugfixes:</strong>
-            <ul class="mb-0 ps-3 extra-small">
-              @for (fix of release.bugfixes; track fix) {
-                <li>{{ fix }}</li>
-              }
-            </ul>
-          </div>
-        }
       </div>
+    } @else {
+      <!-- Gerendertes Markdown aus GitHub -->
+      <div class="markdown-content" [innerHTML]="changelogHtml"></div>
     }
   </div>
-  <div class="modal-footer">
+
+  <div class="modal-footer d-flex justify-content-between">
+    <a
+      href="https://github.com/phenze/kickbase-calculator/blob/main/CHANGELOG.md"
+      target="_blank"
+      class="btn btn-link btn-sm text-decoration-none px-0"
+    >
+      <i class="bi bi-github me-1"></i> Auf GitHub ansehen ↗
+    </a>
     <button type="button" class="btn btn-secondary btn-sm" (click)="modalRef?.hide()">
       Schließen
     </button>

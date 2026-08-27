@@ -6,6 +6,7 @@ import {
   ViewChild,
   ChangeDetectionStrategy,
   TemplateRef,
+  inject,
 } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 
@@ -20,8 +21,9 @@ import { BsModalService, BsModalRef } from 'ngx-bootstrap/modal';
 import { ModalComponent } from './components/modal/modal.component';
 import { LoginPayload } from './components/login/login.component';
 import { UpdateService } from './services/update.service';
-import { CHANGELOG, ReleaseNote } from './config/changelog.config';
 import { ErrorService } from './services/error.service';
+import { HttpClient } from '@angular/common/http';
+import { marked } from 'marked';
 
 interface PayPalDonationButton {
   render(selector: string): void;
@@ -112,8 +114,11 @@ export class AppComponent implements OnInit, AfterViewInit {
 
   public marketOverviewPlayers: KickbasePlayer[] = [];
 
-  public readonly currentVersion = '6.6.3';
-  public readonly changelog: ReleaseNote[] = CHANGELOG;
+  public readonly currentVersion = '6.7.1';
+  public changelogHtml: string = '';
+  public isLoadingChangelog: boolean = false;
+
+  private http = inject(HttpClient);
 
   @ViewChild('releaseNotesModal') releaseNotesModal!: TemplateRef<any>;
   public modalRef?: BsModalRef;
@@ -737,7 +742,27 @@ export class AppComponent implements OnInit, AfterViewInit {
   }
 
   public openReleaseNotes(): void {
-    this.modalRef = this.modalService.show(this.releaseNotesModal, { class: 'modal-md' });
+    this.modalRef = this.modalService.show(this.releaseNotesModal, { class: 'modal-xl' });
+
+    if (!this.changelogHtml) {
+      this.isLoadingChangelog = true;
+      // Raw-URL deiner CHANGELOG.md auf GitHub
+      const rawUrl =
+        'https://raw.githubusercontent.com/phenze/kickbase-calculator/main/CHANGELOG.md';
+
+      this.http.get(rawUrl, { responseType: 'text' }).subscribe({
+        next: (markdown) => {
+          this.changelogHtml = marked.parse(markdown) as string;
+          this.isLoadingChangelog = false;
+          this.cdRef.detectChanges();
+        },
+        error: () => {
+          this.changelogHtml = '<p class="text-danger">Changelog konnte nicht geladen werden.</p>';
+          this.isLoadingChangelog = false;
+          this.cdRef.detectChanges();
+        },
+      });
+    }
   }
 
   private checkAutoShowReleaseNotes(): void {

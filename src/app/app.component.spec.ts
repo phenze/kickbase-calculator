@@ -824,7 +824,7 @@ describe('AppComponent', () => {
 
       expect(mockModalService.show).toHaveBeenCalledWith(
         component.releaseNotesModal,
-        jasmine.objectContaining({ class: 'modal-md' }),
+        jasmine.objectContaining({ class: 'modal-xl' }),
       );
       expect(component.modalRef).toBe(mockModalRef);
     });
