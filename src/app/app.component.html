@@ -311,7 +311,8 @@
               type="checkbox"
               class="form-check-input"
               role="switch"
-              [checked]="!achievementsDisabled"
+              [(ngModel)]="includeAchievements"
+              (ngModelChange)="onIncludeAchievementsChanged()"
               [disabled]="achievementsDisabled"
               id="customSwitch4"
             />

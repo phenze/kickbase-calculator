@@ -198,6 +198,11 @@ export class ApiService {
     );
   }
 
+  getLeagueOverview(leagueId: number): Observable<KickbaseLeague> {
+    const url = `${this.baseUrl}leagues/${leagueId}/overview`;
+    return this.http.get<any>(url).pipe(map((result) => new KickbaseLeague(result)));
+  }
+
   getMarket(leagueId: number): Observable<KickbaseMarket> {
     const url = `${this.baseUrl}leagues/${leagueId}/market?sort=expiry`;
     return this.http.get<any>(url).pipe(

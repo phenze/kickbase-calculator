@@ -52,6 +52,7 @@ describe('AppComponent', () => {
       [
         'getToken',
         'getLeagues',
+        'getLeagueOverview',
         'getMarket',
         'getLineup',
         'setLastLeague',
@@ -197,6 +198,7 @@ describe('AppComponent', () => {
         name: '2. Bundesliga',
         budget: 5000000,
       } as any;
+      mockApiService.getLeagueOverview.and.returnValue(of({} as any));
       mockApiService.getLeagues.and.returnValue(of([mockLeague10, mockLeague20]));
       mockApiService.getMarket.and.returnValue(
         of({ players: [], offerAmountForUser: '500000' } as any),
@@ -305,26 +307,27 @@ describe('AppComponent', () => {
     });
   });
 
-  describe('achivements', () => {
-    it('sollte achievementsDisabled beim Ligawechsel aus der Liga übernehmen', async () => {
+  describe('Achievements / Erfolge', () => {
+    it('sollte achievementsDisabled und includeAchievements beim Ligawechsel übernehmen (amd = true)', async () => {
       const mockLeagueWithAmd = new KickbaseLeague({
         i: 1,
         n: 'Liga 1',
-        amd: true,
         tv: 50000000,
         b: 10000000,
       });
       component.leagues = [mockLeagueWithAmd];
 
+      mockApiService.getLeagueOverview.and.returnValue(of({ amd: true } as any));
       mockApiService.getMarket.and.returnValue(of([] as any));
       mockApiService.getLineup.and.returnValue(of({ players: [] } as any));
 
       await component.onSelectedLeagueChanged(1);
 
       expect(component.achievementsDisabled).toBeTrue();
+      expect(component.includeAchievements).toBeFalse();
     });
 
-    it('sollte achievementsDisabled = false setzen, wenn die Liga amd = false hat', async () => {
+    it('sollte achievementsDisabled = false und includeAchievements = true setzen, wenn amd = false ist', async () => {
       const mockLeagueNormal = new KickbaseLeague({ id: 2, name: 'Liga 2', lm: { amd: false } });
       component.leagues = [mockLeagueNormal];
 
@@ -334,11 +337,12 @@ describe('AppComponent', () => {
       await component.onSelectedLeagueChanged(2);
 
       expect(component.achievementsDisabled).toBeFalse();
+      expect(component.includeAchievements).toBeTrue();
     });
 
-    it('sollte achievementsDisabled an kickbaseGroup.calcValues übergeben', () => {
+    it('sollte !includeAchievements als 4. Argument an kickbaseGroup.calcValues übergeben', () => {
       spyOn(component.kickbaseGroup, 'calcValues');
-      component.achievementsDisabled = true;
+      component.includeAchievements = false;
 
       component.refreshGroups();
 
@@ -346,7 +350,30 @@ describe('AppComponent', () => {
         component.amountValue,
         component.includeMinusMarketValues,
         component.dayUntilFriday,
-        true,
+        true, // !includeAchievements
+      );
+    });
+
+    it('sollte refreshGroups aufrufen, wenn onIncludeAchievementsChanged ausgeführt wird', () => {
+      spyOn(component, 'refreshGroups');
+
+      component.onIncludeAchievementsChanged();
+
+      expect(component.refreshGroups).toHaveBeenCalled();
+    });
+
+    it('sollte calcValues mit aktuellem includeAchievements-Status in onPlayerValueChanged aufrufen', () => {
+      spyOn(component.kickbaseGroup, 'calcValues');
+      component.includeAchievements = true;
+      const player = makePlayer(1, 'Kane', 10000000);
+
+      component.onPlayerValueChanged(player);
+
+      expect(component.kickbaseGroup.calcValues).toHaveBeenCalledWith(
+        component.amountValue,
+        component.includeMinusMarketValues,
+        component.dayUntilFriday,
+        false, // !includeAchievements
       );
     });
   });
@@ -890,7 +917,6 @@ describe('AppComponent', () => {
 
     describe('ngOnInit Datums- und Uhrzeitlogik', () => {
       it('sollte bei Samstag (dow = 6) dayUntilFriday auf 6 setzen', () => {
-        // Samstag, 10. Mai 2025, 12:00 Uhr
         jasmine.clock().mockDate(new Date(2025, 4, 10, 12, 0, 0));
 
         component.ngOnInit();
@@ -899,7 +925,6 @@ describe('AppComponent', () => {
       });
 
       it('sollte nach 22 Uhr unter der Woche (nicht Freitag) dayUntilFriday dekrementieren', () => {
-        // Mittwoch, 14. Mai 2025, 23:00 Uhr (dow = 3, normal bis Fr: 2)
         jasmine.clock().mockDate(new Date(2025, 4, 14, 23, 0, 0));
 
         component.ngOnInit();
@@ -908,7 +933,6 @@ describe('AppComponent', () => {
       });
 
       it('sollte am Freitag nach 22 Uhr dayUntilFriday auf 7 setzen', () => {
-        // Freitag, 16. Mai 2025, 22:30 Uhr (dow = 5)
         jasmine.clock().mockDate(new Date(2025, 4, 16, 22, 30, 0));
 
         component.ngOnInit();
@@ -942,7 +966,6 @@ describe('AppComponent', () => {
         component.leagues = [{ id: 10, name: 'Liga 1' } as any];
         mockApiService.getMarket.and.returnValue(of({ players: [] } as any));
 
-        // Auswahl einer ID, die nicht in `leagues` existiert
         component.onSelectedLeagueChanged(99);
         tick();
 
@@ -973,6 +996,7 @@ describe('AppComponent', () => {
         const p1 = makePlayer(101, 'Kimmich', 1000);
         const p2 = makePlayer(200, 'Musiala', 1000);
 
+        mockApiService.getLeagueOverview.and.returnValue(of({} as any));
         mockApiService.getMarket.and.returnValue(of({ players: [] } as any));
         mockApiService.getLineup.and.returnValue(of({ players: [p1, p2] } as any));
 
