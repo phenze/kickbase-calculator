@@ -4,6 +4,13 @@ Alle wichtigen Änderungen und Updates des Kickbase Calculators auf einen Blick.
 
 ---
 
+## [Unreleased]
+
+### 🚀 Neue Features & Verbesserungen
+- **Dunkelmodus:** Der Rechner lässt sich jetzt zwischen Hell, Dunkel und der System-Einstellung des Geräts umschalten. Der Schalter sitzt oben rechts und ist auch auf der Login-Seite erreichbar. Die Auswahl wird im Browser gespeichert.
+
+---
+
 ## [6.7.0] - 27.08.2026
 
 ### 🚀 Neue Features & Verbesserungen

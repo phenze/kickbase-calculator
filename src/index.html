@@ -37,6 +37,31 @@
     <meta name="msapplication-TileImage" content="/ms-icon-144x144.png" />
     <link rel="manifest" href="manifest.webmanifest" />
     <meta name="theme-color" content="#1976d2" />
+
+    <!--
+      Setzt das gespeicherte Design noch vor dem ersten Rendern, damit beim Start
+      kein heller Blitz entsteht. Muss mit ThemeService synchron gehalten werden.
+    -->
+    <script>
+      (function () {
+        var mode = null;
+        try {
+          mode = localStorage.getItem('theme');
+        } catch (e) {
+          // Kein Zugriff auf den Speicher - wir folgen dann dem Geraet.
+        }
+        if (mode !== 'light' && mode !== 'dark') {
+          mode = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        }
+        document.documentElement.setAttribute('data-bs-theme', mode);
+        if (mode === 'dark') {
+          var meta = document.querySelector('meta[name="theme-color"]');
+          if (meta) {
+            meta.setAttribute('content', '#212529');
+          }
+        }
+      })();
+    </script>
     <script src="https://www.paypalobjects.com/donate/sdk/donate-sdk.js" charset="UTF-8"></script>
   </head>
 

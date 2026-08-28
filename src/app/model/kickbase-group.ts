@@ -1,9 +1,12 @@
 import { KickbasePlayer } from './kickbase-player';
 
 export class KickbaseGroup {
-  public static readonly color_red = '#C10020';
-  public static readonly color_green = '#007D34';
-  public static readonly color_yellow = '#ffc107';
+  // Diese Farben landen per [style.color] direkt im Template. Als CSS-Variable
+  // folgen sie automatisch dem gewaehlten Design - die Werte selbst stehen in
+  // src/styles.scss (Hell) bzw. unter [data-bs-theme='dark'] (Dunkel).
+  public static readonly color_red = 'var(--kb-danger)';
+  public static readonly color_green = 'var(--kb-success)';
+  public static readonly color_yellow = 'var(--kb-warning)';
 
   public players: KickbasePlayer[];
   public numberValue = 0;
@@ -89,9 +92,9 @@ export class KickbaseGroup {
       this.color = KickbaseGroup.color_green;
     }
     if (this.differenceFridayValue > 0) {
-      this.colorFriday = '#007D34';
+      this.colorFriday = KickbaseGroup.color_green;
     } else {
-      this.colorFriday = '#C10020';
+      this.colorFriday = KickbaseGroup.color_red;
     }
   }
 

@@ -48,6 +48,9 @@ In diesem Abschnitt können verschiedene Funktionen ausgelöst werden:
 ### Reset
 Gleicht einem Reload der Seite. Die Daten werden neu geladen
 
+### Design (Hell/Dunkel)
+Über das Symbol oben rechts könnt ihr zwischen hellem und dunklem Design wechseln. Ein Klick schaltet weiter: **System → Hell → Dunkel**. In der Stufe "System" übernimmt der Rechner automatisch die Einstellung eures Geräts, wechselt also z. B. abends mit dem Handy mit. Die Auswahl wird im Browser gespeichert und gilt auch auf der Login-Seite.
+
 ### Druckansicht
 In der Druckansicht werden sensible Informationen wie MW-Änderungen etc ausgeblendet. Es bleibt nur noch der Name und der Richtwert den man aktuell fordert. So kann man einfach Screenshots machen und seinen Kollegen diese schicken zur Übersicht.
 
