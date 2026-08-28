@@ -24,7 +24,7 @@
       }
 
       <div class="d-flex align-items-center gap-1 text-truncate">
-        <strong class="fs-6 text-dark lh-1 text-truncate">{{ player.name }}</strong>
+        <strong class="fs-6 text-body-emphasis lh-1 text-truncate">{{ player.name }}</strong>
 
         @if (player.status === 1) {
           <span class="icon-btn ms-1 flex-shrink-0" title="Verletzt">
@@ -123,7 +123,7 @@
             @if (isMarketOverview && player.price !== 0 && player.price !== player.marketValue) {
               <span class="ms-2 small">
                 <span class="text-muted">Preis: </span>
-                <strong class="text-dark">{{ player.price | euro }}</strong>
+                <strong class="text-body-emphasis">{{ player.price | euro }}</strong>
                 <span class="text-muted">
                   (+{{ player.priceMarketValueDiffer | euro }} /
                   {{ player.priceMarketValueDifferPercent }})</span
@@ -136,7 +136,7 @@
           @if (isMarketOverview && player.username.length > 0) {
             <div class="small">
               <span class="text-muted">Verkäufer: </span>
-              <strong class="text-dark">{{ player.username }}</strong>
+              <strong class="text-body-emphasis">{{ player.username }}</strong>
             </div>
           }
         </div>
@@ -191,7 +191,9 @@
               @if (!isMarketOverview) {
                 <div class="metric-chip">
                   <span class="metric-label">Gekauft</span>
-                  <span class="metric-value text-dark">{{ player.stats.buyPrice | euro }}</span>
+                  <span class="metric-value text-body-emphasis">{{
+                    player.stats.buyPrice | euro
+                  }}</span>
                 </div>
               }
 
@@ -296,7 +298,7 @@
 
                 <!-- Ergebnis oder Datum -->
                 @if (match.isFinished) {
-                  <span class="fw-bold text-dark ms-1">{{ match.resultString }}</span>
+                  <span class="fw-bold text-body-emphasis ms-1">{{ match.resultString }}</span>
                 } @else {
                   <span class="fw-bold text-primary ms-1">{{ match.dateString }}</span>
                 }

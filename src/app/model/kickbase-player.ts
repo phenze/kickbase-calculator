@@ -174,7 +174,7 @@ export class KickbasePlayer {
         ? KickbaseGroup.color_green
         : KickbaseGroup.color_red;
     this.hasOfferFromAny = this.value !== this.marketValue;
-    this.expiryColor = '#212529';
+    this.expiryColor = 'var(--bs-body-color)';
     // one hour
     if (this.expiry <= 60 * 60) {
       this.expiryColor = KickbaseGroup.color_red;

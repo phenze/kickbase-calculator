@@ -1,0 +1,9 @@
+<button
+  type="button"
+  class="btn-header-icon theme-toggle"
+  [title]="label()"
+  [attr.aria-label]="label()"
+  (click)="toggle()"
+>
+  <svg-icon [src]="iconSrc()"></svg-icon>
+</button>

@@ -14,11 +14,153 @@
   $dark: variables.$dark
 );
 
+@use 'sass:color';
+
 @import url('https://fonts.googleapis.com/css?family=Muli:200,300,400,700&display=swap');
 @import url('https://fonts.googleapis.com/css?family=Oswald:200,300,400,700&display=swap');
 
+/* ==========================================================================
+   Design-Tokens für Hell & Dunkel
+   Bootstrap 5.3 bringt seine eigenen Variablen unter [data-bs-theme='dark']
+   bereits mit. Hier stehen nur die Werte, die der Rechner zusätzlich braucht:
+   der eigene Seitenhintergrund, die halbtransparenten Chip-Flächen auf den
+   Spielerkarten und die Statusfarben, die aus dem TypeScript-Modell heraus
+   per Inline-Style gesetzt werden.
+   ========================================================================== */
+
+:root {
+  --kb-body-bg: #f0f0f0;
+  --kb-surface: #fff;
+
+  // Diese Flächen liegen über der eingefärbten Spielerkarte. Sie müssen im
+  // Dunkeln aufhellen statt abzudunkeln, sonst verschwinden sie im Hintergrund.
+  --kb-chip-bg: rgba(255, 255, 255, 0.55);
+  --kb-chip-bg-emphasis: rgba(255, 255, 255, 0.7);
+  --kb-chip-bg-hover: rgba(255, 255, 255, 0.9);
+  --kb-chip-border: rgba(0, 0, 0, 0.06);
+
+  --kb-card-header-bg: rgba(0, 0, 0, 0.04);
+  --kb-card-header-border: rgba(0, 0, 0, 0.08);
+  --kb-hover-bg: rgba(0, 0, 0, 0.05);
+
+  --kb-icon-accent: #337ab7;
+
+  --kb-segmented-track-bg: var(--bs-secondary-bg);
+  --kb-segmented-active-bg: #fff;
+  --kb-segmented-active-color: var(--bs-primary);
+
+  // Statusfarben. Werden auch von KickbaseGroup.color_* referenziert, damit
+  // die Inline-Styles in den Templates dem gewählten Design folgen.
+  --kb-success: #007d34;
+  --kb-danger: #c10020;
+  --kb-warning: #ffc107;
+
+  --kb-banner-bg: #fff3cd;
+  --kb-banner-border: #ffe69c;
+}
+
+/*
+  Bootstrap leitet seine *-text-emphasis-Farben für den Dunkelmodus aus einer
+  40%-Aufhellung der Theme-Farbe ab. $primary (#2f3c48) und $secondary
+  (#6f7f8c) sind hier so dunkel und entsättigt, dass daraus nur rund 3,5:1
+  Kontrast wird. Mit 60% Aufhellung landen alle sechs sicher über 4,5:1.
+*/
+$dark-text-emphasis: (
+  'primary': variables.$primary,
+  'secondary': variables.$secondary,
+  'success': variables.$success,
+  'danger': variables.$danger,
+  'warning': variables.$warning,
+  'info': variables.$info,
+);
+
+[data-bs-theme='dark'] {
+  --kb-body-bg: #1a1d20;
+  --kb-surface: #2b3035;
+
+  --kb-chip-bg: rgba(255, 255, 255, 0.07);
+  --kb-chip-bg-emphasis: rgba(255, 255, 255, 0.11);
+  --kb-chip-bg-hover: rgba(255, 255, 255, 0.16);
+  --kb-chip-border: rgba(255, 255, 255, 0.12);
+
+  --kb-card-header-bg: rgba(255, 255, 255, 0.05);
+  --kb-card-header-border: rgba(255, 255, 255, 0.1);
+  --kb-hover-bg: rgba(255, 255, 255, 0.08);
+
+  --kb-icon-accent: #6ea8fe;
+
+  --kb-segmented-track-bg: rgba(255, 255, 255, 0.06);
+  --kb-segmented-active-bg: #495057;
+  --kb-segmented-active-color: var(--bs-emphasis-color);
+
+  // Aufgehellte Varianten: die hellen Originale erreichen auf dunklem Grund
+  // nur rund 2,5:1 Kontrast und sind damit praktisch unlesbar.
+  --kb-success: #39c46e;
+  --kb-danger: #f1707a;
+  --kb-warning: #ffc107;
+
+  --kb-banner-bg: #332701;
+  --kb-banner-border: #664d03;
+
+  @each $name, $value in $dark-text-emphasis {
+    --bs-#{$name}-text-emphasis: #{color.mix(#fff, $value, 60%)};
+  }
+}
+
+/*
+  Die Theme-Farben ($primary, $success, ...) sind auf hellen Grund abgestimmt
+  und dienen in Bootstrap gleichzeitig als Flächen- und als Textfarbe. Als Text
+  kommen sie im Dunkeln nur auf 1,5-3:1 Kontrast. Bootstrap 5.3 hat für genau
+  diesen Fall die *-text-emphasis-Variablen, die dem Design bereits folgen -
+  wir hängen die Text-Utilities im Dunkelmodus daran. Die bg-Utilities bleiben
+  bewusst unverändert, damit z. B. `badge bg-primary` weiter weißen Text trägt.
+*/
+[data-bs-theme='dark'] {
+  .text-primary {
+    color: var(--bs-primary-text-emphasis) !important;
+  }
+
+  .text-secondary {
+    color: var(--bs-secondary-text-emphasis) !important;
+  }
+
+  .text-success {
+    color: var(--bs-success-text-emphasis) !important;
+  }
+
+  .text-danger {
+    color: var(--bs-danger-text-emphasis) !important;
+  }
+
+  .text-warning {
+    color: var(--bs-warning-text-emphasis) !important;
+  }
+}
+
+/*
+  Gleiches Problem bei den Outline-Buttons: sie tragen die Theme-Farbe als
+  Rahmen- und Schriftfarbe. $primary (#2f3c48) und $secondary (#6f7f8c) sind
+  so dunkel, dass die Buttons auf dunklem Grund praktisch unsichtbar werden.
+*/
+[data-bs-theme='dark'] {
+  @each $name in (primary, secondary, success, danger, warning, info) {
+    .btn-outline-#{$name} {
+      --bs-btn-color: var(--bs-#{$name}-text-emphasis);
+      --bs-btn-border-color: var(--bs-#{$name}-text-emphasis);
+      --bs-btn-hover-color: var(--bs-body-bg);
+      --bs-btn-hover-bg: var(--bs-#{$name}-text-emphasis);
+      --bs-btn-hover-border-color: var(--bs-#{$name}-text-emphasis);
+      --bs-btn-active-color: var(--bs-body-bg);
+      --bs-btn-active-bg: var(--bs-#{$name}-text-emphasis);
+      --bs-btn-active-border-color: var(--bs-#{$name}-text-emphasis);
+      --bs-btn-disabled-color: var(--bs-#{$name}-text-emphasis);
+      --bs-btn-disabled-border-color: var(--bs-#{$name}-text-emphasis);
+    }
+  }
+}
+
 body {
-  background-color: #f0f0f0;
+  background-color: var(--kb-body-bg);
 }
 
 .header-container {
@@ -108,23 +250,23 @@ svg-icon {
   justify-content: center;
   border: none;
   background: transparent;
-  color: #337ab7;
+  color: var(--kb-icon-accent);
   border-radius: 50%;
 
   &:hover {
-    background-color: rgba(0, 0, 0, 0.05);
+    background-color: var(--kb-hover-bg);
   }
 
   &.active {
-    color: #007d34;
+    color: var(--kb-success);
   }
 }
 
 /* Header-Anpassungen */
 .card-header {
   /* Holt die Hintergrundfarbe der Karte ab oder nutzt ein leicht abgedunkeltes Anstelle von Reinweiß */
-  background-color: rgba(0, 0, 0, 0.04) !important;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.08) !important;
+  background-color: var(--kb-card-header-bg) !important;
+  border-bottom: 1px solid var(--kb-card-header-border) !important;
 }
 
 /* Icon-Button Container mit Hintergrund */
@@ -135,14 +277,14 @@ svg-icon {
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  background-color: rgba(255, 255, 255, 0.6); // Dezent helle Fläche
-  border: 1px solid rgba(0, 0, 0, 0.05);
+  background-color: var(--kb-chip-bg); // Dezent abgesetzte Fläche
+  border: 1px solid var(--kb-chip-border);
   cursor: pointer;
   transition: all 0.2s ease-in-out;
   padding: 0;
 
   &:hover {
-    background-color: rgba(255, 255, 255, 0.9);
+    background-color: var(--kb-chip-bg-hover);
     transform: translateY(-1px);
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   }
@@ -237,7 +379,7 @@ svg-icon {
   width: 36px;
   height: 24px;
   cursor: pointer;
-  color: #337ab7;
+  color: var(--kb-icon-accent);
   margin-right: 10px;
 }
 
@@ -246,7 +388,7 @@ svg-icon {
   width: 36px;
   height: 36px;
   cursor: pointer;
-  color: #337ab7;
+  color: var(--kb-icon-accent);
   margin-right: 10px;
 }
 
@@ -255,13 +397,13 @@ svg-icon {
   width: 36px;
   height: 24px;
   cursor: pointer;
-  color: #337ab7;
+  color: var(--kb-icon-accent);
   margin-right: 5px;
   transform: scale(1.2);
   margin-top: 3px;
 
   &.active {
-    color: #007d34;
+    color: var(--kb-success);
   }
 }
 
@@ -270,7 +412,7 @@ svg-icon {
   width: 36px;
   height: 36px;
   cursor: pointer;
-  color: #337ab7;
+  color: var(--kb-icon-accent);
   margin-right: 10px;
 }
 
@@ -278,7 +420,7 @@ svg-icon {
   width: 24px;
   height: 24px;
   cursor: pointer;
-  color: #337ab7;
+  color: var(--kb-icon-accent);
 
   &.disabled {
     cursor: unset;
@@ -305,7 +447,7 @@ svg-icon {
   display: inline-flex;
   align-items: center;
   gap: 0.375rem;
-  background-color: var(--bs-light);
+  background-color: var(--bs-secondary-bg);
   border: 1px solid var(--bs-border-color-translucent);
   border-radius: 999px;
   padding: 0.25rem 0.65rem 0.25rem 0.5rem;
@@ -325,7 +467,7 @@ svg-icon {
 
 // Spenden-Hinweis als ruhige, abgesetzte Karte statt nackter Fließtext
 .support-card {
-  background-color: var(--bs-light);
+  background-color: var(--bs-secondary-bg);
   border: 1px solid var(--bs-border-color-translucent);
   border-radius: 0.75rem;
   padding: 1rem 1.1rem;
@@ -340,7 +482,7 @@ svg-icon {
 
 // Generische, wiederverwendbare Karte für Formular-/Info-Blöcke im Einstiegsbereich
 .section-card {
-  background-color: #fff;
+  background-color: var(--kb-surface);
   border: 1px solid var(--bs-border-color-translucent);
   border-radius: 0.75rem;
   padding: 1rem 1.1rem;
@@ -357,7 +499,7 @@ svg-icon {
 // und "app-artig" an, gleiche Optik wie die Icon-Pille im Sticky-Header
 .segmented-control {
   display: flex;
-  background-color: var(--bs-light);
+  background-color: var(--kb-segmented-track-bg);
   border-radius: 999px;
   padding: 4px;
   gap: 4px;
@@ -379,8 +521,8 @@ svg-icon {
     box-shadow 0.2s ease-in-out;
 
   &.active {
-    background-color: #fff;
-    color: var(--bs-primary);
+    background-color: var(--kb-segmented-active-bg);
+    color: var(--kb-segmented-active-color);
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
   }
 
@@ -454,21 +596,21 @@ svg-icon {
   align-items: center;
   padding: 0.15rem 0.55rem;
   border-radius: 999px;
-  background-color: rgba(255, 255, 255, 0.7);
+  background-color: var(--kb-chip-bg-emphasis);
 }
 
 // Ersetzt die früheren "p-2 bg-light rounded" Ad-hoc-Boxen durch eine
 // einheitliche, wiederverwendbare Stat-Box
 .stat-box {
-  background-color: rgba(255, 255, 255, 0.55);
-  border: 1px solid rgba(0, 0, 0, 0.06);
+  background-color: var(--kb-chip-bg);
+  border: 1px solid var(--kb-chip-border);
   border-radius: 0.6rem;
   padding: 0.5rem 0.75rem;
 }
 
 .offer-box {
   width: 100%;
-  background-color: rgba(255, 255, 255, 0.7);
+  background-color: var(--kb-chip-bg-emphasis);
   font-size: 0.95rem;
 }
 
@@ -498,8 +640,8 @@ svg-icon {
 }
 
 .trend-box {
-  background-color: rgba(255, 255, 255, 0.55);
-  border: 1px solid rgba(0, 0, 0, 0.06);
+  background-color: var(--kb-chip-bg);
+  border: 1px solid var(--kb-chip-border);
   border-radius: 0.6rem;
   overflow: hidden;
 }
@@ -515,13 +657,13 @@ svg-icon {
 // Marktwert/Preis besonders hervorgehoben in der Haupt-Info-Box
 .value-chip {
   display: inline-block;
-  background-color: rgba(255, 255, 255, 0.75);
-  border: 1px solid rgba(0, 0, 0, 0.06);
+  background-color: var(--kb-chip-bg-emphasis);
+  border: 1px solid var(--kb-chip-border);
   border-radius: 0.5rem;
   padding: 0.15rem 0.55rem;
   font-weight: 700;
   font-size: 1rem;
-  color: var(--bs-dark, #212529);
+  color: var(--bs-body-color);
 }
 
 // Einzelne Finanz-Kennzahl als eigene, klar abgesetzte Box (Label über Wert)
@@ -530,8 +672,8 @@ svg-icon {
   display: flex;
   flex-direction: column;
   gap: 0.05rem;
-  background-color: rgba(255, 255, 255, 0.65);
-  border: 1px solid rgba(0, 0, 0, 0.06);
+  background-color: var(--kb-chip-bg);
+  border: 1px solid var(--kb-chip-border);
   border-radius: 0.6rem;
   padding: 0.35rem 0.65rem;
   font-size: 0.82rem;
@@ -557,8 +699,8 @@ svg-icon {
   gap: 0.25rem;
   padding: 0.25rem 0.6rem;
   border-radius: 999px;
-  background-color: rgba(255, 255, 255, 0.6);
-  border: 1px solid rgba(0, 0, 0, 0.06);
+  background-color: var(--kb-chip-bg);
+  border: 1px solid var(--kb-chip-border);
   font-size: 0.8rem;
   white-space: nowrap;
 }

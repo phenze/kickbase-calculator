@@ -3,8 +3,8 @@
   bottom: 0;
   left: 0;
   right: 0;
-  background-color: #fff3cd; // Entspricht Bootstrap 'alert-warning'
-  border-top: 1px solid #ffe69c;
+  background-color: var(--kb-banner-bg); // Entspricht Bootstrap 'alert-warning'
+  border-top: 1px solid var(--kb-banner-border);
   z-index: 1050; // Damit es immer über anderen Elementen (wie der Bottom-Card) liegt
   animation: slideUp 0.3s ease-out forwards;
 
@@ -15,7 +15,7 @@
     right: auto;
     transform: translateX(-50%);
     border-radius: 8px;
-    border: 1px solid #ffe69c;
+    border: 1px solid var(--kb-banner-border);
     min-width: 350px;
     animation: slideUpCenter 0.3s ease-out forwards;
   }

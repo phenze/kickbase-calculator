@@ -17,6 +17,7 @@ import { LoginComponent } from './components/login/login.component';
 import { HelpComponent } from './components/help/help.component';
 import { PlayerItemComponent } from './components/player-item/player-item.component';
 import { MarketOverviewComponent } from './components/market-overview/market-overview.component';
+import { ThemeToggleComponent } from './components/theme-toggle/theme-toggle.component';
 
 import { CurrencyPipe, registerLocaleData } from '@angular/common';
 import localeDe from '@angular/common/locales/de';
@@ -42,6 +43,7 @@ registerLocaleData(localeDe, 'de-DE');
     HelpComponent,
     PlayerItemComponent,
     MarketOverviewComponent,
+    ThemeToggleComponent,
     EuroPipe,
     FormattedNumberDirective,
     ServiceWorkerModule.register('ngsw-worker.js', {
