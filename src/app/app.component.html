@@ -320,6 +320,26 @@
             </div>
           </div>
 
+          <div class="col-12 mt-2 mb-3">
+            <div class="form-check form-switch">
+              <input
+                type="checkbox"
+                class="form-check-input"
+                role="switch"
+                [(ngModel)]="keepPlayersInitially"
+                id="customSwitchKeepInitially"
+                (ngModelChange)="onKeepPlayersInitiallyChanged()"
+              />
+              <label class="form-check-label" for="customSwitchKeepInitially">
+                Niemanden zum Verkauf vormarkieren
+              </label>
+            </div>
+            <div class="form-text">
+              Alle Spieler starten als "behalten", du markierst nur die, die verkauft werden sollen.
+              Das Umschalten setzt auch die aktuelle Auswahl zurück.
+            </div>
+          </div>
+
           <label class="form-label fw-semibold mb-1">Sortierung</label>
           <select
             class="form-select mb-3"
