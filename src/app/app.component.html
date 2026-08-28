@@ -179,12 +179,12 @@
               [(ngModel)]="selectedSorting"
               (ngModelChange)="onSelectedSortingChanged($event)"
             >
-              <option [ngValue]="-1">Standard</option>
-              <option [ngValue]="1">MW &darr;</option>
-              <option [ngValue]="2">MW &uarr;</option>
-              <option [ngValue]="3">MW Änderung &darr;</option>
-              <option [ngValue]="4">MW Änderung &uarr;</option>
-              <option [ngValue]="5">Position (TW &rarr; ST)</option>
+              <option [ngValue]="sorting_default">Standard</option>
+              <option [ngValue]="sorting_mw_desc">MW &darr;</option>
+              <option [ngValue]="sorting_mw_asc">MW &uarr;</option>
+              <option [ngValue]="sorting_mw_change_desc">MW Änderung &darr;</option>
+              <option [ngValue]="sorting_mw_change_asc">MW Änderung &uarr;</option>
+              <option [ngValue]="sorting_position">Position (TW &rarr; ST)</option>
             </select>
           </div>
         </div>
@@ -326,12 +326,12 @@
             [(ngModel)]="selectedSorting"
             (ngModelChange)="onSelectedSortingChanged($event)"
           >
-            <option [ngValue]="-1">Standard</option>
-            <option [ngValue]="1">MW &darr;</option>
-            <option [ngValue]="2">MW &uarr;</option>
-            <option [ngValue]="3">MW Änderung &darr;</option>
-            <option [ngValue]="4">MW Änderung &uarr;</option>
-            <option [ngValue]="5">Position (TW &rarr; ST)</option>
+            <option [ngValue]="sorting_default">Standard</option>
+            <option [ngValue]="sorting_mw_desc">MW &darr;</option>
+            <option [ngValue]="sorting_mw_asc">MW &uarr;</option>
+            <option [ngValue]="sorting_mw_change_desc">MW Änderung &darr;</option>
+            <option [ngValue]="sorting_mw_change_asc">MW Änderung &uarr;</option>
+            <option [ngValue]="sorting_position">Position (TW &rarr; ST)</option>
           </select>
 
           <label class="form-label fw-semibold mb-1"

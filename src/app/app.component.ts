@@ -83,8 +83,8 @@ export class AppComponent implements OnInit, AfterViewInit {
   public readonly sorting_default = -1;
   public readonly sorting_mw_desc = 1;
   public readonly sorting_mw_asc = 2;
-  public readonly sorting_mw_change_asc = 3;
-  public readonly sorting_mw_change_desc = 4;
+  public readonly sorting_mw_change_desc = 3;
+  public readonly sorting_mw_change_asc = 4;
   public readonly sorting_position = 5;
 
   public selectedSorting: number = -1;
@@ -583,8 +583,14 @@ export class AppComponent implements OnInit, AfterViewInit {
         const aChange = a.stats?.realMarketValueChange;
         const bChange = b.stats?.realMarketValueChange;
 
+        // Ohne geladene Details ist die Aenderung unbekannt. Diese Spieler landen
+        // immer am Ende, statt an ihrer zufaelligen Ausgangsposition zu bleiben.
         if (aChange === undefined || bChange === undefined) {
-          return 0;
+          if (aChange === bChange) {
+            return 0;
+          }
+
+          return aChange === undefined ? 1 : -1;
         }
 
         if (aChange === bChange) {
