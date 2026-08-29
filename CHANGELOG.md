@@ -4,6 +4,11 @@ Alle wichtigen Änderungen und Updates des Kickbase Calculators auf einen Blick.
 
 ---
 
+## [6.7.2] - 29.08.2026
+
+### 🐛 Bugfixes & Wartung
+- **Login:** Login Problem gelöst. Man muss ich jetzt nicht immer wieder neu anmelden
+
 ## [6.7.1] - 29.08.2026
 
 ### 🐛 Bugfixes & Wartung

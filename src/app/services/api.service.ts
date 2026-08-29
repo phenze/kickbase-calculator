@@ -49,9 +49,9 @@ export class ApiService {
     // 1. Einmalige Migration alter localStorage-Daten ausführen
     this.migrateLegacyData();
 
-    // 2. Initialen State aus den neuen Speichern laden
-    const token = sessionStorage.getItem('kb_token');
-    const storedUserId = sessionStorage.getItem('kb_user_id');
+    // 2. Initialen State aus dem localStorage (statt sessionStorage) laden
+    const token = localStorage.getItem('kb_token');
+    const storedUserId = localStorage.getItem('kb_user_id');
 
     if (token && storedUserId) {
       this.userID.set(storedUserId);
@@ -61,10 +61,6 @@ export class ApiService {
     this.appSettings.set(this.loadSettings());
   }
 
-  /**
-   * Liest die alte `data`-Struktur aus dem localStorage aus, überführt sie
-   * in die neue Struktur und löscht das alte Objekt (inkl. Passwort).
-   */
   private migrateLegacyData(): void {
     const rawLegacyData = localStorage.getItem('data');
     if (!rawLegacyData) {
@@ -75,17 +71,14 @@ export class ApiService {
       const legacy = JSON.parse(rawLegacyData);
 
       if (legacy) {
-        // Session-Daten in den sessionStorage übertragen (falls vorhanden)
         if (legacy.token) {
-          // Token ohne "Bearer "-Präfix speichern, falls noch enthalten
           const cleanToken = legacy.token.replace(/^Bearer\s+/i, '');
-          sessionStorage.setItem('kb_token', cleanToken);
+          localStorage.setItem('kb_token', cleanToken);
         }
         if (legacy.userID !== undefined && legacy.userID !== null) {
-          sessionStorage.setItem('kb_user_id', String(legacy.userID));
+          localStorage.setItem('kb_user_id', String(legacy.userID));
         }
 
-        // Unkritische App-Einstellungen in neuen localStorage-Key überführen
         const migratedSettings: AppSettings = {
           calculatorActive: legacy.calculatorActive ?? AppComponent.display_mode_calculator,
           lastLeagueId: legacy.lastLeagueId ?? -1,
@@ -95,13 +88,12 @@ export class ApiService {
     } catch (e) {
       console.error('Fehler bei der Migration der alten Kickbase-Daten:', e);
     } finally {
-      // Altes data-Objekt (inkl. Passwort im Klartext) unwiderruflich löschen
       localStorage.removeItem('data');
     }
   }
 
   public getToken(): string | null {
-    return sessionStorage.getItem('kb_token');
+    return localStorage.getItem('kb_token');
   }
 
   // --- Auth API ---
@@ -125,10 +117,12 @@ export class ApiService {
         const userIdStr = String(response.u?.id);
         const leagues = KickbaseLeague.createArrayInstance(response.srvl);
 
-        // Token & User-ID im sessionStorage speichern
-        sessionStorage.setItem('kb_token', response.tkn);
-        sessionStorage.setItem('kb_user_id', userIdStr);
-        sessionStorage.setItem('kb_refresh_token', response.rtkn);
+        // Token & User-ID im localStorage speichern (dauerhafter PWA-Session-State)
+        localStorage.setItem('kb_token', response.tkn);
+        localStorage.setItem('kb_user_id', userIdStr);
+        if (response.rtkn) {
+          localStorage.setItem('kb_refresh_token', response.rtkn);
+        }
 
         // Signals aktualisieren
         this.userID.set(userIdStr);
@@ -145,21 +139,20 @@ export class ApiService {
   }
 
   refreshToken(): Observable<string> {
-    const refreshToken = sessionStorage.getItem('kb_refresh_token');
+    const refreshToken = localStorage.getItem('kb_refresh_token');
     if (!refreshToken) {
       this.logout();
       return throwError(() => new Error('No refresh token available'));
     }
 
-    // Kickbase v4 Token Refresh Request
     return this.http.post<any>(`${this.baseUrl}user/refreshtokens`, { rtkn: refreshToken }).pipe(
       map((response) => {
         if (!response || !response.tkn) {
           throw new Error('Invalid refresh response');
         }
-        sessionStorage.setItem('kb_token', response.tkn);
+        localStorage.setItem('kb_token', response.tkn);
         if (response.rtkn) {
-          sessionStorage.setItem('kb_refresh_token', response.rtkn);
+          localStorage.setItem('kb_refresh_token', response.rtkn);
         }
         return response.tkn;
       }),
@@ -171,9 +164,9 @@ export class ApiService {
   }
 
   logout(): void {
-    sessionStorage.removeItem('kb_token');
-    sessionStorage.removeItem('kb_refresh_token');
-    sessionStorage.removeItem('kb_user_id');
+    localStorage.removeItem('kb_token');
+    localStorage.removeItem('kb_refresh_token');
+    localStorage.removeItem('kb_user_id');
     this.userID.set(null);
     this.leagues.set([]);
     this.isLoggedIn.set(false);
