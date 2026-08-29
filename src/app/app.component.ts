@@ -66,6 +66,7 @@ export class AppComponent implements OnInit, AfterViewInit {
   public offerOffset: string = '0';
   public includeAdditionalAmount = false;
   public loadStatsAlways = true;
+  public keepPlayersInitially = false;
   public includeMinusMarketValues = false;
   public showPermanentDeletedPlayers = true;
   public printMode = false;
@@ -83,8 +84,8 @@ export class AppComponent implements OnInit, AfterViewInit {
   public readonly sorting_default = -1;
   public readonly sorting_mw_desc = 1;
   public readonly sorting_mw_asc = 2;
-  public readonly sorting_mw_change_asc = 3;
-  public readonly sorting_mw_change_desc = 4;
+  public readonly sorting_mw_change_desc = 3;
+  public readonly sorting_mw_change_asc = 4;
   public readonly sorting_position = 5;
 
   public selectedSorting: number = -1;
@@ -152,6 +153,11 @@ export class AppComponent implements OnInit, AfterViewInit {
     const loadStatsAlwaysTmp = localStorage.getItem('loadStatsAlways');
     if (loadStatsAlwaysTmp !== null && loadStatsAlwaysTmp !== undefined) {
       this.loadStatsAlways = loadStatsAlwaysTmp === 'true' ? true : false;
+    }
+
+    const keepPlayersInitiallyTmp = localStorage.getItem('keepPlayersInitially');
+    if (keepPlayersInitiallyTmp !== null && keepPlayersInitiallyTmp !== undefined) {
+      this.keepPlayersInitially = keepPlayersInitiallyTmp === 'true' ? true : false;
     }
 
     const offerOffsetTmp = localStorage.getItem('offerOffset');
@@ -358,6 +364,7 @@ export class AppComponent implements OnInit, AfterViewInit {
 
         player.leagueId = newValue;
         player.isFixedSquad = permanentlyDeletedPlayers.includes(String(player.id));
+        player.isKept = this.keepPlayersInitially;
 
         this.kickbaseGroup.players.push(player);
       }
@@ -452,6 +459,18 @@ export class AppComponent implements OnInit, AfterViewInit {
 
   onLoadStatsAlwaysChanged() {
     localStorage.setItem('loadStatsAlways', this.loadStatsAlways.toString());
+  }
+
+  onKeepPlayersInitiallyChanged() {
+    localStorage.setItem('keepPlayersInitially', this.keepPlayersInitially.toString());
+
+    // Die Umschaltung soll sofort sichtbar sein und nicht erst beim naechsten
+    // Ligawechsel greifen - sie setzt die Verkaufsauswahl also neu.
+    for (const player of this.kickbaseGroup.players) {
+      player.isKept = this.keepPlayersInitially;
+    }
+
+    this.refreshGroups();
   }
 
   onExtraAmountChange(event: number | string) {
@@ -583,8 +602,14 @@ export class AppComponent implements OnInit, AfterViewInit {
         const aChange = a.stats?.realMarketValueChange;
         const bChange = b.stats?.realMarketValueChange;
 
+        // Ohne geladene Details ist die Aenderung unbekannt. Diese Spieler landen
+        // immer am Ende, statt an ihrer zufaelligen Ausgangsposition zu bleiben.
         if (aChange === undefined || bChange === undefined) {
-          return 0;
+          if (aChange === bChange) {
+            return 0;
+          }
+
+          return aChange === undefined ? 1 : -1;
         }
 
         if (aChange === bChange) {

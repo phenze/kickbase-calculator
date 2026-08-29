@@ -179,12 +179,12 @@
               [(ngModel)]="selectedSorting"
               (ngModelChange)="onSelectedSortingChanged($event)"
             >
-              <option [ngValue]="-1">Standard</option>
-              <option [ngValue]="1">MW &darr;</option>
-              <option [ngValue]="2">MW &uarr;</option>
-              <option [ngValue]="3">MW Änderung &darr;</option>
-              <option [ngValue]="4">MW Änderung &uarr;</option>
-              <option [ngValue]="5">Position (TW &rarr; ST)</option>
+              <option [ngValue]="sorting_default">Standard</option>
+              <option [ngValue]="sorting_mw_desc">MW &darr;</option>
+              <option [ngValue]="sorting_mw_asc">MW &uarr;</option>
+              <option [ngValue]="sorting_mw_change_desc">MW Änderung &darr;</option>
+              <option [ngValue]="sorting_mw_change_asc">MW Änderung &uarr;</option>
+              <option [ngValue]="sorting_position">Position (TW &rarr; ST)</option>
             </select>
           </div>
         </div>
@@ -320,18 +320,38 @@
             </div>
           </div>
 
+          <div class="col-12 mt-2 mb-3">
+            <div class="form-check form-switch">
+              <input
+                type="checkbox"
+                class="form-check-input"
+                role="switch"
+                [(ngModel)]="keepPlayersInitially"
+                id="customSwitchKeepInitially"
+                (ngModelChange)="onKeepPlayersInitiallyChanged()"
+              />
+              <label class="form-check-label" for="customSwitchKeepInitially">
+                Niemanden zum Verkauf vormarkieren
+              </label>
+            </div>
+            <div class="form-text">
+              Alle Spieler starten als "behalten", du markierst nur die, die verkauft werden sollen.
+              Das Umschalten setzt auch die aktuelle Auswahl zurück.
+            </div>
+          </div>
+
           <label class="form-label fw-semibold mb-1">Sortierung</label>
           <select
             class="form-select mb-3"
             [(ngModel)]="selectedSorting"
             (ngModelChange)="onSelectedSortingChanged($event)"
           >
-            <option [ngValue]="-1">Standard</option>
-            <option [ngValue]="1">MW &darr;</option>
-            <option [ngValue]="2">MW &uarr;</option>
-            <option [ngValue]="3">MW Änderung &darr;</option>
-            <option [ngValue]="4">MW Änderung &uarr;</option>
-            <option [ngValue]="5">Position (TW &rarr; ST)</option>
+            <option [ngValue]="sorting_default">Standard</option>
+            <option [ngValue]="sorting_mw_desc">MW &darr;</option>
+            <option [ngValue]="sorting_mw_asc">MW &uarr;</option>
+            <option [ngValue]="sorting_mw_change_desc">MW Änderung &darr;</option>
+            <option [ngValue]="sorting_mw_change_asc">MW Änderung &uarr;</option>
+            <option [ngValue]="sorting_position">Position (TW &rarr; ST)</option>
           </select>
 
           <label class="form-label fw-semibold mb-1"

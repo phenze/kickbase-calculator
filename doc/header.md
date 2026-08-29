@@ -33,8 +33,11 @@ Beim Aktivieren dieser Option wird die Summe die ihr weiter oben bei [Erwartete 
 ### Negative Marktwertänderung mit einbeziehen
 Beim Aktivieren dieser Option werden auch dei negativen Marktwerte in die Berechnung der Gewinne/Verluste bis Freitag mit einbezogen. Normalerweise holt man sich am Mittwoch ein Angebot und sichert sich so den Marktwert. Deswegen kann diese Option nur bei Bedarf aktiviert werden. siehe [Marktwertänderungen](#marketChanges)
 
+### Niemanden zum Verkauf vormarkieren
+Standardmäßig sind nach dem Laden alle Spieler zum Verkauf markiert und man hakt die ab, die man behalten will. Mit dieser Option dreht sich das um: Es ist dann niemand vormarkiert und ihr markiert nur die Spieler, die tatsächlich verkauft werden sollen. Das Umschalten setzt auch die aktuelle Auswahl zurück, wirkt also sofort. Die Einstellung wird im Browser gespeichert.
+
 ### Sortierung
-Hier kann man die Sortierung der List der Spieler einstellen. Sie Sortierung MW Änderung greift erst nachdem alle [Details](#details) geladen wurden.
+Hier kann man die Sortierung der List der Spieler einstellen. Sie Sortierung MW Änderung greift erst nachdem alle [Details](#details) geladen wurden. Bei "MW Änderung &darr;" steht die höchste Änderung oben, bei "&uarr;" die niedrigste. Spieler ohne geladene Details stehen immer am Ende.
 
 ### Einnahmen Anzahl Tage ( Tag X)
 Hier kann man die Anzahl an Tage einstellen die für den voraussichtlichen [Marktwert Gewinn/Verlust](#marketChanges) verwendet werden soll. Beim Neuladen der Seite wird die Zahl immer auf den jeweils nächsten Freitag gelegt. Man kann diese Zahl hier aber nach Belieben ändern. Sollte der Spieltag z.B. auf einen Samstag fallen.
