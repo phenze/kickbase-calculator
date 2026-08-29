@@ -16,6 +16,14 @@
 
 @use 'sass:color';
 
+// Bootstrap Icons. Die Templates nutzen durchgängig <i class="bi bi-...">,
+// bislang fehlte nur das Paket dazu. Ausgeliefert wird ausschließlich woff2 –
+// das mitgelieferte .woff (180 kB) ist ein Fallback für Browser, die dieses
+// Angular-Build ohnehin nicht ausführen können.
+@use 'bootstrap-icons/font/bootstrap-icons' with (
+  $bootstrap-icons-font-src: url('bootstrap-icons/font/fonts/bootstrap-icons.woff2') format('woff2')
+);
+
 @import url('https://fonts.googleapis.com/css?family=Muli:200,300,400,700&display=swap');
 @import url('https://fonts.googleapis.com/css?family=Oswald:200,300,400,700&display=swap');
 
