@@ -8,6 +8,7 @@ Alle wichtigen Änderungen und Updates des Kickbase Calculators auf einen Blick.
 
 ### 🚀 Neue Features & Verbesserungen
 - **Dunkelmodus:** Der Rechner lässt sich jetzt zwischen Hell, Dunkel und der System-Einstellung des Geräts umschalten. Der Schalter sitzt oben rechts und ist auch auf der Login-Seite erreichbar. Die Auswahl wird im Browser gespeichert.
+- **Startzustand der Verkaufsauswahl umschaltbar:** Neue Option "Niemanden zum Verkauf vormarkieren". Damit ist nach dem Laden kein Spieler vorausgewählt und du markierst nur die, die wirklich verkauft werden sollen.
 
 ### 🐛 Bugfixes & Wartung
 - **Sortierung "MW Änderung" korrigiert:** Die beiden Richtungen waren vertauscht – bei "MW Änderung ↓" stand die niedrigste Änderung oben statt der höchsten. Spieler ohne geladene Details stehen jetzt außerdem immer am Ende der Liste.

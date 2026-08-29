@@ -484,6 +484,76 @@ describe('AppComponent', () => {
     });
   });
 
+  describe('Startzustand der Verkaufsauswahl', () => {
+    let lineupPlayers: KickbasePlayer[];
+
+    beforeEach(() => {
+      lineupPlayers = [makePlayer(1, 'Neuer', 5000000), makePlayer(2, 'Kane', 8000000)];
+
+      component.leagues = [{ id: 10, name: 'Liga 1', budget: 1000000 } as any];
+      mockApiService.getMarket.and.resolveTo({ players: [], offerAmountForUser: '0' } as any);
+      mockApiService.getLineup.and.resolveTo({ players: lineupPlayers } as any);
+    });
+
+    it('sollte die Option aus dem localStorage lesen', () => {
+      localStorage.setItem('keepPlayersInitially', 'true');
+
+      component.ngOnInit();
+
+      expect(component.keepPlayersInitially).toBeTrue();
+    });
+
+    it('sollte ohne Eintrag im localStorage beim bisherigen Verhalten bleiben', () => {
+      component.ngOnInit();
+
+      expect(component.keepPlayersInitially).toBeFalse();
+    });
+
+    it('sollte standardmäßig alle geladenen Spieler zum Verkauf vormarkieren', fakeAsync(() => {
+      component.onSelectedLeagueChanged(10);
+      tick();
+
+      expect(lineupPlayers.some((p) => p.isKept)).toBeFalse();
+    }));
+
+    it('sollte bei aktiver Option niemanden zum Verkauf vormarkieren', fakeAsync(() => {
+      component.keepPlayersInitially = true;
+
+      component.onSelectedLeagueChanged(10);
+      tick();
+
+      expect(lineupPlayers.every((p) => p.isKept)).toBeTrue();
+    }));
+
+    it('sollte die Auswahl beim Umschalten sofort übernehmen und speichern', () => {
+      component.kickbaseGroup.players = lineupPlayers;
+
+      component.keepPlayersInitially = true;
+      component.onKeepPlayersInitiallyChanged();
+
+      expect(localStorage.getItem('keepPlayersInitially')).toBe('true');
+      expect(lineupPlayers.every((p) => p.isKept)).toBeTrue();
+
+      component.keepPlayersInitially = false;
+      component.onKeepPlayersInitiallyChanged();
+
+      expect(localStorage.getItem('keepPlayersInitially')).toBe('false');
+      expect(lineupPlayers.some((p) => p.isKept)).toBeFalse();
+    });
+
+    it('sollte den festen Kader beim Umschalten nicht zum Verkauf stellen', () => {
+      const fixedPlayer = makePlayer(3, 'Kimmich', 12000000);
+      fixedPlayer.isFixedSquad = true;
+      component.kickbaseGroup.players = [...lineupPlayers, fixedPlayer];
+
+      component.keepPlayersInitially = false;
+      component.onKeepPlayersInitiallyChanged();
+
+      expect(fixedPlayer.isFixedSquad).toBeTrue();
+      expect(component.kickbaseGroup.players.filter((p) => !p.isFixedSquad).length).toBe(2);
+    });
+  });
+
   describe('Geschenk abholen & Fehlerbehandlung', () => {
     it('sollte Modal öffnen, wenn getGift fehlschlägt', fakeAsync(() => {
       component.selectedLeague = 10;
