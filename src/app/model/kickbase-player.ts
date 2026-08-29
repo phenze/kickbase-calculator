@@ -140,12 +140,13 @@ export class KickbasePlayer {
 
   public calcColors(differenceValue: number) {
     if (differenceValue >= 0 && Math.abs(differenceValue) >= this.value) {
-      this.color = '#007D341F';
+      this.color = 'var(--kb-card-bg-positive)';
     } else {
-      this.color = '#C100201F';
+      this.color = 'var(--kb-card-bg-negative)';
     }
+
     if (this.isKept || this.isFixedSquad) {
-      this.color = '#260C0C1F';
+      this.color = 'var(--kb-card-bg-disabled)';
     }
 
     if (this.stats !== null) {

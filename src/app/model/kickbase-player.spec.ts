@@ -110,13 +110,13 @@ describe('KickbasePlayer', () => {
     it('setzt die Gruen-Farbe bei positivem Differenzwert', () => {
       player.calcColors(1000000);
 
-      expect(player.color).toBe('#007D341F');
+      expect(player.color).toBe('var(--kb-card-bg-positive)');
     });
 
     it('setzt die Rot-Farbe bei negativem Differenzwert', () => {
       player.calcColors(500000);
 
-      expect(player.color).toBe('#C100201F');
+      expect(player.color).toBe('var(--kb-card-bg-negative)');
     });
 
     it('ueberschreibt Farbe bei deaktivierten oder geloeschten Spielern', () => {
@@ -124,7 +124,7 @@ describe('KickbasePlayer', () => {
 
       player.calcColors(1000000);
 
-      expect(player.color).toBe('#260C0C1F');
+      expect(player.color).toBe('var(--kb-card-bg-disabled)');
     });
 
     it('beruecksichtigt offerOffset aus dem localStorage', () => {
