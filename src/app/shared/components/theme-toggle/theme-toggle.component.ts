@@ -18,7 +18,7 @@ const THEME_LABELS: Record<ThemeMode, string> = {
   selector: 'app-theme-toggle',
   templateUrl: './theme-toggle.component.html',
   styleUrls: ['./theme-toggle.component.scss'],
-  changeDetection: ChangeDetectionStrategy.Eager,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [AngularSvgIconModule],
 })
