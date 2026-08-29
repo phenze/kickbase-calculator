@@ -40,9 +40,9 @@ describe('ApiService', () => {
     expect(service.getToken()).toBeNull();
   });
 
-  it('sollte bei vorhandenem sessionStorage die Sitzung wiederherstellen', () => {
-    sessionStorage.setItem('kb_token', 'saved-token');
-    sessionStorage.setItem('kb_user_id', '456');
+  it('sollte bei vorhandenem localStorage die Sitzung wiederherstellen', () => {
+    localStorage.setItem('kb_token', 'saved-token');
+    localStorage.setItem('kb_user_id', '456');
 
     service = TestBed.inject(ApiService);
 
@@ -62,9 +62,9 @@ describe('ApiService', () => {
 
     service = TestBed.inject(ApiService);
 
-    expect(sessionStorage.getItem('kb_token')).toBe('legacy-token');
-    expect(sessionStorage.getItem('kb_user_id')).toBe('789');
-    expect(localStorage.getItem('data')).toBeNull(); // Soll gelöscht werden
+    expect(localStorage.getItem('kb_token')).toBe('legacy-token');
+    expect(localStorage.getItem('kb_user_id')).toBe('789');
+    expect(localStorage.getItem('data')).toBeNull();
     expect(service.appSettings().lastLeagueId).toBe(5);
   });
 
@@ -90,7 +90,7 @@ describe('ApiService', () => {
       expect(service.isLoggedIn()).toBeTrue();
       expect(service.userID()).toBe('123');
       expect(service.getToken()).toBe('mock-token-123');
-      expect(sessionStorage.getItem('kb_token')).toBe('mock-token-123');
+      expect(localStorage.getItem('kb_token')).toBe('mock-token-123');
     });
 
     it('sollte bei Fehlschlagen von login den Status zurücksetzen', () => {
@@ -110,23 +110,23 @@ describe('ApiService', () => {
     });
 
     it('sollte logout ausführen und Session löschen', () => {
-      sessionStorage.setItem('kb_token', 'abc');
-      sessionStorage.setItem('kb_user_id', '123');
+      localStorage.setItem('kb_token', 'abc');
+      localStorage.setItem('kb_user_id', '123');
       service = TestBed.inject(ApiService);
 
       service.logout();
 
       expect(service.userID()).toBeNull();
       expect(service.isLoggedIn()).toBeFalse();
-      expect(sessionStorage.getItem('kb_token')).toBeNull();
-      expect(sessionStorage.getItem('kb_user_id')).toBeNull();
+      expect(localStorage.getItem('kb_token')).toBeNull();
+      expect(localStorage.getItem('kb_user_id')).toBeNull();
     });
   });
 
   describe('API Requests', () => {
     beforeEach(() => {
-      sessionStorage.setItem('kb_token', 'mock-token');
-      sessionStorage.setItem('kb_user_id', '123');
+      localStorage.setItem('kb_token', 'mock-token');
+      localStorage.setItem('kb_user_id', '123');
       service = TestBed.inject(ApiService);
     });
 
