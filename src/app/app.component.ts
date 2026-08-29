@@ -10,7 +10,17 @@ import {
 } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 
+import { DatePipe } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+
 import { ApiService } from './services/api.service';
+
+import { HelpComponent } from './components/help/help.component';
+import { MarketOverviewComponent } from './components/market-overview/market-overview.component';
+import { PlayerItemComponent } from './components/player-item/player-item.component';
+import { ThemeToggleComponent } from './components/theme-toggle/theme-toggle.component';
+import { FormattedNumberDirective } from './formatted-number.directive';
+import { EuroPipe } from './no-decimals.pipe';
 
 import { KickbaseGroup } from './model/kickbase-group';
 import { KickbasePlayer } from './model/kickbase-player';
@@ -19,7 +29,7 @@ import { KickbaseMarket } from './model/kickbase-market';
 import { KickbaseGift } from './model/kickbase-gift';
 import { BsModalService, BsModalRef } from 'ngx-bootstrap/modal';
 import { ModalComponent } from './components/modal/modal.component';
-import { LoginPayload } from './components/login/login.component';
+import { LoginComponent, LoginPayload } from './components/login/login.component';
 import { UpdateService } from './services/update.service';
 import { ErrorService } from './services/error.service';
 import { HttpClient } from '@angular/common/http';
@@ -56,7 +66,17 @@ window.PayPal = window.PayPal || {};
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss'],
   changeDetection: ChangeDetectionStrategy.Eager,
-  standalone: false,
+  imports: [
+    DatePipe,
+    FormsModule,
+    FormattedNumberDirective,
+    EuroPipe,
+    HelpComponent,
+    LoginComponent,
+    MarketOverviewComponent,
+    PlayerItemComponent,
+    ThemeToggleComponent,
+  ],
 })
 export class AppComponent implements OnInit, AfterViewInit {
   bsModalRef: BsModalRef | undefined;

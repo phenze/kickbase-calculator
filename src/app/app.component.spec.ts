@@ -103,8 +103,7 @@ describe('AppComponent', () => {
     };
 
     await TestBed.configureTestingModule({
-      declarations: [AppComponent],
-      imports: [EuroPipe],
+      imports: [AppComponent],
       providers: [
         { provide: ApiService, useValue: mockApiService },
         { provide: BsModalService, useValue: mockModalService },
