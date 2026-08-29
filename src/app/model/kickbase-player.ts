@@ -1,6 +1,7 @@
 import { ApiService } from '../services/api.service';
 import { KickbasePlayerStats } from './kickbase-player-stats';
 import { KickbaseGroup } from './kickbase-group';
+import { firstValueFrom } from 'rxjs';
 
 export class KickbasePlayer {
   public id!: number;
@@ -305,10 +306,9 @@ export class KickbasePlayer {
 
   loadStats = async (league: number, apiService: ApiService, force = false) => {
     if (this.stats === null || force) {
-      this.stats = await apiService.getPlayerStats(league, this.id);
-      const marketValueStats = (await apiService.getMarketValuePlayerStats(
-        league,
-        this.id,
+      this.stats = await firstValueFrom(apiService.getPlayerStats(league, this.id));
+      const marketValueStats = (await firstValueFrom(
+        apiService.getMarketValuePlayerStats(league, this.id),
       )) as unknown as Record<string, unknown>;
       this.stats.marketValues = (marketValueStats['it'] as unknown[]) ?? [];
       this.stats.buyPrice = Number(marketValueStats['trp']);

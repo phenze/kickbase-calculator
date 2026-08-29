@@ -8,14 +8,11 @@ export class KickbaseLeague {
   constructor(json: any) {
     Object.assign(this, json);
     if (json != null) {
-      if (json.hasOwnProperty('lm')) {
-        let lm = json['lm'];
-        this.teamValue = lm['teamValue'];
-        this.budget = lm['budget'];
-        this.amd = lm['amd'] ?? json['amd'] ?? false;
-      } else if (json.hasOwnProperty('amd')) {
-        this.amd = json['amd'];
-      }
+      this.id = json['i'];
+      this.name = json['n'];
+      this.budget = json['b'];
+      this.teamValue = json['tv'];
+      this.amd = json['amd'] ?? false;
     }
   }
 

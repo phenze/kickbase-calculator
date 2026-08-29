@@ -3,9 +3,9 @@ import { AngularSvgIconModule } from 'angular-svg-icon';
 import { THEME_MODE_ORDER, ThemeMode, ThemeService } from '../../services/theme.service';
 
 const THEME_ICONS: Record<ThemeMode, string> = {
-  system: 'assets/brightness_auto-24px.svg',
-  light: 'assets/light_mode-24px.svg',
-  dark: 'assets/dark_mode-24px.svg',
+  system: 'bi bi-circle-half',
+  light: 'bi bi-brightness-high-fill',
+  dark: 'bi bi-moon-stars-fill',
 };
 
 const THEME_LABELS: Record<ThemeMode, string> = {

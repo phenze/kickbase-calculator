@@ -38,7 +38,7 @@ describe('ThemeToggleComponent', () => {
 
   it('zeigt im Standardfall das Icon fuer den System-Modus', () => {
     expect(component.mode()).toBe('system');
-    expect(component.iconSrc()).toBe('assets/brightness_auto-24px.svg');
+    expect(component.iconSrc()).toBe('bi bi-circle-half');
   });
 
   it('schaltet per Klick auf das naechste Design um', () => {
@@ -46,14 +46,14 @@ describe('ThemeToggleComponent', () => {
     fixture.detectChanges();
 
     expect(component.mode()).toBe('light');
-    expect(component.iconSrc()).toBe('assets/light_mode-24px.svg');
+    expect(component.iconSrc()).toBe('bi bi-brightness-high-fill');
     expect(localStorage.getItem(THEME_STORAGE_KEY)).toBe('light');
 
     button().click();
     fixture.detectChanges();
 
     expect(component.mode()).toBe('dark');
-    expect(component.iconSrc()).toBe('assets/dark_mode-24px.svg');
+    expect(component.iconSrc()).toBe('bi bi-moon-stars-fill');
     expect(document.documentElement.getAttribute('data-bs-theme')).toBe('dark');
   });
 

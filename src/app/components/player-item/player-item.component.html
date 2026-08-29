@@ -26,15 +26,24 @@
       <div class="d-flex align-items-center gap-1 text-truncate">
         <strong class="fs-6 text-body-emphasis lh-1 text-truncate">{{ player.name }}</strong>
 
-        @if (player.status === 1) {
-          <span class="icon-btn ms-1 flex-shrink-0" title="Verletzt">
+        @if (player.status === 1 || player.status === 2) {
+          <span class="icon-btn ms-1 flex-shrink-0">
+            <i
+              class="bi player-icon"
+              [ngClass]="player.status === 1 ? 'bi-plus-lg injury-heavy' : 'bi-bandaid-fill'"
+              [style.color]="player.status === 1 ? '#e5311c' : '#ffc107'"
+            ></i>
+          </span>
+
+          <!-- <span class="icon-btn ms-1 flex-shrink-0" title="Verletzt">
             <svg-icon
               class="player-icon"
               src="assets/health_injured.svg"
               style="color: #e5311c"
             ></svg-icon>
-          </span>
-        } @else if (player.status === 2) {
+          </span> -->
+        }
+        <!-- @else if (player.status === 2) {
           <span class="icon-btn ms-1 flex-shrink-0" title="Angeschlagen">
             <svg-icon
               class="player-icon"
@@ -42,7 +51,7 @@
               style="color: #d8a47d"
             ></svg-icon>
           </span>
-        }
+        } -->
       </div>
     </div>
 
@@ -65,15 +74,9 @@
           @if (!player.isFixedSquad) {
             <span class="icon-btn">
               @if (!player.isKept) {
-                <svg-icon
-                  class="player-icon text-success"
-                  src="assets/check_box-24px.svg"
-                ></svg-icon>
+                <i class="bi bi-check-square-fill"></i>
               } @else {
-                <svg-icon
-                  class="player-icon text-muted"
-                  src="assets/check_box_outline_blank-24px.svg"
-                ></svg-icon>
+                <i class="bi bi-square"></i>
               }
             </span>
           }
@@ -86,10 +89,7 @@
               (click)="onSetPlayerPermanentDeleted($event, player, false)"
               title="Spieler wieder für Verkäufe freigeben"
             >
-              <svg-icon
-                src="assets/person_remove-24px.svg"
-                class="player-icon icon-permanent text-danger"
-              ></svg-icon>
+              <i class="bi bi-tags-fill"></i>
             </button>
           } @else {
             <button
@@ -98,10 +98,7 @@
               (click)="onSetPlayerPermanentDeleted($event, player, true)"
               title="In festen Kader verschieben"
             >
-              <svg-icon
-                src="assets/person_add-24px.svg"
-                class="player-icon icon-permanent text-secondary"
-              ></svg-icon>
+              <i class="bi bi-shield-check"></i>
             </button>
           }
         </div>

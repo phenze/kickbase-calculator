@@ -9,8 +9,27 @@
   </div>
 }
 
+@if (errorService.errorMessage(); as errorMsg) {
+  <div class="error-banner shadow">
+    <div
+      class="d-flex justify-content-between align-items-center px-3 py-2 bg-danger text-white rounded"
+    >
+      <span class="fw-semibold small d-flex align-items-center">
+        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+        {{ errorMsg }}
+      </span>
+      <button
+        type="button"
+        class="btn-close btn-close-white btn-sm ms-3"
+        aria-label="Schließen"
+        (click)="errorService.clearError()"
+      ></button>
+    </div>
+  </div>
+}
+
 <div class="app-topbar">
-  @if (apiService.isLoggedIn) {
+  @if (apiService.isLoggedIn()) {
     <span
       class="cursor-pointer text-muted extra-small fw-semibold"
       (click)="openReleaseNotes()"
@@ -21,13 +40,14 @@
 
     @if (currentGift !== null) {
       <div class="gift-chip" title="Geschenk">
-        <svg-icon
+        <button
           [class.disabled]="!currentGift.isAvailable"
+          type="button"
+          class="btn-header-icon gift-icon"
           (click)="getGift()"
-          class="nav-icon gift-icon"
-          src="assets/card_giftcard-24px.svg"
         >
-        </svg-icon>
+          <i class="bi bi-gift-fill"></i>
+        </button>
         <span class="gift-value">{{ currentGift.amount | euro }}</span>
       </div>
     }
@@ -35,14 +55,14 @@
 
   <app-theme-toggle></app-theme-toggle>
 
-  @if (apiService.isLoggedIn) {
+  @if (apiService.isLoggedIn()) {
     <button (click)="logout()" type="button" class="btn btn-outline-secondary btn-sm logout-btn">
       <i class="bi bi-box-arrow-right me-1"></i>Logout
     </button>
   }
 </div>
 
-@if (!apiService.isLoggedIn) {
+@if (!apiService.isLoggedIn()) {
   <div>
     <app-login (login)="login($event)" [doLogin]="doLogin"></app-login>
     <div class="support-card mt-4 mb-4">
@@ -58,7 +78,7 @@
   </div>
 }
 
-@if (apiService.isLoggedIn) {
+@if (apiService.isLoggedIn()) {
   <div class="support-card mt-2 mb-3">
     <p class="support-text">
       Wenn ihr mich und meine Arbeit unterstützen wollt könnt ihr mir eine kleine Spende da lassen.
@@ -292,7 +312,8 @@
               type="checkbox"
               class="form-check-input"
               role="switch"
-              [checked]="!achievementsDisabled"
+              [(ngModel)]="includeAchievements"
+              (ngModelChange)="onIncludeAchievementsChanged()"
               [disabled]="achievementsDisabled"
               id="customSwitch4"
             />
@@ -404,7 +425,7 @@
                   (click)="reload()"
                   title="Aktualisieren"
                 >
-                  <svg-icon src="assets/refresh-24px.svg"></svg-icon>
+                  <i class="bi bi-arrow-clockwise"></i>
                 </button>
 
                 @if (!printMode) {
@@ -414,7 +435,7 @@
                     (click)="printMode = true"
                     title="Druckmodus aktivieren"
                   >
-                    <svg-icon src="assets/print_disabled_black_24dp.svg"></svg-icon>
+                    <i class="bi bi-printer"></i>
                   </button>
                 } @else {
                   <button
@@ -423,7 +444,7 @@
                     (click)="printMode = false"
                     title="Druckmodus deaktivieren"
                   >
-                    <svg-icon src="assets/print_black_24dp.svg"></svg-icon>
+                    <i class="bi bi-printer"></i>
                   </button>
                 }
 
@@ -434,7 +455,7 @@
                     (click)="showPermanentDeletedPlayers = true"
                     title="Deaktivierte Spieler einblenden"
                   >
-                    <svg-icon src="assets/person_add-24px.svg"></svg-icon>
+                    <i class="bi bi-shield-check"></i>
                   </button>
                 } @else {
                   <button
@@ -443,7 +464,7 @@
                     (click)="showPermanentDeletedPlayers = false"
                     title="Deaktivierte Spieler ausblenden"
                   >
-                    <svg-icon src="assets/person_remove-24px.svg"></svg-icon>
+                    <i class="bi bi-shield-check"></i>
                   </button>
                 }
               </div>
@@ -564,7 +585,7 @@
                   {{ getDisabledPlayersCount() }} Spieler
                 </span>
                 <!-- Auf-/Zuklapp Icon mit CSS-Rotationsanimation -->
-                <span class="chevron-icon" [class.rotated]="isCardExpanded">&#9660;</span>
+                <i class="bi bi-chevron-down chevron-icon" [class.rotated]="isCardExpanded"></i>
               </div>
             </div>
 
@@ -744,49 +765,46 @@
 }
 
 <!-- Modal für Release Notes / Changelog -->
+<!-- Modal für Release Notes / Changelog -->
 <ng-template #releaseNotesModal>
-  <div class="modal-header">
-    <h5 class="modal-title fw-bold">🚀 What's New / Release Notes</h5>
-    <button type="button" class="btn-close" (click)="modalRef?.hide()"></button>
+  <div class="modal-header d-flex justify-content-between align-items-center">
+    <h5 class="modal-title fw-bold mb-0">🚀 What's New / Release Notes</h5>
+
+    <!-- Button-Gruppe oben rechts -->
+    <div class="d-flex align-items-center gap-2">
+      <a
+        href="https://github.com/phenze/kickbase-calculator/blob/main/CHANGELOG.md"
+        target="_blank"
+        class="btn btn-outline-secondary btn-sm d-flex align-items-center gap-1 text-decoration-none"
+      >
+        <i class="bi bi-github"></i>
+        <span>Auf GitHub ansehen ↗</span>
+      </a>
+      <button type="button" class="btn-close" (click)="modalRef?.hide()"></button>
+    </div>
   </div>
-  <div class="modal-body">
-    @for (release of changelog; track release.version; let first = $first) {
-      <div class="mb-4" [class.border-bottom]="!$last" [class.pb-3]="!$last">
-        <div class="d-flex align-items-center justify-content-between mb-2">
-          <h6 class="fw-bold mb-0">
-            v{{ release.version }}
-            @if (first) {
-              <span class="badge bg-success ms-1">Aktuell</span>
-            }
-          </h6>
-          <small class="text-muted">{{ release.date }}</small>
+
+  <div class="modal-body extra-small">
+    @if (isLoadingChangelog) {
+      <div class="d-flex justify-content-center my-4">
+        <div class="spinner-border spinner-border-sm text-primary" role="status">
+          <span class="visually-hidden">Lade Changelog...</span>
         </div>
-
-        @if (release.features && release.features.length > 0) {
-          <div class="mb-2">
-            <strong class="extra-small text-uppercase text-muted">Neue Features:</strong>
-            <ul class="mb-0 ps-3 extra-small">
-              @for (feature of release.features; track feature) {
-                <li>{{ feature }}</li>
-              }
-            </ul>
-          </div>
-        }
-
-        @if (release.bugfixes && release.bugfixes.length > 0) {
-          <div>
-            <strong class="extra-small text-uppercase text-muted">Bugfixes:</strong>
-            <ul class="mb-0 ps-3 extra-small">
-              @for (fix of release.bugfixes; track fix) {
-                <li>{{ fix }}</li>
-              }
-            </ul>
-          </div>
-        }
       </div>
+    } @else {
+      <!-- Gerendertes Markdown aus GitHub -->
+      <div class="markdown-content" [innerHTML]="changelogHtml"></div>
     }
   </div>
-  <div class="modal-footer">
+
+  <div class="modal-footer d-flex justify-content-between">
+    <a
+      href="https://github.com/phenze/kickbase-calculator/blob/main/CHANGELOG.md"
+      target="_blank"
+      class="btn btn-link btn-sm text-decoration-none px-0"
+    >
+      <i class="bi bi-github me-1"></i> Auf GitHub ansehen ↗
+    </a>
     <button type="button" class="btn btn-secondary btn-sm" (click)="modalRef?.hide()">
       Schließen
     </button>

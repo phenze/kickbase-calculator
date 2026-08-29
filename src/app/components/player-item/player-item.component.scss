@@ -1,3 +1,9 @@
 :host {
   cursor: pointer;
+
+  .player-icon.injury-heavy {
+    -webkit-text-stroke: 2px #e5311c; /* Für Font-Icon-Darstellung */
+    stroke: #e5311c; /* Für Inline-SVG */
+    stroke-width: 2px;
+  }
 }
