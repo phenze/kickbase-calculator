@@ -4,27 +4,19 @@ Alle wichtigen Änderungen und Updates des Kickbase Calculators auf einen Blick.
 
 ---
 
-## [Unreleased]
-
-### 🚀 Neue Features & Verbesserungen
-- **Dunkelmodus:** Der Rechner lässt sich jetzt zwischen Hell, Dunkel und der System-Einstellung des Geräts umschalten. Der Schalter sitzt oben rechts und ist auch auf der Login-Seite erreichbar. Die Auswahl wird im Browser gespeichert.
-- **Symbole sichtbar:** Die Icons in Buttons, Hinweisen und Überschriften (Rechner, Markt, Aktualisieren, Logout, Erfolge …) werden jetzt tatsächlich angezeigt – das dafür nötige Icon-Paket hatte bisher gefehlt.
-- **Startzustand der Verkaufsauswahl umschaltbar:** Neue Option "Niemanden zum Verkauf vormarkieren". Damit ist nach dem Laden kein Spieler vorausgewählt und du markierst nur die, die wirklich verkauft werden sollen.
-
-### 🐛 Bugfixes & Wartung
-- **Sortierung "MW Änderung" korrigiert:** Die beiden Richtungen waren vertauscht – bei "MW Änderung ↓" stand die niedrigste Änderung oben statt der höchsten. Spieler ohne geladene Details stehen jetzt außerdem immer am Ende der Liste.
-
----
-
-## [6.7.0] - 27.08.2026
+## [6.7.0] - 29.08.2026
 
 ### 🚀 Neue Features & Verbesserungen
 - **Sicherheits- & Datenschutz-Update:** Deine Anmeldedaten werden ab sofort noch geschützter verarbeitet. Veraltete Speichereinträge im Browser wurden automatisch und sicher bereinigt.
 - **Stabilere Server-Verbindung:** Vollständige Überarbeitung der API-Schnittstelle für eine zuverlässigere und schnellere Datenübertragung.
 - **Neue Hinweismeldungen:** Bei Verbindungsproblemen oder abgelaufener Sitzung erscheint nun direkt ein einfaches Warnbanner.
+- **Dunkelmodus:** Der Rechner lässt sich jetzt zwischen Hell, Dunkel und der System-Einstellung des Geräts umschalten. Der Schalter sitzt oben rechts und ist auch auf der Login-Seite erreichbar. Die Auswahl wird im Browser gespeichert.
+- **Symbole sichtbar:** Die Icons in Buttons, Hinweisen und Überschriften (Rechner, Markt, Aktualisieren, Logout, Erfolge …) werden jetzt tatsächlich angezeigt – das dafür nötige Icon-Paket hatte bisher gefehlt.
+- **Startzustand der Verkaufsauswahl umschaltbar:** Neue Option "Niemanden zum Verkauf vormarkieren". Damit ist nach dem Laden kein Spieler vorausgewählt und du markierst nur die, die wirklich verkauft werden sollen.
 
 ### 🐛 Bugfixes & Wartung
 - **Sitzungsverwaltung:** Automatisches Verlängern der Anmeldung im Hintergrund sowie sauberes Ausloggen, falls die Sitzung abgelaufen ist.
+- **Sortierung "MW Änderung" korrigiert:** Die beiden Richtungen waren vertauscht – bei "MW Änderung ↓" stand die niedrigste Änderung oben statt der höchsten. Spieler ohne geladene Details stehen jetzt außerdem immer am Ende der Liste.
 
 > ⚠️ **WICHTIGER HINWEIS:**  
 > Aufgrund der Umstellung des Sicherheitssystems kann es sein, dass du einmalig ausgeloggt wurdest. Bitte melde dich bei Bedarf einfach erneut an.
