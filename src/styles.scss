@@ -737,8 +737,8 @@ svg-icon {
 
 // Icon Rotation Animation (180 Grad Drehung)
 .chevron-icon {
-  display: inline-block;
-  font-size: 0.75rem;
+  // display: inline-block;
+  // font-size: 0.75rem;
   transition: transform 0.3s ease-in-out;
 
   &.rotated {
