@@ -65,6 +65,10 @@
 
   --kb-banner-bg: #fff3cd;
   --kb-banner-border: #ffe69c;
+
+  --kb-card-bg-positive: #007d341f;
+  --kb-card-bg-negative: #c100201f;
+  --kb-card-bg-disabled: #260c0c1f;
 }
 
 /*
@@ -113,6 +117,13 @@ $dark-text-emphasis: (
   @each $name, $value in $dark-text-emphasis {
     --bs-#{$name}-text-emphasis: #{color.mix(#fff, $value, 60%)};
   }
+
+  --kb-card-bg-positive: rgba(57, 196, 110, 0.15);
+  --kb-card-bg-negative: rgba(241, 112, 122, 0.15);
+
+  /* Für deaktivierte Spieler/festen Kader im Dark Mode:
+     Ein sichtbarer, leicht erhellter Grauton statt dem dunklen/unsichtbaren Rot */
+  --kb-card-bg-disabled: rgba(255, 255, 255, 0.05);
 }
 
 /*

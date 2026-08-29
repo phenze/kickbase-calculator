@@ -115,7 +115,7 @@ export class AppComponent implements OnInit, AfterViewInit {
 
   public marketOverviewPlayers: KickbasePlayer[] = [];
 
-  public readonly currentVersion = '6.7.0';
+  public readonly currentVersion = '6.7.1';
   public changelogHtml: string = '';
   public isLoadingChangelog: boolean = false;
 
