@@ -140,13 +140,22 @@ describe('KickbasePlayer', () => {
     });
 
     it('setzt expiryColor rot bei <= 1 Stunde und gruen bei <= 2 Stunden', () => {
-      player.expiry = 1800;
-      player.calcColors(0);
-      expect(player.expiryColor).toBe(KickbaseGroup.color_red);
+      // isUntilMarketValueUpdate vergleicht gegen 22:00 Uhr des laufenden Tages. Ohne feste
+      // Uhrzeit faellt der zweite Fall ab 20:30 Uhr durch - der Test war also zeitabhaengig.
+      jasmine.clock().install();
+      jasmine.clock().mockDate(new Date(2026, 0, 15, 12, 0, 0));
 
-      player.expiry = 5400;
-      player.calcColors(0);
-      expect(player.expiryColor).toBe(KickbaseGroup.color_yellow);
+      try {
+        player.expiry = 1800;
+        player.calcColors(0);
+        expect(player.expiryColor).toBe(KickbaseGroup.color_red);
+
+        player.expiry = 5400;
+        player.calcColors(0);
+        expect(player.expiryColor).toBe(KickbaseGroup.color_yellow);
+      } finally {
+        jasmine.clock().uninstall();
+      }
     });
   });
 

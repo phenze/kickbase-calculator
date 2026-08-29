@@ -424,6 +424,59 @@ describe('AppComponent', () => {
       expect(component.kickbaseGroup.players[1].id).toBe(1);
     });
 
+    it('sollte Spieler nach Marktwertveränderung absteigend sortieren', () => {
+      component.selectedSorting = component.sorting_mw_change_desc;
+      component.sortCurrentPlayers();
+
+      expect(component.kickbaseGroup.players[0].id).toBe(1);
+      expect(component.kickbaseGroup.players[1].id).toBe(2);
+    });
+
+    // Die Auswahlliste in app.component.html bindet diese Zahlen. Sie landen auch im
+    // localStorage, deshalb pruefen die beiden Tests bewusst die Werte und nicht die
+    // Konstanten - genau hier lag der vertauschte Fall aus Issue #15.
+    it('sollte "MW Änderung ↓" (Wert 3) mit dem groessten Anstieg oben sortieren', () => {
+      component.selectedSorting = 3;
+      component.sortCurrentPlayers();
+
+      expect(component.kickbaseGroup.players[0].id).toBe(1);
+      expect(component.kickbaseGroup.players[1].id).toBe(2);
+    });
+
+    it('sollte "MW Änderung ↑" (Wert 4) mit dem groessten Verlust oben sortieren', () => {
+      component.selectedSorting = 4;
+      component.sortCurrentPlayers();
+
+      expect(component.kickbaseGroup.players[0].id).toBe(2);
+      expect(component.kickbaseGroup.players[1].id).toBe(1);
+    });
+
+    it('sollte "MW ↓" (Wert 1) und "MW ↑" (Wert 2) unveraendert lassen', () => {
+      component.selectedSorting = 1;
+      component.sortCurrentPlayers();
+      expect(component.kickbaseGroup.players[0].id).toBe(1);
+
+      component.selectedSorting = 2;
+      component.sortCurrentPlayers();
+      expect(component.kickbaseGroup.players[0].id).toBe(2);
+    });
+
+    it('sollte Spieler ohne geladene Details ans Ende sortieren', () => {
+      const pOhneStats = makePlayer(3, 'Ohne Details', 7000000);
+      pOhneStats.stats = null;
+      component.kickbaseGroup.players = [pOhneStats, p2, p1];
+
+      component.selectedSorting = component.sorting_mw_change_desc;
+      component.sortCurrentPlayers();
+
+      expect(component.kickbaseGroup.players.map((p) => p.id)).toEqual([1, 2, 3]);
+
+      component.selectedSorting = component.sorting_mw_change_asc;
+      component.sortCurrentPlayers();
+
+      expect(component.kickbaseGroup.players.map((p) => p.id)).toEqual([2, 1, 3]);
+    });
+
     it('sollte Speichern der Sortierung im localStorage ausführen', () => {
       component.onSelectedSortingChanged(component.sorting_mw_desc);
 
