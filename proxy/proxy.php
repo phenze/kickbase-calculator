@@ -11,8 +11,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 }
 
 // Ziel-Pfad aus der URL ermitteln (z. B. v4/user/login)
+// Ziel-Pfad aus der URL ermitteln
 $path = $_GET['path'] ?? '';
+
+// Query-String ohne den internen 'path'-Parameter neu aufbauen
+$queryParams = $_GET;
+unset($queryParams['path']);
+$queryString = http_build_query($queryParams);
+
+// Ziel-URL inklusive Query-Parametern zusammensetzen
 $targetUrl = 'https://api.kickbase.com/' . ltrim($path, '/');
+if (!empty($queryString)) {
+    $targetUrl .= '?' . $queryString;
+}
 
 // Header aufbauen und Mobile User-Agent erzwingen
 $headers = [
