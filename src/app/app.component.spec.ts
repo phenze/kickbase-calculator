@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { AppComponent } from './app.component';
 import { DisplayMode } from './core/models/display-mode';
+import { SortMode } from './core/models/sort-mode';
 import { ApiService } from './core/services/api.service';
 import { BsModalService, BsModalRef } from 'ngx-bootstrap/modal';
 import { ChangeDetectorRef, NO_ERRORS_SCHEMA, signal } from '@angular/core';
@@ -394,7 +395,7 @@ describe('AppComponent', () => {
 
       component.kickbaseGroup.players = [pST, pTW, pMF, pABW];
 
-      component.selectedSorting = component.sorting_position || 5;
+      component.selectedSorting = SortMode.position;
       component.sortCurrentPlayers();
 
       expect(component.kickbaseGroup.players[0].name).toBe('Neuer');
@@ -405,7 +406,7 @@ describe('AppComponent', () => {
 
     it('should sort Kickbase players by expiry and move user-offered players to the end', () => {
       component.displayMode = DisplayMode.marketOverview;
-      component.selectedSorting = component.sorting_default;
+      component.selectedSorting = SortMode.default;
 
       const playerKbLate = new KickbasePlayer({ i: '1', n: 'Müller', exs: 10000 }, '123');
       const playerKbEarly = new KickbasePlayer({ i: '2', n: 'Goretzka', exs: 1000 }, '123');
@@ -423,7 +424,7 @@ describe('AppComponent', () => {
     });
 
     it('sollte Spieler nach Marktwert aufsteigend sortieren', () => {
-      component.selectedSorting = component.sorting_mw_asc;
+      component.selectedSorting = SortMode.marketValueAsc;
       component.sortCurrentPlayers();
 
       expect(component.kickbaseGroup.players[0].id).toBe(2);
@@ -431,7 +432,7 @@ describe('AppComponent', () => {
     });
 
     it('sollte Spieler nach Marktwert absteigend sortieren', () => {
-      component.selectedSorting = component.sorting_mw_desc;
+      component.selectedSorting = SortMode.marketValueDesc;
       component.sortCurrentPlayers();
 
       expect(component.kickbaseGroup.players[0].id).toBe(1);
@@ -439,7 +440,7 @@ describe('AppComponent', () => {
     });
 
     it('sollte Spieler nach Marktwertveränderung aufsteigend sortieren', () => {
-      component.selectedSorting = component.sorting_mw_change_asc;
+      component.selectedSorting = SortMode.marketValueChangeAsc;
       component.sortCurrentPlayers();
 
       expect(component.kickbaseGroup.players[0].id).toBe(2);
@@ -447,7 +448,7 @@ describe('AppComponent', () => {
     });
 
     it('sollte Spieler nach Marktwertveränderung absteigend sortieren', () => {
-      component.selectedSorting = component.sorting_mw_change_desc;
+      component.selectedSorting = SortMode.marketValueChangeDesc;
       component.sortCurrentPlayers();
 
       expect(component.kickbaseGroup.players[0].id).toBe(1);
@@ -488,19 +489,19 @@ describe('AppComponent', () => {
       pOhneStats.stats = null;
       component.kickbaseGroup.players = [pOhneStats, p2, p1];
 
-      component.selectedSorting = component.sorting_mw_change_desc;
+      component.selectedSorting = SortMode.marketValueChangeDesc;
       component.sortCurrentPlayers();
 
       expect(component.kickbaseGroup.players.map((p) => p.id)).toEqual([1, 2, 3]);
 
-      component.selectedSorting = component.sorting_mw_change_asc;
+      component.selectedSorting = SortMode.marketValueChangeAsc;
       component.sortCurrentPlayers();
 
       expect(component.kickbaseGroup.players.map((p) => p.id)).toEqual([2, 1, 3]);
     });
 
     it('sollte Speichern der Sortierung im localStorage ausführen', () => {
-      component.onSelectedSortingChanged(component.sorting_mw_desc);
+      component.onSelectedSortingChanged(SortMode.marketValueDesc);
 
       expect(localStorage.getItem('sorting')).toBe('1');
     });
@@ -777,12 +778,12 @@ describe('AppComponent', () => {
 
   describe('Positions-Trenner (shouldShowPositionDivider)', () => {
     beforeEach(() => {
-      component.selectedSorting = component.sorting_position || 5;
+      component.selectedSorting = SortMode.position;
       spyOn(component, 'showPlayer').and.returnValue(true);
     });
 
     it('sollte false zurückgeben, wenn nicht nach Position sortiert wird', () => {
-      component.selectedSorting = component.sorting_mw_desc;
+      component.selectedSorting = SortMode.marketValueDesc;
       const players = [makePlayer(1, 'Neuer', 1000, 0, 1)];
 
       expect(component.shouldShowPositionDivider(players, 0, false)).toBeFalse();
@@ -1034,7 +1035,7 @@ describe('AppComponent', () => {
         const p2 = makePlayer(2, 'B', 1000, 500);
 
         component.kickbaseGroup.players = [p1, p2];
-        component.selectedSorting = component.sorting_mw_change_asc;
+        component.selectedSorting = SortMode.marketValueChangeAsc;
 
         component.sortCurrentPlayers();
 
@@ -1047,7 +1048,7 @@ describe('AppComponent', () => {
         const p2 = makePlayer(2, 'B', 1000);
 
         component.kickbaseGroup.players = [p1, p2];
-        component.selectedSorting = component.sorting_mw_change_desc;
+        component.selectedSorting = SortMode.marketValueChangeDesc;
 
         component.sortCurrentPlayers();
 
@@ -1059,7 +1060,7 @@ describe('AppComponent', () => {
         const p2 = makePlayer(2, 'B', 5000);
 
         component.kickbaseGroup.players = [p1, p2];
-        component.selectedSorting = component.sorting_mw_asc;
+        component.selectedSorting = SortMode.marketValueAsc;
 
         component.sortCurrentPlayers();
 

@@ -12,6 +12,7 @@ import { AngularSvgIconModule } from 'angular-svg-icon';
 
 import { KickbasePlayer } from '../../core/models/kickbase-player';
 import { ApiService } from '../../core/services/api.service';
+import { readBooleanSetting, writeSetting } from '../../core/utils/local-storage';
 
 import { PlayerItemComponent } from '../../shared/components/player-item/player-item.component';
 
@@ -27,9 +28,9 @@ export class MarketOverviewComponent implements OnChanges {
   public apiService = inject(ApiService);
 
   public playersToShow: KickbasePlayer[] = [];
-  public onlyManualPrices = localStorage.getItem('onlyManualPrices') === 'true';
-  public onlyKickbasePlayers = localStorage.getItem('onlyKickbasePlayers') === 'true';
-  public onlyUntilMwUpdate = localStorage.getItem('onlyUntilMwUpdate') === 'true';
+  public onlyManualPrices = readBooleanSetting('onlyManualPrices', false);
+  public onlyKickbasePlayers = readBooleanSetting('onlyKickbasePlayers', false);
+  public onlyUntilMwUpdate = readBooleanSetting('onlyUntilMwUpdate', false);
 
   @Input() sortedPlayers: KickbasePlayer[] = [];
   @Input() selectedLeague: number | null = null;
@@ -42,17 +43,17 @@ export class MarketOverviewComponent implements OnChanges {
   }
 
   onOnlyManualPricesChanges(): void {
-    localStorage.setItem('onlyManualPrices', this.onlyManualPrices.toString());
+    writeSetting('onlyManualPrices', this.onlyManualPrices);
     this.filterPlayersToShow();
   }
 
   onOnlyKickbasePlayersChanged(): void {
-    localStorage.setItem('onlyKickbasePlayers', this.onlyKickbasePlayers.toString());
+    writeSetting('onlyKickbasePlayers', this.onlyKickbasePlayers);
     this.filterPlayersToShow();
   }
 
   onOnlyUntilMwUpdateChanged(): void {
-    localStorage.setItem('onlyUntilMwUpdate', this.onlyUntilMwUpdate.toString());
+    writeSetting('onlyUntilMwUpdate', this.onlyUntilMwUpdate);
     this.filterPlayersToShow();
   }
 

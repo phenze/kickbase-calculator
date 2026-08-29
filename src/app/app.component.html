@@ -199,12 +199,12 @@
               [(ngModel)]="selectedSorting"
               (ngModelChange)="onSelectedSortingChanged($event)"
             >
-              <option [ngValue]="sorting_default">Standard</option>
-              <option [ngValue]="sorting_mw_desc">MW &darr;</option>
-              <option [ngValue]="sorting_mw_asc">MW &uarr;</option>
-              <option [ngValue]="sorting_mw_change_desc">MW Änderung &darr;</option>
-              <option [ngValue]="sorting_mw_change_asc">MW Änderung &uarr;</option>
-              <option [ngValue]="sorting_position">Position (TW &rarr; ST)</option>
+              <option [ngValue]="SortMode.default">Standard</option>
+              <option [ngValue]="SortMode.marketValueDesc">MW &darr;</option>
+              <option [ngValue]="SortMode.marketValueAsc">MW &uarr;</option>
+              <option [ngValue]="SortMode.marketValueChangeDesc">MW Änderung &darr;</option>
+              <option [ngValue]="SortMode.marketValueChangeAsc">MW Änderung &uarr;</option>
+              <option [ngValue]="SortMode.position">Position (TW &rarr; ST)</option>
             </select>
           </div>
         </div>
@@ -367,12 +367,12 @@
             [(ngModel)]="selectedSorting"
             (ngModelChange)="onSelectedSortingChanged($event)"
           >
-            <option [ngValue]="sorting_default">Standard</option>
-            <option [ngValue]="sorting_mw_desc">MW &darr;</option>
-            <option [ngValue]="sorting_mw_asc">MW &uarr;</option>
-            <option [ngValue]="sorting_mw_change_desc">MW Änderung &darr;</option>
-            <option [ngValue]="sorting_mw_change_asc">MW Änderung &uarr;</option>
-            <option [ngValue]="sorting_position">Position (TW &rarr; ST)</option>
+            <option [ngValue]="SortMode.default">Standard</option>
+            <option [ngValue]="SortMode.marketValueDesc">MW &darr;</option>
+            <option [ngValue]="SortMode.marketValueAsc">MW &uarr;</option>
+            <option [ngValue]="SortMode.marketValueChangeDesc">MW Änderung &darr;</option>
+            <option [ngValue]="SortMode.marketValueChangeAsc">MW Änderung &uarr;</option>
+            <option [ngValue]="SortMode.position">Position (TW &rarr; ST)</option>
           </select>
 
           <label class="form-label fw-semibold mb-1"
@@ -543,7 +543,7 @@
                 @for (player of kickbaseGroup.players; track player.id; let i = $index) {
                   @if (showPlayer(player) && !player.isFixedSquad) {
                     @if (
-                      selectedSorting === sorting_position &&
+                      selectedSorting === SortMode.position &&
                       shouldShowPositionDivider(kickbaseGroup.players, i, false)
                     ) {
                       <div
@@ -601,7 +601,7 @@
                     @for (player of kickbaseGroup.players; track player.id; let i = $index) {
                       @if (player.isFixedSquad) {
                         @if (
-                          selectedSorting === sorting_position &&
+                          selectedSorting === SortMode.position &&
                           shouldShowPositionDivider(kickbaseGroup.players, i, true)
                         ) {
                           <div
