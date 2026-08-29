@@ -10,7 +10,7 @@ import { FormsModule } from '@angular/forms';
 import { KickbasePlayer } from 'src/app/model/kickbase-player';
 import { ApiService } from 'src/app/services/api.service';
 import { AngularSvgIconModule } from 'angular-svg-icon';
-import { CurrencyPipe } from '@angular/common';
+import { CommonModule, CurrencyPipe } from '@angular/common';
 import { EuroPipe } from 'src/app/no-decimals.pipe';
 import { FormattedNumberDirective } from 'src/app/formatted-number.directive';
 
@@ -20,7 +20,7 @@ import { FormattedNumberDirective } from 'src/app/formatted-number.directive';
   styleUrls: ['./player-item.component.scss'],
   changeDetection: ChangeDetectionStrategy.Eager,
   standalone: true,
-  imports: [FormsModule, AngularSvgIconModule, EuroPipe, FormattedNumberDirective],
+  imports: [FormsModule, AngularSvgIconModule, EuroPipe, FormattedNumberDirective, CommonModule],
 })
 export class PlayerItemComponent implements OnInit {
   @Input({ required: true }) player!: KickbasePlayer;

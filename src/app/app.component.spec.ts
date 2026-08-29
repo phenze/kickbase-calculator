@@ -515,8 +515,9 @@ describe('AppComponent', () => {
       lineupPlayers = [makePlayer(1, 'Neuer', 5000000), makePlayer(2, 'Kane', 8000000)];
 
       component.leagues = [{ id: 10, name: 'Liga 1', budget: 1000000 } as any];
-      mockApiService.getMarket.and.resolveTo({ players: [], offerAmountForUser: '0' } as any);
-      mockApiService.getLineup.and.resolveTo({ players: lineupPlayers } as any);
+      mockApiService.getLeagueOverview.and.returnValue(of({} as any));
+      mockApiService.getMarket.and.returnValue(of({ players: [], offerAmountForUser: '0' } as any));
+      mockApiService.getLineup.and.returnValue(of({ players: lineupPlayers } as any));
     });
 
     it('sollte die Option aus dem localStorage lesen', () => {

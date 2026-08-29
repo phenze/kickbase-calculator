@@ -40,13 +40,14 @@
 
     @if (currentGift !== null) {
       <div class="gift-chip" title="Geschenk">
-        <svg-icon
+        <button
           [class.disabled]="!currentGift.isAvailable"
+          type="button"
+          class="btn-header-icon gift-icon"
           (click)="getGift()"
-          class="nav-icon gift-icon"
-          src="assets/card_giftcard-24px.svg"
         >
-        </svg-icon>
+          <i class="bi bi-gift-fill"></i>
+        </button>
         <span class="gift-value">{{ currentGift.amount | euro }}</span>
       </div>
     }
@@ -424,7 +425,7 @@
                   (click)="reload()"
                   title="Aktualisieren"
                 >
-                  <svg-icon src="assets/refresh-24px.svg"></svg-icon>
+                  <i class="bi bi-arrow-clockwise"></i>
                 </button>
 
                 @if (!printMode) {
@@ -434,7 +435,7 @@
                     (click)="printMode = true"
                     title="Druckmodus aktivieren"
                   >
-                    <svg-icon src="assets/print_disabled_black_24dp.svg"></svg-icon>
+                    <i class="bi bi-printer"></i>
                   </button>
                 } @else {
                   <button
@@ -443,7 +444,7 @@
                     (click)="printMode = false"
                     title="Druckmodus deaktivieren"
                   >
-                    <svg-icon src="assets/print_black_24dp.svg"></svg-icon>
+                    <i class="bi bi-printer"></i>
                   </button>
                 }
 
@@ -454,7 +455,7 @@
                     (click)="showPermanentDeletedPlayers = true"
                     title="Deaktivierte Spieler einblenden"
                   >
-                    <svg-icon src="assets/person_add-24px.svg"></svg-icon>
+                    <i class="bi bi-shield-check"></i>
                   </button>
                 } @else {
                   <button
@@ -463,7 +464,7 @@
                     (click)="showPermanentDeletedPlayers = false"
                     title="Deaktivierte Spieler ausblenden"
                   >
-                    <svg-icon src="assets/person_remove-24px.svg"></svg-icon>
+                    <i class="bi bi-shield-check"></i>
                   </button>
                 }
               </div>
