@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, ChangeDetectionStrategy } from '@angular/core';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 
 @Component({
   selector: 'app-help',
@@ -7,12 +7,6 @@ import { Component, Input, OnInit, ChangeDetectionStrategy } from '@angular/core
   changeDetection: ChangeDetectionStrategy.Eager,
   standalone: true,
 })
-export class HelpComponent implements OnInit {
-  public showHelp = false;
-
-  constructor() {}
-
-  ngOnInit(): void {}
-
+export class HelpComponent {
   public isHelpExpanded: boolean = false;
 }

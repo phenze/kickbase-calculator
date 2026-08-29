@@ -179,13 +179,11 @@ describe('AppComponent', () => {
     }));
 
     it('sollte beim Logout die Session und Gruppe zurücksetzen', () => {
-      component.newplayername = 'Test';
       component.kickbaseGroup.players = [makePlayer(1, 'Müller', 1000)];
 
       component.logout();
 
       expect(mockApiService.logout).toHaveBeenCalled();
-      expect(component.newplayername).toBe('');
       expect(component.kickbaseGroup.players.length).toBe(0);
     });
   });
@@ -1099,22 +1097,10 @@ describe('AppComponent', () => {
         expect(component.printMode).toBeFalse();
       });
 
-      it('sollte onMinusValueChanged ohne Fehler ausführen', () => {
-        spyOn(component, 'onIncludeAdditionalAmountChanged');
-        component.onMinusValueChanged(100);
-        expect(component.onIncludeAdditionalAmountChanged).toHaveBeenCalled();
-      });
-
       it('sollte onExtraAmountChange ohne Fehler ausführen', () => {
         spyOn(component, 'onIncludeAdditionalAmountChanged');
         component.onExtraAmountChange(500);
         expect(component.onIncludeAdditionalAmountChanged).toHaveBeenCalled();
-      });
-
-      it('sollte onAmountChange in die Konsole loggen', () => {
-        spyOn(console, 'log');
-        component.onAmountChange(1000);
-        expect(console.log).toHaveBeenCalledWith(1000);
       });
 
       it('sollte reload aufrufen', () => {

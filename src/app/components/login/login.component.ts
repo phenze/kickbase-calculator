@@ -1,11 +1,4 @@
-import {
-  Component,
-  EventEmitter,
-  Input,
-  OnInit,
-  Output,
-  ChangeDetectionStrategy,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
 export interface LoginPayload {
@@ -21,20 +14,12 @@ export interface LoginPayload {
   standalone: true,
   imports: [FormsModule],
 })
-export class LoginComponent implements OnInit {
+export class LoginComponent {
   @Output() login = new EventEmitter<LoginPayload>();
   @Input() doLogin: boolean = false;
 
   public username = '';
   public password = '';
-
-  public isAdminMode: boolean = false;
-
-  constructor() {
-    this.isAdminMode = true;
-  }
-
-  ngOnInit(): void {}
 
   loginPrivate() {
     this.login.emit({

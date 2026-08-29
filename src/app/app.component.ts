@@ -59,13 +59,10 @@ window.PayPal = window.PayPal || {};
   standalone: false,
 })
 export class AppComponent implements OnInit, AfterViewInit {
-  title = 'app';
-
   bsModalRef: BsModalRef | undefined;
 
   public AppComponent = AppComponent;
   public minusValue: number = 0;
-  public availableAmountString: string = '0';
   public offerOffset: string = '0';
   public includeAdditionalAmount = false;
   public loadStatsAlways = true;
@@ -97,9 +94,6 @@ export class AppComponent implements OnInit, AfterViewInit {
   public isGroupedView: boolean = true;
   public isCardExpanded: boolean = true;
 
-  public newplayername = '';
-  public newplayeramount = 0;
-
   public kickbaseGroup = new KickbaseGroup();
 
   public static readonly display_mode_calculator = 'calculator';
@@ -107,7 +101,6 @@ export class AppComponent implements OnInit, AfterViewInit {
   public displayMode = AppComponent.display_mode_calculator;
 
   public extraAmount = 0;
-  public extraAmountString = '0';
   public amountValue = 0;
 
   public dayUntilFriday = 0;
@@ -358,7 +351,7 @@ export class AppComponent implements OnInit, AfterViewInit {
 
       for (const player of lineUp.players) {
         const marketPlayer = this.currentMarket?.players.find(
-          (marketItem) => marketPlayerKey(marketItem) === String(player.id),
+          (marketItem) => String(marketItem.id) === String(player.id),
         );
 
         if (marketPlayer !== undefined) {
@@ -385,10 +378,6 @@ export class AppComponent implements OnInit, AfterViewInit {
       this.cdRef.detectChanges();
     }
   };
-
-  onAmountChange(newValue: number | string) {
-    console.log(newValue);
-  }
 
   onIncludeAchievementsChanged() {
     this.refreshGroups();
@@ -450,12 +439,6 @@ export class AppComponent implements OnInit, AfterViewInit {
     );
   }
 
-  onMinusValueChanged(value: number | string) {
-    try {
-      this.onIncludeAdditionalAmountChanged();
-    } catch {}
-  }
-
   onIncludeAdditionalAmountChanged() {
     if (this.includeAdditionalAmount) {
       this.amountValue = Number(this.minusValue) - Number(this.extraAmount);
@@ -495,18 +478,6 @@ export class AppComponent implements OnInit, AfterViewInit {
       this.kickbaseGroup.calcColors(this.amountValue);
     } catch {}
   }
-
-  // onAddPlayer() {
-  //   // apiService.userID() liefert string | null
-  //   let player = new KickbasePlayer(null, this.apiService.userID() ?? undefined);
-  //   player.name = this.newplayername;
-  //   player.value = Number(this.newplayeramount);
-
-  //   this.kickbaseGroup.players.push(player);
-  //   this.refreshGroups();
-  //   this.newplayeramount = 0;
-  //   this.newplayername = '';
-  // }
 
   onRemovePlayer(player: KickbasePlayer) {
     const index = this.kickbaseGroup.players.find((p) => p.name === player.name);
@@ -563,7 +534,6 @@ export class AppComponent implements OnInit, AfterViewInit {
 
   logout() {
     this.apiService.logout();
-    this.newplayername = '';
     this.kickbaseGroup = new KickbaseGroup();
   }
 
@@ -781,9 +751,4 @@ export class AppComponent implements OnInit, AfterViewInit {
       localStorage.setItem('last_seen_version', this.currentVersion);
     }
   }
-}
-
-// Hilfsfunktion zur sicheren ID-Ermittlung beim Vergleich
-function marketPlayerKey(player: KickbasePlayer): string {
-  return String(player.id);
 }

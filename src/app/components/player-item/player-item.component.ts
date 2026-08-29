@@ -1,11 +1,4 @@
-import {
-  Component,
-  EventEmitter,
-  Input,
-  OnInit,
-  Output,
-  ChangeDetectionStrategy,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { KickbasePlayer } from 'src/app/model/kickbase-player';
 import { ApiService } from 'src/app/services/api.service';
@@ -22,7 +15,7 @@ import { FormattedNumberDirective } from 'src/app/formatted-number.directive';
   standalone: true,
   imports: [FormsModule, AngularSvgIconModule, EuroPipe, FormattedNumberDirective, CommonModule],
 })
-export class PlayerItemComponent implements OnInit {
+export class PlayerItemComponent {
   @Input({ required: true }) player!: KickbasePlayer;
   @Input({ required: true }) printMode!: boolean;
   @Input() isMarketOverview = false;
@@ -32,9 +25,8 @@ export class PlayerItemComponent implements OnInit {
   @Output() loadDetails = new EventEmitter();
 
   @Output() playerChanged = new EventEmitter();
-  constructor(public apiService: ApiService) {}
 
-  ngOnInit(): void {}
+  constructor(public apiService: ApiService) {}
 
   onLoadAllDetailsForPlayer = async () => {
     this.loadDetails.emit();

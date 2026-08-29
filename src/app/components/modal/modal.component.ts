@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { BsModalRef } from 'ngx-bootstrap/modal';
 
 @Component({
@@ -8,12 +8,10 @@ import { BsModalRef } from 'ngx-bootstrap/modal';
   changeDetection: ChangeDetectionStrategy.Eager,
   standalone: true,
 })
-export class ModalComponent implements OnInit {
+export class ModalComponent {
   title = '';
   closeBtnName = '';
   list: any[] = [];
 
   constructor(public bsModalRef: BsModalRef) {}
-
-  ngOnInit() {}
 }

@@ -1,39 +1,37 @@
-@if (isAdminMode) {
-  <div class="row card p-3 mt-2">
-    <h4>Kickbase Login</h4>
-    <div class="col-12">
-      <!-- <form> -->
-      <div class="mb-3">
-        <label class="form-label" for="exampleInputEmail1">Email address</label>
-        <input
-          type="email"
-          [(ngModel)]="username"
-          class="form-control"
-          id="exampleInputEmail1"
-          aria-describedby="emailHelp"
-          placeholder="Enter email"
-        />
-      </div>
-      <div class="mb-3">
-        <label class="form-label" for="exampleInputPassword1">Password</label>
-        <input
-          type="password"
-          [(ngModel)]="password"
-          class="form-control"
-          id="exampleInputPassword1"
-          placeholder="Password"
-        />
-      </div>
-      <button (click)="loginPrivate()" type="button" class="btn btn-primary w-100">
-        @if (!doLogin) {
-          <span>Login</span>
-        }
-        @if (doLogin) {
-          <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-          Loading...
-        }
-      </button>
-      <!-- </form> -->
+<div class="row card p-3 mt-2">
+  <h4>Kickbase Login</h4>
+  <div class="col-12">
+    <!-- <form> -->
+    <div class="mb-3">
+      <label class="form-label" for="exampleInputEmail1">Email address</label>
+      <input
+        type="email"
+        [(ngModel)]="username"
+        class="form-control"
+        id="exampleInputEmail1"
+        aria-describedby="emailHelp"
+        placeholder="Enter email"
+      />
     </div>
+    <div class="mb-3">
+      <label class="form-label" for="exampleInputPassword1">Password</label>
+      <input
+        type="password"
+        [(ngModel)]="password"
+        class="form-control"
+        id="exampleInputPassword1"
+        placeholder="Password"
+      />
+    </div>
+    <button (click)="loginPrivate()" type="button" class="btn btn-primary w-100">
+      @if (!doLogin) {
+        <span>Login</span>
+      }
+      @if (doLogin) {
+        <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+        Loading...
+      }
+    </button>
+    <!-- </form> -->
   </div>
-}
+</div>
