@@ -22,6 +22,7 @@ import { ThemeToggleComponent } from './shared/components/theme-toggle/theme-tog
 import { FormattedNumberDirective } from './shared/directives/formatted-number.directive';
 import { EuroPipe } from './shared/pipes/euro.pipe';
 
+import { DisplayMode } from './core/models/display-mode';
 import { KickbaseGroup } from './core/models/kickbase-group';
 import { KickbasePlayer } from './core/models/kickbase-player';
 import { KickbaseLeague } from './core/models/kickbase-league';
@@ -81,7 +82,7 @@ window.PayPal = window.PayPal || {};
 export class AppComponent implements OnInit, AfterViewInit {
   bsModalRef: BsModalRef | undefined;
 
-  public AppComponent = AppComponent;
+  protected readonly DisplayMode = DisplayMode;
   public minusValue: number = 0;
   public offerOffset: string = '0';
   public includeAdditionalAmount = false;
@@ -116,9 +117,7 @@ export class AppComponent implements OnInit, AfterViewInit {
 
   public kickbaseGroup = new KickbaseGroup();
 
-  public static readonly display_mode_calculator = 'calculator';
-  public static readonly display_mode_market_overview = 'marketOverview';
-  public displayMode = AppComponent.display_mode_calculator;
+  public displayMode: DisplayMode = DisplayMode.calculator;
 
   public extraAmount = 0;
   public amountValue = 0;
@@ -132,18 +131,15 @@ export class AppComponent implements OnInit, AfterViewInit {
   public changelogHtml: string = '';
   public isLoadingChangelog: boolean = false;
 
-  private http = inject(HttpClient);
+  public readonly apiService = inject(ApiService);
+  public readonly cdRef = inject(ChangeDetectorRef);
+  public readonly updateService = inject(UpdateService);
+  public readonly errorService = inject(ErrorService);
+  private readonly modalService = inject(BsModalService);
+  private readonly http = inject(HttpClient);
 
   @ViewChild('releaseNotesModal') releaseNotesModal!: TemplateRef<any>;
   public modalRef?: BsModalRef;
-
-  constructor(
-    public apiService: ApiService,
-    private modalService: BsModalService,
-    public cdRef: ChangeDetectorRef,
-    public updateService: UpdateService,
-    public errorService: ErrorService,
-  ) {}
 
   get amountPlayers(): number {
     if (!this.kickbaseGroup?.players) return 0;
@@ -189,7 +185,7 @@ export class AppComponent implements OnInit, AfterViewInit {
     if (this.apiService.isLoggedIn()) {
       this.loadLeagues();
     }
-    this.displayMode = AppComponent.display_mode_calculator;
+    this.displayMode = DisplayMode.calculator;
 
     const date = new Date();
     const dow = date.getDay();
@@ -272,7 +268,7 @@ export class AppComponent implements OnInit, AfterViewInit {
         if (!result) {
           alert('Bitte Username und Passwort überprüfen');
         } else {
-          this.displayMode = AppComponent.display_mode_calculator;
+          this.displayMode = DisplayMode.calculator;
           await this.loadLeagues();
         }
       } catch {
@@ -408,7 +404,7 @@ export class AppComponent implements OnInit, AfterViewInit {
       return;
     }
     this.loadingAllDetailsManual = true;
-    if (this.displayMode === AppComponent.display_mode_market_overview) {
+    if (this.displayMode === DisplayMode.marketOverview) {
       if (this.currentMarket === null) {
         this.loadingAllDetailsManual = false;
         return;
@@ -564,7 +560,7 @@ export class AppComponent implements OnInit, AfterViewInit {
   }
 
   sortCurrentPlayers(): void {
-    const isMarketOverview = this.displayMode === AppComponent.display_mode_market_overview;
+    const isMarketOverview = this.displayMode === DisplayMode.marketOverview;
 
     const sourcePlayers = isMarketOverview
       ? (this.currentMarket?.players ?? [])
@@ -681,11 +677,11 @@ export class AppComponent implements OnInit, AfterViewInit {
     return true;
   }
 
-  switchDisplay = async (displayMode: string): Promise<void> => {
+  switchDisplay = async (displayMode: DisplayMode): Promise<void> => {
     this.displayMode = displayMode;
     this.apiService.setLastDisplay(this.displayMode);
 
-    if (displayMode === AppComponent.display_mode_market_overview) {
+    if (displayMode === DisplayMode.marketOverview) {
       this.selectedSorting = this.sorting_default;
 
       await this.reloadMarket(true);

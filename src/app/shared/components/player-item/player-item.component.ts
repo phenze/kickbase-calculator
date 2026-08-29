@@ -1,4 +1,11 @@
-import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  EventEmitter,
+  Input,
+  Output,
+  inject,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { KickbasePlayer } from '../../../core/models/kickbase-player';
 import { ApiService } from '../../../core/services/api.service';
@@ -26,7 +33,7 @@ export class PlayerItemComponent {
 
   @Output() playerChanged = new EventEmitter();
 
-  constructor(public apiService: ApiService) {}
+  public readonly apiService = inject(ApiService);
 
   onLoadAllDetailsForPlayer = async () => {
     this.loadDetails.emit();

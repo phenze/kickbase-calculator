@@ -1,6 +1,8 @@
-import { EuroPipe } from './euro.pipe'; // Pfad anpassen!
 import { CurrencyPipe, registerLocaleData } from '@angular/common';
 import localeDe from '@angular/common/locales/de';
+import { LOCALE_ID } from '@angular/core';
+import { TestBed } from '@angular/core/testing';
+import { EuroPipe } from './euro.pipe';
 
 // Deutsche Sprachdaten für den Test registrieren
 registerLocaleData(localeDe, 'de-DE');
@@ -9,11 +11,13 @@ describe('EuroPipe', () => {
   let pipe: EuroPipe;
 
   beforeEach(() => {
-    // 1. Die originale Angular-Pipe mit de-DE Locale erstellen
-    const currencyPipe = new CurrencyPipe('de-DE');
+    // Die Pipe holt sich die Angular-CurrencyPipe per inject(), also muss sie
+    // aus dem Injector kommen - mit de-DE als Locale.
+    TestBed.configureTestingModule({
+      providers: [EuroPipe, CurrencyPipe, { provide: LOCALE_ID, useValue: 'de-DE' }],
+    });
 
-    // 2. Deine eigene Pipe erstellen und die Angular-Pipe übergeben
-    pipe = new EuroPipe(currencyPipe);
+    pipe = TestBed.inject(EuroPipe);
   });
 
   it('sollte erfolgreich erstellt werden', () => {

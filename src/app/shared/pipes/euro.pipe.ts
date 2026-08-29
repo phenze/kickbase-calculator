@@ -1,11 +1,11 @@
-import { Pipe, PipeTransform } from '@angular/core';
+import { Pipe, PipeTransform, inject } from '@angular/core';
 import { CurrencyPipe } from '@angular/common';
 
 @Pipe({
   name: 'euro', // So heißt die Pipe später im HTML
 })
 export class EuroPipe implements PipeTransform {
-  constructor(private currencyPipe: CurrencyPipe) {}
+  private readonly currencyPipe = inject(CurrencyPipe);
 
   transform(value: number | string | null | undefined): string | null {
     if (value == null) return null;

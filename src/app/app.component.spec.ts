@@ -1,5 +1,6 @@
 import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { AppComponent } from './app.component';
+import { DisplayMode } from './core/models/display-mode';
 import { ApiService } from './core/services/api.service';
 import { BsModalService, BsModalRef } from 'ngx-bootstrap/modal';
 import { ChangeDetectorRef, NO_ERRORS_SCHEMA, signal } from '@angular/core';
@@ -63,7 +64,7 @@ describe('AppComponent', () => {
       ],
       {
         appSettings: signal({
-          calculatorActive: AppComponent.display_mode_calculator,
+          calculatorActive: DisplayMode.calculator,
           lastLeagueId: -1,
         }),
         isLoggedIn: signal(true),
@@ -161,7 +162,7 @@ describe('AppComponent', () => {
       tick();
 
       expect(mockApiService.login).toHaveBeenCalledWith('testuser', 'password');
-      expect(component.displayMode).toBe(AppComponent.display_mode_calculator);
+      expect(component.displayMode).toBe(DisplayMode.calculator);
       expect(mockApiService.getLeagues).toHaveBeenCalled();
     }));
 
@@ -403,7 +404,7 @@ describe('AppComponent', () => {
     });
 
     it('should sort Kickbase players by expiry and move user-offered players to the end', () => {
-      component.displayMode = AppComponent.display_mode_market_overview;
+      component.displayMode = DisplayMode.marketOverview;
       component.selectedSorting = component.sorting_default;
 
       const playerKbLate = new KickbasePlayer({ i: '1', n: 'Müller', exs: 10000 }, '123');
@@ -603,13 +604,11 @@ describe('AppComponent', () => {
       component.selectedLeague = 10;
       mockApiService.getMarket.and.returnValue(of({ players: [] } as any));
 
-      component.switchDisplay(AppComponent.display_mode_market_overview);
+      component.switchDisplay(DisplayMode.marketOverview);
       tick();
 
-      expect(component.displayMode).toBe(AppComponent.display_mode_market_overview);
-      expect(mockApiService.setLastDisplay).toHaveBeenCalledWith(
-        AppComponent.display_mode_market_overview,
-      );
+      expect(component.displayMode).toBe(DisplayMode.marketOverview);
+      expect(mockApiService.setLastDisplay).toHaveBeenCalledWith(DisplayMode.marketOverview);
       expect(mockApiService.getMarket).toHaveBeenCalledWith(10);
     }));
   });
@@ -647,7 +646,7 @@ describe('AppComponent', () => {
     }));
 
     it('sollte onLoadAllDetails im Market Overview Modus für alle Spieler laden', fakeAsync(() => {
-      component.displayMode = AppComponent.display_mode_market_overview;
+      component.displayMode = DisplayMode.marketOverview;
       const p1 = makePlayer(1, 'Müller', 5000000);
       spyOn(p1, 'loadStats').and.resolveTo();
       spyOn(p1, 'calcValues');
@@ -662,7 +661,7 @@ describe('AppComponent', () => {
     }));
 
     it('sollte onLoadAllDetails im Calculator Modus für die Gruppe laden', fakeAsync(() => {
-      component.displayMode = AppComponent.display_mode_calculator;
+      component.displayMode = DisplayMode.calculator;
       const p1 = makePlayer(1, 'Müller', 5000000);
       spyOn(p1, 'loadStats').and.resolveTo();
       component.kickbaseGroup.players = [p1];

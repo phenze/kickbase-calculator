@@ -1,15 +1,15 @@
-import { Injectable, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { Injectable, inject, signal } from '@angular/core';
 import { Observable, map, catchError, throwError } from 'rxjs';
 
 import { KickbaseLeague } from '../models/kickbase-league';
 import { KickbaseMarket } from '../models/kickbase-market';
 import { KickbasePlayerStats } from '../models/kickbase-player-stats';
 import { KickbaseGift } from '../models/kickbase-gift';
-import { AppComponent } from '../../app.component';
+import { DisplayMode } from '../models/display-mode';
 
 export interface AppSettings {
-  calculatorActive: string;
+  calculatorActive: DisplayMode;
   lastLeagueId: number;
 }
 
@@ -41,11 +41,13 @@ export class ApiService {
   public userID = signal<string | null>(null);
   public leagues = signal<KickbaseLeague[]>([]);
   public appSettings = signal<AppSettings>({
-    calculatorActive: AppComponent.display_mode_calculator,
+    calculatorActive: DisplayMode.calculator,
     lastLeagueId: -1,
   });
 
-  constructor(private http: HttpClient) {
+  private readonly http = inject(HttpClient);
+
+  constructor() {
     // 1. Einmalige Migration alter localStorage-Daten ausführen
     this.migrateLegacyData();
 
@@ -80,7 +82,7 @@ export class ApiService {
         }
 
         const migratedSettings: AppSettings = {
-          calculatorActive: legacy.calculatorActive ?? AppComponent.display_mode_calculator,
+          calculatorActive: legacy.calculatorActive ?? DisplayMode.calculator,
           lastLeagueId: legacy.lastLeagueId ?? -1,
         };
         localStorage.setItem('app_settings', JSON.stringify(migratedSettings));
@@ -243,7 +245,7 @@ export class ApiService {
       }
     }
     return {
-      calculatorActive: AppComponent.display_mode_calculator,
+      calculatorActive: DisplayMode.calculator,
       lastLeagueId: -1,
     };
   }
@@ -253,7 +255,7 @@ export class ApiService {
     localStorage.setItem('app_settings', JSON.stringify(settings));
   }
 
-  public setLastDisplay(displayMode: string): void {
+  public setLastDisplay(displayMode: DisplayMode): void {
     const current = this.appSettings();
     this.saveSettings({ ...current, calculatorActive: displayMode });
   }

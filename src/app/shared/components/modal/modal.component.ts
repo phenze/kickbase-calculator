@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { BsModalRef } from 'ngx-bootstrap/modal';
 
 @Component({
@@ -13,5 +13,5 @@ export class ModalComponent {
   closeBtnName = '';
   list: any[] = [];
 
-  constructor(public bsModalRef: BsModalRef) {}
+  public readonly bsModalRef = inject(BsModalRef);
 }

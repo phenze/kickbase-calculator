@@ -1,4 +1,4 @@
-import { Directive, ElementRef, HostListener, forwardRef } from '@angular/core';
+import { Directive, ElementRef, HostListener, forwardRef, inject } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 
 @Directive({
@@ -17,7 +17,7 @@ export class FormattedNumberDirective implements ControlValueAccessor {
   private onChange: (value: number | null) => void = () => {};
   private onTouched: () => void = () => {};
 
-  constructor(private el: ElementRef<HTMLInputElement>) {}
+  private readonly el = inject<ElementRef<HTMLInputElement>>(ElementRef);
 
   // ControlValueAccessor: Wird von Angular aufgerufen, wenn sich das Model (TS) ändert
   writeValue(value: number | null): void {
