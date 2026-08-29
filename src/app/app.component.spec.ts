@@ -1,17 +1,17 @@
 import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { AppComponent } from './app.component';
-import { ApiService } from './services/api.service';
+import { ApiService } from './core/services/api.service';
 import { BsModalService, BsModalRef } from 'ngx-bootstrap/modal';
 import { ChangeDetectorRef, NO_ERRORS_SCHEMA, signal } from '@angular/core';
-import { KickbasePlayer } from './model/kickbase-player';
-import { KickbaseLeague } from './model/kickbase-league';
-import { KickbaseMarket } from './model/kickbase-market';
-import { KickbasePlayerStats } from './model/kickbase-player-stats';
+import { KickbasePlayer } from './core/models/kickbase-player';
+import { KickbaseLeague } from './core/models/kickbase-league';
+import { KickbaseMarket } from './core/models/kickbase-market';
+import { KickbasePlayerStats } from './core/models/kickbase-player-stats';
 import { CurrencyPipe } from '@angular/common';
-import { EuroPipe } from './no-decimals.pipe';
-import { UpdateService } from './services/update.service';
+import { EuroPipe } from './shared/pipes/euro.pipe';
+import { UpdateService } from './core/services/update.service';
 import { of, throwError } from 'rxjs';
-import { ErrorService } from './services/error.service';
+import { ErrorService } from './core/services/error.service';
 
 describe('AppComponent', () => {
   let component: AppComponent;

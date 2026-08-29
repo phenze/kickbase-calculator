@@ -3,8 +3,8 @@ import { HttpClient, provideHttpClient, withInterceptors } from '@angular/common
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { of, throwError } from 'rxjs';
 import { authInterceptor } from './auth.interceptor';
-import { ApiService } from './api.service';
-import { ErrorService } from './error.service';
+import { ApiService } from '../services/api.service';
+import { ErrorService } from '../services/error.service';
 
 describe('authInterceptor', () => {
   let http: HttpClient;

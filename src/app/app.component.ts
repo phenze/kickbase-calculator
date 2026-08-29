@@ -13,25 +13,25 @@ import { firstValueFrom } from 'rxjs';
 import { DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
-import { ApiService } from './services/api.service';
+import { ApiService } from './core/services/api.service';
 
-import { HelpComponent } from './components/help/help.component';
-import { MarketOverviewComponent } from './components/market-overview/market-overview.component';
-import { PlayerItemComponent } from './components/player-item/player-item.component';
-import { ThemeToggleComponent } from './components/theme-toggle/theme-toggle.component';
-import { FormattedNumberDirective } from './formatted-number.directive';
-import { EuroPipe } from './no-decimals.pipe';
+import { HelpComponent } from './features/help/help.component';
+import { MarketOverviewComponent } from './features/market-overview/market-overview.component';
+import { PlayerItemComponent } from './shared/components/player-item/player-item.component';
+import { ThemeToggleComponent } from './shared/components/theme-toggle/theme-toggle.component';
+import { FormattedNumberDirective } from './shared/directives/formatted-number.directive';
+import { EuroPipe } from './shared/pipes/euro.pipe';
 
-import { KickbaseGroup } from './model/kickbase-group';
-import { KickbasePlayer } from './model/kickbase-player';
-import { KickbaseLeague } from './model/kickbase-league';
-import { KickbaseMarket } from './model/kickbase-market';
-import { KickbaseGift } from './model/kickbase-gift';
+import { KickbaseGroup } from './core/models/kickbase-group';
+import { KickbasePlayer } from './core/models/kickbase-player';
+import { KickbaseLeague } from './core/models/kickbase-league';
+import { KickbaseMarket } from './core/models/kickbase-market';
+import { KickbaseGift } from './core/models/kickbase-gift';
 import { BsModalService, BsModalRef } from 'ngx-bootstrap/modal';
-import { ModalComponent } from './components/modal/modal.component';
-import { LoginComponent, LoginPayload } from './components/login/login.component';
-import { UpdateService } from './services/update.service';
-import { ErrorService } from './services/error.service';
+import { ModalComponent } from './shared/components/modal/modal.component';
+import { LoginComponent, LoginPayload } from './features/login/login.component';
+import { UpdateService } from './core/services/update.service';
+import { ErrorService } from './core/services/error.service';
 import { HttpClient } from '@angular/common/http';
 import { marked } from 'marked';
 

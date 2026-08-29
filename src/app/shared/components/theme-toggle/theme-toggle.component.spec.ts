@@ -3,7 +3,7 @@ import { AngularSvgIconModule } from 'angular-svg-icon';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { ThemeToggleComponent } from './theme-toggle.component';
-import { THEME_STORAGE_KEY, ThemeService } from '../../services/theme.service';
+import { THEME_STORAGE_KEY, ThemeService } from '../../../core/services/theme.service';
 
 describe('ThemeToggleComponent', () => {
   let component: ThemeToggleComponent;

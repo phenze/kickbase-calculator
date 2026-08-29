@@ -1,11 +1,11 @@
 import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { KickbasePlayer } from 'src/app/model/kickbase-player';
-import { ApiService } from 'src/app/services/api.service';
+import { KickbasePlayer } from '../../../core/models/kickbase-player';
+import { ApiService } from '../../../core/services/api.service';
 import { AngularSvgIconModule } from 'angular-svg-icon';
 import { CommonModule, CurrencyPipe } from '@angular/common';
-import { EuroPipe } from 'src/app/no-decimals.pipe';
-import { FormattedNumberDirective } from 'src/app/formatted-number.directive';
+import { EuroPipe } from '../../pipes/euro.pipe';
+import { FormattedNumberDirective } from '../../directives/formatted-number.directive';
 
 @Component({
   selector: 'app-player-item',

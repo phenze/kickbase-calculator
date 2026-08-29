@@ -10,8 +10,8 @@ import {
 import { provideRouter } from '@angular/router';
 import { provideServiceWorker } from '@angular/service-worker';
 import { provideAngularSvgIcon } from 'angular-svg-icon';
-import { environment } from 'src/environments/environment';
-import { authInterceptor } from './services/auth.interceptor';
+import { environment } from '../environments/environment';
+import { authInterceptor } from './core/interceptors/auth.interceptor';
 
 registerLocaleData(localeDe, 'de-DE');
 

@@ -1,12 +1,12 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MarketOverviewComponent } from './market-overview.component';
-import { ApiService } from 'src/app/services/api.service';
-import { KickbasePlayer } from 'src/app/model/kickbase-player';
+import { ApiService } from '../../core/services/api.service';
+import { KickbasePlayer } from '../../core/models/kickbase-player';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { AngularSvgIconModule } from 'angular-svg-icon';
 import { CurrencyPipe } from '@angular/common';
-import { EuroPipe } from 'src/app/no-decimals.pipe';
+import { EuroPipe } from '../../shared/pipes/euro.pipe';
 
 describe('MarketOverviewComponent', () => {
   let component: MarketOverviewComponent;

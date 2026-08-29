@@ -10,10 +10,10 @@ import {
 import { FormsModule } from '@angular/forms';
 import { AngularSvgIconModule } from 'angular-svg-icon';
 
-import { KickbasePlayer } from 'src/app/model/kickbase-player';
-import { ApiService } from 'src/app/services/api.service';
+import { KickbasePlayer } from '../../core/models/kickbase-player';
+import { ApiService } from '../../core/services/api.service';
 
-import { PlayerItemComponent } from '../player-item/player-item.component';
+import { PlayerItemComponent } from '../../shared/components/player-item/player-item.component';
 
 @Component({
   selector: 'app-market-overview',

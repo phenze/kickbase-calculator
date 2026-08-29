@@ -2,11 +2,11 @@ import { Injectable, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, map, catchError, throwError } from 'rxjs';
 
-import { KickbaseLeague } from '../model/kickbase-league';
-import { KickbaseMarket } from '../model/kickbase-market';
-import { KickbasePlayerStats } from '../model/kickbase-player-stats';
-import { KickbaseGift } from '../model/kickbase-gift';
-import { AppComponent } from '../app.component';
+import { KickbaseLeague } from '../models/kickbase-league';
+import { KickbaseMarket } from '../models/kickbase-market';
+import { KickbasePlayerStats } from '../models/kickbase-player-stats';
+import { KickbaseGift } from '../models/kickbase-gift';
+import { AppComponent } from '../../app.component';
 
 export interface AppSettings {
   calculatorActive: string;

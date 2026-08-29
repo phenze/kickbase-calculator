@@ -1,12 +1,12 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { PlayerItemComponent } from './player-item.component';
-import { ApiService } from 'src/app/services/api.service';
-import { KickbasePlayer } from 'src/app/model/kickbase-player';
+import { ApiService } from '../../../core/services/api.service';
+import { KickbasePlayer } from '../../../core/models/kickbase-player';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { AngularSvgIconModule } from 'angular-svg-icon';
 import { CurrencyPipe, registerLocaleData } from '@angular/common';
-import { EuroPipe } from 'src/app/no-decimals.pipe';
+import { EuroPipe } from '../../pipes/euro.pipe';
 
 import localeDe from '@angular/common/locales/de';
 

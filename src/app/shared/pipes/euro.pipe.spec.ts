@@ -1,4 +1,4 @@
-import { EuroPipe } from './no-decimals.pipe'; // Pfad anpassen!
+import { EuroPipe } from './euro.pipe'; // Pfad anpassen!
 import { CurrencyPipe, registerLocaleData } from '@angular/common';
 import localeDe from '@angular/common/locales/de';
 
