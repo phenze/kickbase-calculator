@@ -4,6 +4,11 @@ Alle wichtigen Änderungen und Updates des Kickbase Calculators auf einen Blick.
 
 ---
 
+## [6.7.4] - 31.08.2026
+
+### 🐛 Bugfixes & Wartung
+- **API:** Proxy wird jetzte nur noch für Login/Token Refresh benutzt
+
 ## [6.7.3] - 31.08.2026
 
 ### 🐛 Bugfixes & Wartung
