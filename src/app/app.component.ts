@@ -122,6 +122,7 @@ export class AppComponent implements OnInit, AfterViewInit {
   public readonly printMode = signal(false);
   public readonly showPermanentDeletedPlayers = signal(true);
   public readonly loadingData = signal(false);
+  public readonly loadingLeagues = signal(false);
   public readonly loadingAllDetailsManual = signal(false);
   public readonly doLogin = signal(false);
 
@@ -261,7 +262,8 @@ export class AppComponent implements OnInit, AfterViewInit {
   }
 
   loadLeagues = async (): Promise<void> => {
-    this.loadingData.set(true);
+    this.loadingLeagues.set(true);
+    this.cdRef.detectChanges();
     try {
       const leagues = await firstValueFrom(this.apiService.getLeagues());
       this.leagues.set(leagues);
@@ -287,7 +289,7 @@ export class AppComponent implements OnInit, AfterViewInit {
     } catch (error) {
       console.error(error);
     } finally {
-      this.loadingData.set(false);
+      this.loadingLeagues.set(false);
       this.cdRef.detectChanges();
     }
   };

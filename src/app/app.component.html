@@ -119,29 +119,37 @@
     <app-help></app-help>
   </div>
 
-  <div class="section-card mb-3">
-    <label class="form-label fw-semibold" for="selectedLeague">Liga</label>
-    <select
-      id="selectedLeague"
-      class="form-select"
-      [ngModel]="selectedLeague()"
-      (ngModelChange)="onSelectedLeagueChanged($event)"
-    >
-      <option [ngValue]="null">-- Bitte eine Liga auswählen --</option>
-      @for (league of leagues(); track league.id) {
-        <option [ngValue]="+league.id">{{ league.name }}</option>
-      }
-    </select>
-  </div>
-
-  @if (selectedLeague() === null && !loadingData()) {
-    <div class="alert alert-info d-flex align-items-center mt-3 shadow-sm" role="alert">
-      <i class="bi bi-info-circle-fill me-2 fs-5 flex-shrink-0"></i>
-      <div>
-        <strong>Keine Liga ausgewählt:</strong> Bitte wähle oben eine Liga aus, um den Rechner oder
-        Marktübersichten zu nutzen.
+  @if (loadingLeagues()) {
+    <div class="d-flex justify-content-center">
+      <div class="spinner-border m-5" role="status">
+        <span class="visually-hidden">Lade Ligen...</span>
       </div>
     </div>
+  } @else {
+    <div class="section-card mb-3">
+      <label class="form-label fw-semibold" for="selectedLeague">Liga</label>
+      <select
+        id="selectedLeague"
+        class="form-select"
+        [ngModel]="selectedLeague()"
+        (ngModelChange)="onSelectedLeagueChanged($event)"
+      >
+        <option [ngValue]="null">-- Bitte eine Liga auswählen --</option>
+        @for (league of leagues(); track league.id) {
+          <option [ngValue]="+league.id">{{ league.name }}</option>
+        }
+      </select>
+    </div>
+
+    @if (selectedLeague() === null) {
+      <div class="alert alert-info d-flex align-items-center mt-3 shadow-sm" role="alert">
+        <i class="bi bi-info-circle-fill me-2 fs-5 flex-shrink-0"></i>
+        <div>
+          <strong>Keine Liga ausgewählt:</strong> Bitte wähle oben eine Liga aus, um den Rechner
+          oder Marktübersichten zu nutzen.
+        </div>
+      </div>
+    }
   }
 
   @if (selectedLeague() !== null) {
