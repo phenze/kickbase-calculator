@@ -328,15 +328,6 @@ svg-icon {
   }
 }
 
-.player-row {
-  // margin: 5px;
-  // padding: 5px;
-  // border: 1px dashed black;
-  &.hover:hover {
-    background-color: rgba($color: #000000, $alpha: 0.1);
-  }
-}
-
 .profile-picture {
   width: 50px;
   height: 50px;
@@ -362,71 +353,7 @@ svg-icon {
   cursor: pointer;
 }
 
-.next-match-homegame {
-  margin-right: 5px;
-}
-
-.start-picture {
-  border-radius: 50%;
-}
-
-.sticky-header {
-  margin-right: 0;
-  margin-left: 0;
-  background-color: white;
-  width: 100%;
-  z-index: 999;
-  padding-top: 5px;
-  padding-bottom: 5px;
-  box-sizing: border-box;
-  box-shadow:
-    0 5px 5px -3px rgba(0, 0, 0, 0.2),
-    0 8px 10px 1px rgba(0, 0, 0, 0.14),
-    0 3px 14px 2px rgba(0, 0, 0, 0.12);
-}
-
-.btn-group.special {
-  display: flex;
-}
-
-.special .btn {
-  flex: 1;
-}
-
-.number_players {
-  float: right;
-  width: 36px;
-  height: 24px;
-  cursor: pointer;
-  color: var(--kb-icon-accent);
-  margin-right: 10px;
-}
-
 .refresh-icon {
-  float: right;
-  width: 36px;
-  height: 36px;
-  cursor: pointer;
-  color: var(--kb-icon-accent);
-  margin-right: 10px;
-}
-
-.deleted-icon {
-  float: right;
-  width: 36px;
-  height: 24px;
-  cursor: pointer;
-  color: var(--kb-icon-accent);
-  margin-right: 5px;
-  transform: scale(1.2);
-  margin-top: 3px;
-
-  &.active {
-    color: var(--kb-success);
-  }
-}
-
-.print-icon {
   float: right;
   width: 36px;
   height: 36px;
@@ -633,22 +560,6 @@ svg-icon {
   font-size: 0.95rem;
 }
 
-// Kompaktes Kennzahlen-Grid (Gekauft, MW-Änderung, Gewinn/Verlust, Erfolge, Punkte, Schnitt)
-.finance-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.35rem 0.75rem;
-}
-
-.finance-item {
-  display: flex;
-  flex-direction: column;
-  gap: 0.05rem;
-  font-size: 0.8rem;
-  line-height: 1.2;
-  white-space: nowrap;
-}
-
 .section-label {
   font-size: 0.7rem;
   font-weight: 700;
@@ -728,16 +639,6 @@ svg-icon {
   .metric-chip {
     font-size: 0.78rem;
     padding: 0.3rem 0.55rem;
-  }
-}
-
-@media (max-width: 400px) {
-  .finance-grid {
-    gap: 0.3rem 0.5rem;
-  }
-
-  .finance-item {
-    font-size: 0.78rem;
   }
 }
 

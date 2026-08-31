@@ -1,29 +1,50 @@
 import {
   AfterViewInit,
+  ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
   OnInit,
-  ViewChild,
-  ChangeDetectionStrategy,
   TemplateRef,
+  ViewChild,
+  computed,
   inject,
+  signal,
 } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 
-import { ApiService } from './services/api.service';
+import { DatePipe } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 
-import { KickbaseGroup } from './model/kickbase-group';
-import { KickbasePlayer } from './model/kickbase-player';
-import { KickbaseLeague } from './model/kickbase-league';
-import { KickbaseMarket } from './model/kickbase-market';
-import { KickbaseGift } from './model/kickbase-gift';
+import { ApiService } from './core/services/api.service';
+
+import { HelpComponent } from './features/help/help.component';
+import { MarketOverviewComponent } from './features/market-overview/market-overview.component';
+import { PlayerItemComponent } from './shared/components/player-item/player-item.component';
+import { ThemeToggleComponent } from './shared/components/theme-toggle/theme-toggle.component';
+import { FormattedNumberDirective } from './shared/directives/formatted-number.directive';
+import { EuroPipe } from './shared/pipes/euro.pipe';
+
+import { DisplayMode } from './core/models/display-mode';
+import { SortMode } from './core/models/sort-mode';
+import { ChangelogService } from './core/services/changelog.service';
+import {
+  readBooleanSetting,
+  readNumberSetting,
+  readStringSetting,
+  writeSetting,
+} from './core/utils/local-storage';
+import { addDays, calculateMatchdayCountdown } from './core/utils/matchday';
+import { sortPlayers } from './core/utils/player-sorting';
+import { KickbaseGroup } from './core/models/kickbase-group';
+import { KickbasePlayer } from './core/models/kickbase-player';
+import { KickbaseLeague } from './core/models/kickbase-league';
+import { KickbaseMarket } from './core/models/kickbase-market';
+import { KickbaseGift } from './core/models/kickbase-gift';
 import { BsModalService, BsModalRef } from 'ngx-bootstrap/modal';
-import { ModalComponent } from './components/modal/modal.component';
-import { LoginPayload } from './components/login/login.component';
-import { UpdateService } from './services/update.service';
-import { ErrorService } from './services/error.service';
-import { HttpClient } from '@angular/common/http';
-import { marked } from 'marked';
+import { ModalComponent } from './shared/components/modal/modal.component';
+import { LoginComponent, LoginPayload } from './features/login/login.component';
+import { UpdateService } from './core/services/update.service';
+import { ErrorService } from './core/services/error.service';
 
 interface PayPalDonationButton {
   render(selector: string): void;
@@ -56,81 +77,76 @@ window.PayPal = window.PayPal || {};
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss'],
   changeDetection: ChangeDetectionStrategy.Eager,
-  standalone: false,
+  imports: [
+    DatePipe,
+    FormsModule,
+    FormattedNumberDirective,
+    EuroPipe,
+    HelpComponent,
+    LoginComponent,
+    MarketOverviewComponent,
+    PlayerItemComponent,
+    ThemeToggleComponent,
+  ],
 })
 export class AppComponent implements OnInit, AfterViewInit {
-  title = 'app';
-
   bsModalRef: BsModalRef | undefined;
 
-  public AppComponent = AppComponent;
-  public minusValue: number = 0;
-  public availableAmountString: string = '0';
-  public offerOffset: string = '0';
-  public includeAdditionalAmount = false;
-  public loadStatsAlways = true;
-  public keepPlayersInitially = false;
-  public includeMinusMarketValues = false;
-  public showPermanentDeletedPlayers = true;
-  public printMode = false;
-  public doLogin = false;
+  protected readonly DisplayMode = DisplayMode;
+  protected readonly SortMode = SortMode;
 
-  public loadingData = false;
-  public loadingAllDetailsManual = false;
+  // --- Eingaben und Optionen des Rechners ---
+  public readonly minusValue = signal(0);
+  public readonly offerOffset = signal('0');
+  public readonly extraAmount = signal(0);
+  public readonly includeAdditionalAmount = signal(false);
+  public readonly includeMinusMarketValues = signal(false);
+  public readonly includeAchievements = signal(true);
+  public readonly loadStatsAlways = signal(true);
+  public readonly keepPlayersInitially = signal(false);
+  public readonly selectedSorting = signal<number>(SortMode.default);
+  public readonly dayUntilFriday = signal(0);
+  public readonly fridayDate = signal(new Date());
 
-  public leagues: KickbaseLeague[] = [];
+  /** Kontostand abzueglich der erwarteten Ausgaben, falls diese einbezogen werden. */
+  public readonly amountValue = computed(() =>
+    this.includeAdditionalAmount()
+      ? Number(this.minusValue()) - Number(this.extraAmount())
+      : Number(this.minusValue()),
+  );
+
+  // --- Ansichtszustand ---
+  public readonly displayMode = signal<DisplayMode>(DisplayMode.calculator);
+  public readonly isGroupedView = signal(true);
+  public readonly isCardExpanded = signal(true);
+  public readonly printMode = signal(false);
+  public readonly showPermanentDeletedPlayers = signal(true);
+  public readonly loadingData = signal(false);
+  public readonly loadingAllDetailsManual = signal(false);
+  public readonly doLogin = signal(false);
+
+  // --- Geladene Daten ---
+  public readonly leagues = signal<KickbaseLeague[]>([]);
+  public readonly selectedLeague = signal<number | null>(null);
+  public readonly currentGift = signal<KickbaseGift | null>(null);
+  public readonly achievementsDisabled = signal(false);
+  public readonly marketOverviewPlayers = signal<KickbasePlayer[]>([]);
   public currentMarket: KickbaseMarket | null = null;
-  public currentGift: KickbaseGift | null = null;
-  public selectedLeague: number | null = null;
-  public achievementsDisabled = false;
-  public includeAchievements = true;
-
-  public readonly sorting_default = -1;
-  public readonly sorting_mw_desc = 1;
-  public readonly sorting_mw_asc = 2;
-  public readonly sorting_mw_change_desc = 3;
-  public readonly sorting_mw_change_asc = 4;
-  public readonly sorting_position = 5;
-
-  public selectedSorting: number = -1;
-
-  public isGroupedView: boolean = true;
-  public isCardExpanded: boolean = true;
-
-  public newplayername = '';
-  public newplayeramount = 0;
-
   public kickbaseGroup = new KickbaseGroup();
 
-  public static readonly display_mode_calculator = 'calculator';
-  public static readonly display_mode_market_overview = 'marketOverview';
-  public displayMode = AppComponent.display_mode_calculator;
-
-  public extraAmount = 0;
-  public extraAmountString = '0';
-  public amountValue = 0;
-
-  public dayUntilFriday = 0;
-  public fridayDate = new Date();
-
-  public marketOverviewPlayers: KickbasePlayer[] = [];
-
   public readonly currentVersion = '6.7.2';
-  public changelogHtml: string = '';
-  public isLoadingChangelog: boolean = false;
+  public readonly changelogHtml = signal('');
+  public readonly isLoadingChangelog = signal(false);
 
-  private http = inject(HttpClient);
+  public readonly apiService = inject(ApiService);
+  public readonly cdRef = inject(ChangeDetectorRef);
+  public readonly updateService = inject(UpdateService);
+  public readonly errorService = inject(ErrorService);
+  private readonly modalService = inject(BsModalService);
+  private readonly changelogService = inject(ChangelogService);
 
   @ViewChild('releaseNotesModal') releaseNotesModal!: TemplateRef<any>;
   public modalRef?: BsModalRef;
-
-  constructor(
-    public apiService: ApiService,
-    private modalService: BsModalService,
-    public cdRef: ChangeDetectorRef,
-    public updateService: UpdateService,
-    public errorService: ErrorService,
-  ) {}
 
   get amountPlayers(): number {
     if (!this.kickbaseGroup?.players) return 0;
@@ -148,52 +164,22 @@ export class AppComponent implements OnInit, AfterViewInit {
   }
 
   ngOnInit() {
-    let sorting = localStorage.getItem('sorting');
-    if (sorting !== null && sorting !== undefined) {
-      this.selectedSorting = Number.parseInt(sorting, 10);
-    }
-
-    let groupedView = localStorage.getItem('groupedView');
-    if (groupedView !== null && groupedView !== undefined) {
-      this.isGroupedView = groupedView === 'true';
-    }
-
-    const loadStatsAlwaysTmp = localStorage.getItem('loadStatsAlways');
-    if (loadStatsAlwaysTmp !== null && loadStatsAlwaysTmp !== undefined) {
-      this.loadStatsAlways = loadStatsAlwaysTmp === 'true';
-    }
-
-    const keepPlayersInitiallyTmp = localStorage.getItem('keepPlayersInitially');
-    if (keepPlayersInitiallyTmp !== null && keepPlayersInitiallyTmp !== undefined) {
-      this.keepPlayersInitially = keepPlayersInitiallyTmp === 'true' ? true : false;
-    }
-
-    const offerOffsetTmp = localStorage.getItem('offerOffset');
-    if (offerOffsetTmp !== null && offerOffsetTmp !== undefined) {
-      this.offerOffset = offerOffsetTmp;
-    }
+    this.selectedSorting.set(readNumberSetting('sorting', this.selectedSorting()));
+    this.isGroupedView.set(readBooleanSetting('groupedView', this.isGroupedView()));
+    this.loadStatsAlways.set(readBooleanSetting('loadStatsAlways', this.loadStatsAlways()));
+    this.keepPlayersInitially.set(
+      readBooleanSetting('keepPlayersInitially', this.keepPlayersInitially()),
+    );
+    this.offerOffset.set(readStringSetting('offerOffset', this.offerOffset()));
 
     if (this.apiService.isLoggedIn()) {
       this.loadLeagues();
     }
-    this.displayMode = AppComponent.display_mode_calculator;
+    this.displayMode.set(DisplayMode.calculator);
 
-    const date = new Date();
-    const dow = date.getDay();
-    if (dow === 6) {
-      this.dayUntilFriday = 6;
-    } else {
-      this.dayUntilFriday = Math.abs(5 - dow);
-    }
-    this.fridayDate = this.addDays(new Date(), this.dayUntilFriday);
-
-    const hod = date.getHours();
-    if (hod >= 22 && dow !== 5) {
-      this.dayUntilFriday--;
-    } else if (hod >= 22 && dow === 5) {
-      this.dayUntilFriday = 7;
-      this.fridayDate = this.addDays(new Date(), this.dayUntilFriday);
-    }
+    const countdown = calculateMatchdayCountdown(new Date());
+    this.dayUntilFriday.set(countdown.days);
+    this.fridayDate.set(countdown.fridayDate);
   }
 
   createPayPalButton() {
@@ -214,23 +200,24 @@ export class AppComponent implements OnInit, AfterViewInit {
   }
 
   reloadMarket = async (fullRefresh: boolean): Promise<void> => {
-    if (this.selectedLeague === null) {
+    const leagueId = this.selectedLeague();
+    if (leagueId === null) {
       return;
     }
 
-    this.loadingData = true;
+    this.loadingData.set(true);
 
     try {
       if (fullRefresh || this.currentMarket === null) {
-        this.currentMarket = await firstValueFrom(this.apiService.getMarket(this.selectedLeague));
+        this.currentMarket = await firstValueFrom(this.apiService.getMarket(leagueId));
       }
       if (this.currentMarket === null) {
         return;
       }
 
       for (const player of this.currentMarket.players) {
-        if (this.loadStatsAlways) {
-          await player.loadStats(this.selectedLeague, this.apiService);
+        if (this.loadStatsAlways()) {
+          await player.loadStats(leagueId, this.apiService);
         }
 
         player.calcValues();
@@ -240,7 +227,7 @@ export class AppComponent implements OnInit, AfterViewInit {
 
       this.sortCurrentPlayers();
     } finally {
-      this.loadingData = false;
+      this.loadingData.set(false);
       this.cdRef.detectChanges();
     }
   };
@@ -252,34 +239,34 @@ export class AppComponent implements OnInit, AfterViewInit {
   async login(payload: LoginPayload) {
     if (payload.username.length > 0 && payload.password.length > 0) {
       try {
-        this.doLogin = true;
+        this.doLogin.set(true);
         const result = await firstValueFrom(
           this.apiService.login(payload.username, payload.password),
         );
         if (!result) {
           alert('Bitte Username und Passwort überprüfen');
         } else {
-          this.displayMode = AppComponent.display_mode_calculator;
+          this.displayMode.set(DisplayMode.calculator);
           await this.loadLeagues();
         }
       } catch {
         this.errorService.showError('Fehler beim Login. Bitte überprüfen Sie Ihre Zugangsdaten.');
       } finally {
-        this.doLogin = false;
+        this.doLogin.set(false);
       }
     } else {
       this.errorService.showError('Bitte Username und Password angeben');
-      this.doLogin = false;
+      this.doLogin.set(false);
     }
   }
 
   loadLeagues = async (): Promise<void> => {
-    this.loadingData = true;
+    this.loadingData.set(true);
     try {
       const leagues = await firstValueFrom(this.apiService.getLeagues());
-      this.leagues = leagues;
+      this.leagues.set(leagues);
 
-      if (this.leagues.length > 0) {
+      if (leagues.length > 0) {
         const rawLastId = this.apiService.appSettings().lastLeagueId;
         const parsedLastId =
           rawLastId !== undefined && rawLastId !== null ? Number(rawLastId) : null;
@@ -287,44 +274,44 @@ export class AppComponent implements OnInit, AfterViewInit {
         const leagueExists = leagues.some((l: KickbaseLeague) => Number(l.id) === parsedLastId);
 
         if (parsedLastId !== null && !isNaN(parsedLastId) && parsedLastId !== -1 && leagueExists) {
-          this.selectedLeague = parsedLastId;
+          this.selectedLeague.set(parsedLastId);
           await this.onSelectedLeagueChanged(parsedLastId);
         } else {
-          this.selectedLeague = null;
+          this.selectedLeague.set(null);
           await this.onSelectedLeagueChanged(null);
         }
       } else {
-        this.selectedLeague = null;
+        this.selectedLeague.set(null);
         await this.onSelectedLeagueChanged(null);
       }
     } catch (error) {
       console.error(error);
     } finally {
-      this.loadingData = false;
+      this.loadingData.set(false);
       this.cdRef.detectChanges();
     }
   };
 
   onSelectedLeagueChanged = async (newValue: number | null): Promise<void> => {
-    this.loadingData = true;
+    this.loadingData.set(true);
     this.kickbaseGroup = new KickbaseGroup();
 
     if (newValue === null) {
-      this.selectedLeague = null;
+      this.selectedLeague.set(null);
       this.currentMarket = null;
-      this.currentGift = null;
-      this.loadingData = false;
+      this.currentGift.set(null);
+      this.loadingData.set(false);
       return;
     }
 
-    this.selectedLeague = newValue;
+    this.selectedLeague.set(newValue);
     this.apiService.setLastLeague(newValue);
 
     try {
       this.currentMarket = await firstValueFrom(this.apiService.getMarket(newValue));
-      this.currentGift = null;
+      this.currentGift.set(null);
 
-      const league = this.leagues.find((item) => Number(item.id) === newValue);
+      const league = this.leagues().find((item) => Number(item.id) === newValue);
 
       if (league === undefined) {
         return;
@@ -333,15 +320,15 @@ export class AppComponent implements OnInit, AfterViewInit {
       const leagueOverview = await firstValueFrom(this.apiService.getLeagueOverview(league.id));
       league.amd = leagueOverview.amd;
 
-      this.achievementsDisabled = league.amd ?? false;
-      this.includeAchievements = !this.achievementsDisabled;
+      this.achievementsDisabled.set(league.amd ?? false);
+      this.includeAchievements.set(!this.achievementsDisabled());
 
       const lineUp = await firstValueFrom(this.apiService.getLineup(newValue));
 
-      this.minusValue = league.budget ?? 0;
+      this.minusValue.set(league.budget ?? 0);
 
       if (this.currentMarket !== null) {
-        this.extraAmount = Number(this.currentMarket.offerAmountForUser);
+        this.extraAmount.set(Number(this.currentMarket.offerAmountForUser));
       }
 
       const deletedPlayersStorage = localStorage.getItem(`permantDeletedPlayer_${newValue}`);
@@ -358,7 +345,7 @@ export class AppComponent implements OnInit, AfterViewInit {
 
       for (const player of lineUp.players) {
         const marketPlayer = this.currentMarket?.players.find(
-          (marketItem) => marketPlayerKey(marketItem) === String(player.id),
+          (marketItem) => String(marketItem.id) === String(player.id),
         );
 
         if (marketPlayer !== undefined) {
@@ -368,12 +355,12 @@ export class AppComponent implements OnInit, AfterViewInit {
 
         player.leagueId = newValue;
         player.isFixedSquad = permanentlyDeletedPlayers.includes(String(player.id));
-        player.isKept = this.keepPlayersInitially;
+        player.isKept = this.keepPlayersInitially();
 
         this.kickbaseGroup.players.push(player);
       }
 
-      if (this.loadStatsAlways) {
+      if (this.loadStatsAlways()) {
         await this.onLoadAllDetails(false);
       }
 
@@ -381,31 +368,28 @@ export class AppComponent implements OnInit, AfterViewInit {
     } catch (error) {
       console.error('Fehler beim Wechseln der Liga:', error);
     } finally {
-      this.loadingData = false;
+      this.loadingData.set(false);
       this.cdRef.detectChanges();
     }
   };
-
-  onAmountChange(newValue: number | string) {
-    console.log(newValue);
-  }
 
   onIncludeAchievementsChanged() {
     this.refreshGroups();
   }
 
   onLoadAllDetails = async (refresh: boolean) => {
-    if (this.selectedLeague === null) {
+    const leagueId = this.selectedLeague();
+    if (leagueId === null) {
       return;
     }
-    this.loadingAllDetailsManual = true;
-    if (this.displayMode === AppComponent.display_mode_market_overview) {
+    this.loadingAllDetailsManual.set(true);
+    if (this.displayMode() === DisplayMode.marketOverview) {
       if (this.currentMarket === null) {
-        this.loadingAllDetailsManual = false;
+        this.loadingAllDetailsManual.set(false);
         return;
       }
       for (let pl of this.currentMarket.players) {
-        await pl.loadStats(this.selectedLeague, this.apiService);
+        await pl.loadStats(leagueId, this.apiService);
         if (refresh) {
           pl.calcValues();
           pl.isKept = true;
@@ -414,17 +398,18 @@ export class AppComponent implements OnInit, AfterViewInit {
       }
     } else {
       for (let pl of this.kickbaseGroup.players) {
-        await pl.loadStats(this.selectedLeague, this.apiService);
+        await pl.loadStats(leagueId, this.apiService);
         if (refresh) {
           this.refreshGroups();
         }
       }
     }
-    this.loadingAllDetailsManual = false;
+    this.loadingAllDetailsManual.set(false);
   };
 
   onLoadAllDetailsForPlayer = async (player: KickbasePlayer) => {
-    if (this.selectedLeague === null) {
+    const leagueId = this.selectedLeague();
+    if (leagueId === null) {
       return;
     }
     if (player.isInEditMode) {
@@ -432,7 +417,7 @@ export class AppComponent implements OnInit, AfterViewInit {
     }
 
     if (player.stats === null) {
-      await player.loadStats(this.selectedLeague, this.apiService);
+      await player.loadStats(leagueId, this.apiService);
       player.calcValues();
       player.calcColors(0);
       this.refreshGroups();
@@ -443,45 +428,36 @@ export class AppComponent implements OnInit, AfterViewInit {
 
   onPlayerValueChanged(player: KickbasePlayer) {
     this.kickbaseGroup.calcValues(
-      this.amountValue,
-      this.includeMinusMarketValues,
-      this.dayUntilFriday,
-      !this.includeAchievements,
+      this.amountValue(),
+      this.includeMinusMarketValues(),
+      this.dayUntilFriday(),
+      !this.includeAchievements(),
     );
   }
 
-  onMinusValueChanged(value: number | string) {
-    try {
-      this.onIncludeAdditionalAmountChanged();
-    } catch {}
-  }
-
   onIncludeAdditionalAmountChanged() {
-    if (this.includeAdditionalAmount) {
-      this.amountValue = Number(this.minusValue) - Number(this.extraAmount);
-    } else {
-      this.amountValue = Number(this.minusValue);
-    }
     this.refreshGroups();
   }
 
   onLoadStatsAlwaysChanged() {
-    localStorage.setItem('loadStatsAlways', this.loadStatsAlways.toString());
+    writeSetting('loadStatsAlways', this.loadStatsAlways());
   }
 
   onKeepPlayersInitiallyChanged() {
-    localStorage.setItem('keepPlayersInitially', this.keepPlayersInitially.toString());
+    writeSetting('keepPlayersInitially', this.keepPlayersInitially());
 
     // Die Umschaltung soll sofort sichtbar sein und nicht erst beim naechsten
     // Ligawechsel greifen - sie setzt die Verkaufsauswahl also neu.
     for (const player of this.kickbaseGroup.players) {
-      player.isKept = this.keepPlayersInitially;
+      player.isKept = this.keepPlayersInitially();
     }
 
     this.refreshGroups();
   }
 
-  onExtraAmountChange(event: number | string) {
+  onExtraAmountChange(value: number | string | null) {
+    // Die FormattedNumber-Direktive meldet ein leeres Feld als null.
+    this.extraAmount.set(Number(value ?? 0));
     try {
       this.onIncludeAdditionalAmountChanged();
     } catch {}
@@ -490,23 +466,11 @@ export class AppComponent implements OnInit, AfterViewInit {
   onOfferOffsetChange(event: string) {
     try {
       const value: string = event;
-      this.offerOffset = value.replace(',', '.');
-      localStorage.setItem('offerOffset', this.offerOffset.toString());
-      this.kickbaseGroup.calcColors(this.amountValue);
+      this.offerOffset.set(value.replace(',', '.'));
+      writeSetting('offerOffset', this.offerOffset());
+      this.kickbaseGroup.calcColors(this.amountValue());
     } catch {}
   }
-
-  // onAddPlayer() {
-  //   // apiService.userID() liefert string | null
-  //   let player = new KickbasePlayer(null, this.apiService.userID() ?? undefined);
-  //   player.name = this.newplayername;
-  //   player.value = Number(this.newplayeramount);
-
-  //   this.kickbaseGroup.players.push(player);
-  //   this.refreshGroups();
-  //   this.newplayeramount = 0;
-  //   this.newplayername = '';
-  // }
 
   onRemovePlayer(player: KickbasePlayer) {
     const index = this.kickbaseGroup.players.find((p) => p.name === player.name);
@@ -524,20 +488,21 @@ export class AppComponent implements OnInit, AfterViewInit {
 
   refreshGroups() {
     this.kickbaseGroup.calcValues(
-      this.amountValue,
-      this.includeMinusMarketValues,
-      this.dayUntilFriday,
-      !this.includeAchievements,
+      this.amountValue(),
+      this.includeMinusMarketValues(),
+      this.dayUntilFriday(),
+      !this.includeAchievements(),
     );
     this.sortCurrentPlayers();
   }
 
   getGift = async () => {
-    if (this.selectedLeague === null) {
+    const leagueId = this.selectedLeague();
+    if (leagueId === null) {
       return;
     }
     try {
-      await firstValueFrom(this.apiService.collectGift(this.selectedLeague));
+      await firstValueFrom(this.apiService.collectGift(leagueId));
       this.reload();
     } catch (error) {
       console.log('cannot collect gift');
@@ -563,122 +528,42 @@ export class AppComponent implements OnInit, AfterViewInit {
 
   logout() {
     this.apiService.logout();
-    this.newplayername = '';
     this.kickbaseGroup = new KickbaseGroup();
   }
 
   onSelectedSortingChanged(sorting: number) {
-    localStorage.setItem('sorting', sorting.toString());
-    this.selectedSorting = sorting;
+    writeSetting('sorting', sorting);
+    this.selectedSorting.set(sorting);
     this.sortCurrentPlayers();
   }
 
   sortCurrentPlayers(): void {
-    const isMarketOverview = this.displayMode === AppComponent.display_mode_market_overview;
+    const isMarketOverview = this.displayMode() === DisplayMode.marketOverview;
 
     const sourcePlayers = isMarketOverview
       ? (this.currentMarket?.players ?? [])
       : this.kickbaseGroup.players;
 
-    const playersToSort = [...sourcePlayers];
-
-    if (this.selectedSorting === this.sorting_position) {
-      playersToSort.sort((a, b) => (a.position || 99) - (b.position || 99));
-    }
-
-    if (
-      this.selectedSorting === this.sorting_mw_asc ||
-      this.selectedSorting === this.sorting_mw_desc
-    ) {
-      const ascending = this.selectedSorting === this.sorting_mw_asc;
-
-      playersToSort.sort((a, b) => {
-        if (a.marketValue === b.marketValue) {
-          return 0;
-        }
-
-        const result = a.marketValue < b.marketValue ? -1 : 1;
-
-        return ascending ? result : -result;
-      });
-    }
-
-    if (
-      this.selectedSorting === this.sorting_mw_change_asc ||
-      this.selectedSorting === this.sorting_mw_change_desc
-    ) {
-      const ascending = this.selectedSorting === this.sorting_mw_change_asc;
-
-      playersToSort.sort((a, b) => {
-        const aChange = a.stats?.realMarketValueChange;
-        const bChange = b.stats?.realMarketValueChange;
-
-        // Ohne geladene Details ist die Aenderung unbekannt. Diese Spieler landen
-        // immer am Ende, statt an ihrer zufaelligen Ausgangsposition zu bleiben.
-        if (aChange === undefined || bChange === undefined) {
-          if (aChange === bChange) {
-            return 0;
-          }
-
-          return aChange === undefined ? 1 : -1;
-        }
-
-        if (aChange === bChange) {
-          return 0;
-        }
-
-        const result = aChange < bChange ? -1 : 1;
-
-        return ascending ? result : -result;
-      });
-    }
-
-    if (this.selectedSorting === this.sorting_default) {
-      playersToSort.sort((a, b) => {
-        const aIsUserPlayer = (a.username || '').length > 0;
-        const bIsUserPlayer = (b.username || '').length > 0;
-
-        if (aIsUserPlayer && !bIsUserPlayer) {
-          return 1;
-        }
-        if (!aIsUserPlayer && bIsUserPlayer) {
-          return -1;
-        }
-        const aExpiry = a.expiry ?? Number.MAX_SAFE_INTEGER;
-        const bExpiry = b.expiry ?? Number.MAX_SAFE_INTEGER;
-
-        if (aExpiry === bExpiry) {
-          return 0;
-        }
-
-        return aExpiry > bExpiry ? 1 : -1;
-      });
-    }
+    const sorted = sortPlayers(sourcePlayers, this.selectedSorting());
 
     if (isMarketOverview) {
-      this.marketOverviewPlayers = playersToSort;
+      this.marketOverviewPlayers.set(sorted);
     } else {
-      this.kickbaseGroup.players = playersToSort;
+      this.kickbaseGroup.players = sorted;
     }
   }
 
   setPrintMode() {
-    this.printMode = !this.printMode;
+    this.printMode.set(!this.printMode());
   }
 
   onFridayDateChanged(countDays: string) {
     const intValue = Number.parseInt(countDays, 10);
     if (!isNaN(intValue)) {
-      this.dayUntilFriday = intValue;
-      this.fridayDate = this.addDays(new Date(), this.dayUntilFriday);
+      this.dayUntilFriday.set(intValue);
+      this.fridayDate.set(addDays(new Date(), this.dayUntilFriday()));
       this.refreshGroups();
     }
-  }
-
-  private addDays(baseDate: Date, days: number): Date {
-    const updatedDate = new Date(baseDate);
-    updatedDate.setDate(updatedDate.getDate() + days);
-    return updatedDate;
   }
 
   showPlayer(player: KickbasePlayer) {
@@ -686,17 +571,17 @@ export class AppComponent implements OnInit, AfterViewInit {
       return false;
     }
     if (player.isFixedSquad) {
-      return this.showPermanentDeletedPlayers;
+      return this.showPermanentDeletedPlayers();
     }
     return true;
   }
 
-  switchDisplay = async (displayMode: string): Promise<void> => {
-    this.displayMode = displayMode;
-    this.apiService.setLastDisplay(this.displayMode);
+  switchDisplay = async (displayMode: DisplayMode): Promise<void> => {
+    this.displayMode.set(displayMode);
+    this.apiService.setLastDisplay(this.displayMode());
 
-    if (displayMode === AppComponent.display_mode_market_overview) {
-      this.selectedSorting = this.sorting_default;
+    if (displayMode === DisplayMode.marketOverview) {
+      this.selectedSorting.set(SortMode.default);
 
       await this.reloadMarket(true);
     }
@@ -713,9 +598,9 @@ export class AppComponent implements OnInit, AfterViewInit {
   }
 
   onGroupedViewChanged() {
-    localStorage.setItem('groupedView', this.isGroupedView.toString());
-    if (this.isGroupedView) {
-      this.showPermanentDeletedPlayers = true;
+    writeSetting('groupedView', this.isGroupedView());
+    if (this.isGroupedView()) {
+      this.showPermanentDeletedPlayers.set(true);
     }
     this.cdRef.detectChanges();
   }
@@ -725,7 +610,7 @@ export class AppComponent implements OnInit, AfterViewInit {
     currentIndex: number,
     isFixedSquadSection: boolean,
   ): boolean {
-    if (this.selectedSorting !== this.sorting_position) {
+    if (this.selectedSorting() !== SortMode.position) {
       return false;
     }
 
@@ -750,40 +635,29 @@ export class AppComponent implements OnInit, AfterViewInit {
     return currentPlayer.position !== previousPlayer.position;
   }
 
-  public openReleaseNotes(): void {
+  public async openReleaseNotes(): Promise<void> {
     this.modalRef = this.modalService.show(this.releaseNotesModal, { class: 'modal-xl' });
 
-    if (!this.changelogHtml) {
-      this.isLoadingChangelog = true;
-      // Raw-URL deiner CHANGELOG.md auf GitHub
-      const rawUrl =
-        'https://raw.githubusercontent.com/phenze/kickbase-calculator/main/CHANGELOG.md';
+    if (this.changelogHtml()) {
+      return;
+    }
 
-      this.http.get(rawUrl, { responseType: 'text' }).subscribe({
-        next: (markdown) => {
-          this.changelogHtml = marked.parse(markdown) as string;
-          this.isLoadingChangelog = false;
-          this.cdRef.detectChanges();
-        },
-        error: () => {
-          this.changelogHtml = '<p class="text-danger">Changelog konnte nicht geladen werden.</p>';
-          this.isLoadingChangelog = false;
-          this.cdRef.detectChanges();
-        },
-      });
+    this.isLoadingChangelog.set(true);
+    try {
+      this.changelogHtml.set(await firstValueFrom(this.changelogService.loadAsHtml()));
+    } catch {
+      this.changelogHtml.set('<p class="text-danger">Changelog konnte nicht geladen werden.</p>');
+    } finally {
+      this.isLoadingChangelog.set(false);
+      this.cdRef.detectChanges();
     }
   }
 
   private checkAutoShowReleaseNotes(): void {
-    const lastSeenVersion = localStorage.getItem('last_seen_version');
+    const lastSeenVersion = readStringSetting('last_seen_version', '');
     if (lastSeenVersion !== this.currentVersion) {
       this.openReleaseNotes();
-      localStorage.setItem('last_seen_version', this.currentVersion);
+      writeSetting('last_seen_version', this.currentVersion);
     }
   }
-}
-
-// Hilfsfunktion zur sicheren ID-Ermittlung beim Vergleich
-function marketPlayerKey(player: KickbasePlayer): string {
-  return String(player.id);
 }
