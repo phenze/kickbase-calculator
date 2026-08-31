@@ -1,5 +1,4 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { AngularSvgIconModule } from 'angular-svg-icon';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { ThemeToggleComponent } from './theme-toggle.component';
@@ -18,7 +17,7 @@ describe('ThemeToggleComponent', () => {
     document.documentElement.removeAttribute('data-bs-theme');
 
     await TestBed.configureTestingModule({
-      imports: [ThemeToggleComponent, AngularSvgIconModule.forRoot()],
+      imports: [ThemeToggleComponent],
       providers: [provideHttpClient(), provideHttpClientTesting()],
     }).compileComponents();
 

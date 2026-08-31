@@ -4,7 +4,6 @@ import { ApiService } from '../../../core/services/api.service';
 import { KickbasePlayer } from '../../../core/models/kickbase-player';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
-import { AngularSvgIconModule } from 'angular-svg-icon';
 import { CurrencyPipe, registerLocaleData } from '@angular/common';
 import { EuroPipe } from '../../pipes/euro.pipe';
 
@@ -23,7 +22,7 @@ describe('PlayerItemComponent', () => {
     mockApiService = jasmine.createSpyObj('ApiService', ['setPlayerPermanentDeleted']);
 
     await TestBed.configureTestingModule({
-      imports: [PlayerItemComponent, AngularSvgIconModule.forRoot(), CurrencyPipe, EuroPipe],
+      imports: [PlayerItemComponent, CurrencyPipe, EuroPipe],
       providers: [
         { provide: ApiService, useValue: mockApiService },
         provideHttpClient(),

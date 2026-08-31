@@ -1,5 +1,4 @@
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
-import { AngularSvgIconModule } from 'angular-svg-icon';
 import { THEME_MODE_ORDER, ThemeMode, ThemeService } from '../../../core/services/theme.service';
 
 const THEME_ICONS: Record<ThemeMode, string> = {
@@ -20,7 +19,7 @@ const THEME_LABELS: Record<ThemeMode, string> = {
   styleUrls: ['./theme-toggle.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
-  imports: [AngularSvgIconModule],
+  imports: [],
 })
 export class ThemeToggleComponent {
   private readonly themeService = inject(ThemeService);

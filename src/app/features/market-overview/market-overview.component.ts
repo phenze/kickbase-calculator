@@ -8,7 +8,6 @@ import {
   inject,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { AngularSvgIconModule } from 'angular-svg-icon';
 
 import { KickbasePlayer } from '../../core/models/kickbase-player';
 import { ApiService } from '../../core/services/api.service';
@@ -22,7 +21,7 @@ import { PlayerItemComponent } from '../../shared/components/player-item/player-
   styleUrls: ['./market-overview.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
-  imports: [FormsModule, AngularSvgIconModule, PlayerItemComponent],
+  imports: [FormsModule, PlayerItemComponent],
 })
 export class MarketOverviewComponent implements OnChanges {
   public apiService = inject(ApiService);
