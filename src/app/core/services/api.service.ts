@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, inject, signal } from '@angular/core';
-import { Observable, map, catchError, throwError } from 'rxjs';
+import { Observable, map, catchError, throwError, of } from 'rxjs';
 
 import { KickbaseLeague } from '../models/kickbase-league';
 import { KickbaseMarket } from '../models/kickbase-market';
@@ -34,7 +34,8 @@ export class ApiService {
    *  https://github.com/phenze/kickbase-calculator/blob/main/proxy/proxy.php
    * 5. I dont steal your passwords !
    */
-  private readonly baseUrl = 'https://pascalhenze.de/kickbase-proxy/api/v4/';
+  private readonly baseUrlProxy = 'https://pascalhenze.de/kickbase-proxy/api/v4/';
+  private readonly baseUrl = 'https://api.kickbase.com/v4/';
 
   // Reactive State via Signals
   public isLoggedIn = signal<boolean>(false);
@@ -101,7 +102,7 @@ export class ApiService {
   // --- Auth API ---
 
   login(username: string, pass: string): Observable<boolean> {
-    const url = `${this.baseUrl}user/login`;
+    const url = `${this.baseUrlProxy}user/login`;
     const payload = {
       ext: true,
       em: username,
@@ -147,22 +148,24 @@ export class ApiService {
       return throwError(() => new Error('No refresh token available'));
     }
 
-    return this.http.post<any>(`${this.baseUrl}user/refreshtokens`, { rtkn: refreshToken }).pipe(
-      map((response) => {
-        if (!response || !response.tkn) {
-          throw new Error('Invalid refresh response');
-        }
-        localStorage.setItem('kb_token', response.tkn);
-        if (response.rtkn) {
-          localStorage.setItem('kb_refresh_token', response.rtkn);
-        }
-        return response.tkn;
-      }),
-      catchError((err) => {
-        this.logout();
-        return throwError(() => err);
-      }),
-    );
+    return this.http
+      .post<any>(`${this.baseUrlProxy}user/refreshtokens`, { rtkn: refreshToken })
+      .pipe(
+        map((response) => {
+          if (!response || !response.tkn) {
+            throw new Error('Invalid refresh response');
+          }
+          localStorage.setItem('kb_token', response.tkn);
+          if (response.rtkn) {
+            localStorage.setItem('kb_refresh_token', response.rtkn);
+          }
+          return response.tkn;
+        }),
+        catchError((err) => {
+          this.logout();
+          return throwError(() => err);
+        }),
+      );
   }
 
   logout(): void {
@@ -178,10 +181,7 @@ export class ApiService {
 
   getLeagues(): Observable<KickbaseLeague[]> {
     if (this.leagues().length > 0) {
-      return new Observable((subscriber) => {
-        subscriber.next(this.leagues());
-        subscriber.complete();
-      });
+      return of(this.leagues());
     }
 
     return this.http.get<any>(`${this.baseUrl}leagues/selection`).pipe(

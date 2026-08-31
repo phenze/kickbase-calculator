@@ -8,7 +8,10 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const apiService = inject(ApiService);
   const errorService = inject(ErrorService); // <-- Injezieren
   const token = apiService.getToken();
-  const isApiRequest = req.url.startsWith('https://pascalhenze.de/') || req.url.startsWith('/api');
+  const isApiRequest =
+    req.url.startsWith('https://pascalhenze.de/') ||
+    req.url.startsWith('/api') ||
+    req.url.startsWith('https://api.kickbase.com/');
 
   let authReq = req;
   if (token && isApiRequest) {

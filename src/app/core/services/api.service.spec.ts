@@ -8,7 +8,8 @@ describe('ApiService', () => {
   let service: ApiService;
   let httpMock: HttpTestingController;
 
-  const baseUrl = 'https://pascalhenze.de/kickbase-proxy/api/v4/';
+  const baseUrl = 'https://api.kickbase.com/v4/';
+  const baseUrlProxy = 'https://pascalhenze.de/kickbase-proxy/api/v4/';
   const mockUserResponse = {
     u: { id: 123 },
     tkn: 'mock-token-123',
@@ -80,7 +81,7 @@ describe('ApiService', () => {
         result = res;
       });
 
-      const req = httpMock.expectOne(`${baseUrl}user/login`);
+      const req = httpMock.expectOne(`${baseUrlProxy}user/login`);
       expect(req.request.method).toBe('POST');
       expect(req.request.body.em).toBe('testuser');
 
@@ -100,7 +101,7 @@ describe('ApiService', () => {
         error: () => (errorOccurred = true),
       });
 
-      const req = httpMock.expectOne(`${baseUrl}user/login`);
+      const req = httpMock.expectOne(`${baseUrlProxy}user/login`);
       req.flush(null, { status: 400, statusText: 'Bad Request' });
 
       expect(errorOccurred).toBeTrue();
@@ -120,6 +121,27 @@ describe('ApiService', () => {
       expect(service.isLoggedIn()).toBeFalse();
       expect(localStorage.getItem('kb_token')).toBeNull();
       expect(localStorage.getItem('kb_user_id')).toBeNull();
+    });
+
+    it('sollte login-Anfragen über die baseUrlProxy routen', () => {
+      service.login('testuser', 'pass').subscribe();
+
+      // Prüft exakt, dass baseUrlProxy verwendet wurde und NICHT https://api.kickbase.com/v4/
+      const req = httpMock.expectOne('https://pascalhenze.de/kickbase-proxy/api/v4/user/login');
+      expect(req.request.method).toBe('POST');
+      req.flush(mockUserResponse);
+    });
+
+    it('sollte refreshToken-Anfragen über die baseUrlProxy routen', () => {
+      localStorage.setItem('kb_refresh_token', 'valid-rtkn');
+
+      service.refreshToken().subscribe();
+
+      const req = httpMock.expectOne(
+        'https://pascalhenze.de/kickbase-proxy/api/v4/user/refreshtokens',
+      );
+      expect(req.request.method).toBe('POST');
+      req.flush({ tkn: 'new-token' });
     });
   });
 
