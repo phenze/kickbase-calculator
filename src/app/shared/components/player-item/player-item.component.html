@@ -212,6 +212,15 @@
                   }
                 </div>
               }
+            } @else if (player.loadingDetails) {
+              <div class="d-flex align-items-center gap-2 text-muted extra-small py-1">
+                <span
+                  class="spinner-border spinner-border-sm text-primary"
+                  role="status"
+                  aria-hidden="true"
+                ></span>
+                <span>Details werden geladen...</span>
+              </div>
             } @else {
               <div class="text-muted extra-small py-1">Tippen, um Details zu laden...</div>
             }

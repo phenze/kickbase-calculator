@@ -417,10 +417,12 @@ export class AppComponent implements OnInit, AfterViewInit {
     }
 
     if (player.stats === null) {
+      player.loadingDetails = true;
       await player.loadStats(leagueId, this.apiService);
       player.calcValues();
       player.calcColors(0);
       this.refreshGroups();
+      player.loadingDetails = false;
     } else {
       this.onDeactivatePlayer(player);
     }
