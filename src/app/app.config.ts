@@ -9,7 +9,6 @@ import {
 } from '@angular/core';
 import { provideRouter } from '@angular/router';
 import { provideServiceWorker } from '@angular/service-worker';
-import { provideAngularSvgIcon } from 'angular-svg-icon';
 import { environment } from '../environments/environment';
 import { authInterceptor } from './core/interceptors/auth.interceptor';
 
@@ -20,7 +19,6 @@ export const appConfig: ApplicationConfig = {
     provideZoneChangeDetection(),
     provideHttpClient(withInterceptors([authInterceptor])),
     provideRouter([]),
-    provideAngularSvgIcon(),
     // Wird von der EuroPipe als Delegat injiziert.
     CurrencyPipe,
     { provide: LOCALE_ID, useValue: 'de-DE' },

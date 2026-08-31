@@ -47,6 +47,8 @@ export class KickbasePlayer {
 
   public expectedSaleValue: number | null = null;
 
+  public loadingDetails = false;
+
   constructor(json: any, userID: string | number) {
     this.offervalue = 0;
     this.hasOfferFromAny = false;

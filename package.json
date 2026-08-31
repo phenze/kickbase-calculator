@@ -24,7 +24,6 @@
     "@angular/platform-browser-dynamic": "22.1.2",
     "@angular/router": "22.1.2",
     "@angular/service-worker": "22.1.2",
-    "angular-svg-icon": "19.1.1",
     "bootstrap": "5.3.8",
     "bootstrap-icons": "1.13.1",
     "marked": "18.0.11",

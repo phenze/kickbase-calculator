@@ -4,6 +4,12 @@ Alle wichtigen Änderungen und Updates des Kickbase Calculators auf einen Blick.
 
 ---
 
+## [6.7.3] - 31.08.2026
+
+### 🐛 Bugfixes & Wartung
+- **Login:** Hinweistext zum Passwort setzen ergänzt
+- **Spieler Details:** Ladeindikator beim Laden der Details hinzugefügt
+
 ## [6.7.2] - 29.08.2026
 
 ### 🐛 Bugfixes & Wartung

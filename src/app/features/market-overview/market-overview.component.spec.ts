@@ -4,7 +4,6 @@ import { ApiService } from '../../core/services/api.service';
 import { KickbasePlayer } from '../../core/models/kickbase-player';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
-import { AngularSvgIconModule } from 'angular-svg-icon';
 import { CurrencyPipe } from '@angular/common';
 import { EuroPipe } from '../../shared/pipes/euro.pipe';
 
@@ -39,7 +38,7 @@ describe('MarketOverviewComponent', () => {
     mockApiService = jasmine.createSpyObj('ApiService', ['getPlayerStats']);
 
     await TestBed.configureTestingModule({
-      imports: [MarketOverviewComponent, AngularSvgIconModule.forRoot(), CurrencyPipe, EuroPipe],
+      imports: [MarketOverviewComponent, CurrencyPipe, EuroPipe],
       providers: [
         { provide: ApiService, useValue: mockApiService },
         provideHttpClient(),

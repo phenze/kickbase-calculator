@@ -9,7 +9,6 @@ import {
 import { FormsModule } from '@angular/forms';
 import { KickbasePlayer } from '../../../core/models/kickbase-player';
 import { ApiService } from '../../../core/services/api.service';
-import { AngularSvgIconModule } from 'angular-svg-icon';
 import { CommonModule, CurrencyPipe } from '@angular/common';
 import { EuroPipe } from '../../pipes/euro.pipe';
 import { FormattedNumberDirective } from '../../directives/formatted-number.directive';
@@ -20,7 +19,7 @@ import { FormattedNumberDirective } from '../../directives/formatted-number.dire
   styleUrls: ['./player-item.component.scss'],
   changeDetection: ChangeDetectionStrategy.Eager,
   standalone: true,
-  imports: [FormsModule, AngularSvgIconModule, EuroPipe, FormattedNumberDirective, CommonModule],
+  imports: [FormsModule, EuroPipe, FormattedNumberDirective, CommonModule],
 })
 export class PlayerItemComponent {
   @Input({ required: true }) player!: KickbasePlayer;

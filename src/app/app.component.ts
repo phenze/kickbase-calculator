@@ -134,7 +134,7 @@ export class AppComponent implements OnInit, AfterViewInit {
   public currentMarket: KickbaseMarket | null = null;
   public kickbaseGroup = new KickbaseGroup();
 
-  public readonly currentVersion = '6.7.2';
+  public readonly currentVersion = '6.7.3';
   public readonly changelogHtml = signal('');
   public readonly isLoadingChangelog = signal(false);
 
@@ -417,10 +417,12 @@ export class AppComponent implements OnInit, AfterViewInit {
     }
 
     if (player.stats === null) {
+      player.loadingDetails = true;
       await player.loadStats(leagueId, this.apiService);
       player.calcValues();
       player.calcColors(0);
       this.refreshGroups();
+      player.loadingDetails = false;
     } else {
       this.onDeactivatePlayer(player);
     }
