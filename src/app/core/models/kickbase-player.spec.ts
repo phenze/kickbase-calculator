@@ -6,8 +6,6 @@ import { of } from 'rxjs';
 describe('KickbasePlayer', () => {
   let player: KickbasePlayer;
 
-  beforeAll(() => {});
-
   beforeEach(() => {
     localStorage.clear();
     player = new KickbasePlayer(null, 'user123');
@@ -77,6 +75,8 @@ describe('KickbasePlayer', () => {
 
       const mockStats = jasmine.createSpyObj('KickbasePlayerStats', ['calcValues']);
       mockStats.buyPrice = 2000000;
+      mockStats.isBought = true;
+      mockStats.isBoughtFromMarket = true;
       player.stats = mockStats;
 
       player.calcValues();
@@ -91,12 +91,27 @@ describe('KickbasePlayer', () => {
     it('berechnet gestaffelte successValues basierend auf offsetNumber', () => {
       const mockStats = new KickbasePlayerStats(null);
       mockStats.buyPrice = 1000000;
+      mockStats.isBought = true;
+      mockStats.isBoughtFromMarket = true;
       player.stats = mockStats;
 
       player.value = 27000000;
       player.calcValues();
 
       expect(player.successValue).toBe(3750000);
+    });
+
+    it('gibt null/0 zurück, wenn der Spieler nicht gekauft bzw. nicht vom Markt gekauft wurde', () => {
+      const mockStats = new KickbasePlayerStats(null);
+      mockStats.buyPrice = 1000000;
+      mockStats.isBought = false;
+      mockStats.isBoughtFromMarket = false;
+      player.stats = mockStats;
+
+      player.value = 5000000;
+
+      expect(player.offsetNumber).toBeNull();
+      expect(player.successValue).toBe(0);
     });
   });
 
@@ -140,9 +155,7 @@ describe('KickbasePlayer', () => {
       expect(player.colorOfferValue).toBe(KickbaseGroup.color_green);
     });
 
-    it('setzt expiryColor rot bei <= 1 Stunde und gruen bei <= 2 Stunden', () => {
-      // isUntilMarketValueUpdate vergleicht gegen 22:00 Uhr des laufenden Tages. Ohne feste
-      // Uhrzeit faellt der zweite Fall ab 20:30 Uhr durch - der Test war also zeitabhaengig.
+    it('setzt expiryColor rot bei <= 1 Stunde und gelb bei <= 22:00 Uhr', () => {
       jasmine.clock().install();
       jasmine.clock().mockDate(new Date(2026, 0, 15, 12, 0, 0));
 
@@ -182,28 +195,33 @@ describe('KickbasePlayer', () => {
   });
 
   describe('loadStats', () => {
-    it('laedt PlayerStats und MarketValueStats vom ApiService', async () => {
+    it('laedt PlayerStats, MarketValueStats und TransferHistory vom ApiService', async () => {
       player.id = 99;
       player.marketValue = 1000000;
 
       const mockApiService = jasmine.createSpyObj('ApiService', [
         'getPlayerStats',
         'getMarketValuePlayerStats',
+        'getPlayerTransferHistory',
       ]);
       const mockStats = new KickbasePlayerStats(null);
       mockStats.mv = 1000000;
 
-      // Statt resolveTo(...) jetzt RxJS Observables mittels of(...) zurückgeben
       mockApiService.getPlayerStats.and.returnValue(of(mockStats));
-      mockApiService.getMarketValuePlayerStats.and.returnValue(
-        of({ it: [100, 200], trp: '500000' } as any),
+      mockApiService.getMarketValuePlayerStats.and.returnValue(of({ it: [100, 200] } as any));
+      mockApiService.getPlayerTransferHistory.and.returnValue(
+        of({ it: [{ t: 2, trp: 500000 }] } as any),
       );
 
       await player.loadStats(1, mockApiService);
 
       expect(mockApiService.getPlayerStats).toHaveBeenCalledWith(1, 99);
       expect(mockApiService.getMarketValuePlayerStats).toHaveBeenCalledWith(1, 99);
+      expect(mockApiService.getPlayerTransferHistory).toHaveBeenCalledWith(1, 99);
+
       expect(player.stats).toBe(mockStats);
+      expect(player.stats!.isBought).toBeTrue();
+      expect(player.stats!.isBoughtFromMarket).toBeTrue();
       expect(player.stats!.buyPrice).toBe(500000);
       expect(player.stats!.marketValues).toEqual([100, 200]);
     });

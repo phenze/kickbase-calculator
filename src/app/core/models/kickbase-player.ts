@@ -213,7 +213,7 @@ export class KickbasePlayer {
 
   get successValue(): number {
     let retVal = 0;
-    if (this.stats !== null) {
+    if (this.stats !== null && this.stats.isBoughtFromMarket) {
       let offset = this.offsetNumber;
       if (offset === null) {
         return 0;
@@ -243,7 +243,7 @@ export class KickbasePlayer {
   }
 
   get offsetNumber(): number | null {
-    if (this.stats !== null) {
+    if (this.stats !== null && this.stats.isBought) {
       return (
         (this.expectedSaleValue !== null ? this.expectedSaleValue : this.value) -
         this.stats.buyPrice
@@ -309,14 +309,31 @@ export class KickbasePlayer {
 
   loadStats = async (league: number, apiService: ApiService, force = false) => {
     if (this.stats === null || force) {
+      // 1. Haupt-Stats laden
       this.stats = await firstValueFrom(apiService.getPlayerStats(league, this.id));
-      const marketValueStats = (await firstValueFrom(
-        apiService.getMarketValuePlayerStats(league, this.id),
-      )) as unknown as Record<string, unknown>;
-      this.stats.marketValues = (marketValueStats['it'] as unknown[]) ?? [];
-      this.stats.buyPrice = Number(marketValueStats['trp']);
-      // sometimes mv from stats differs from the real one which is one the player
-      // This happens in Challenges. Dont know why
+
+      // 2. Marktwert-Verlauf und Transfer-Historie parallel abrufen
+      const [mvData, transferData] = await Promise.all([
+        firstValueFrom(apiService.getMarketValuePlayerStats(league, this.id)),
+        firstValueFrom(apiService.getPlayerTransferHistory(league, this.id)),
+      ]);
+
+      // Marktwert-Verlauf für den 3-Tage-Trend setzen
+      this.stats.marketValues = mvData?.it ?? [];
+
+      // Transfer-Historie für Kaufpreis und Erfolge auswerten
+      const historyItems = transferData?.it ?? [];
+      const lastTransfer = historyItems.length > 0 ? historyItems[historyItems.length - 1] : null;
+
+      // isBought = Letzter Transfer war ein Kauf (Typ 2)
+      this.stats.isBought = lastTransfer?.t === 2;
+
+      // isBoughtFromMarket = gekauf und einziger Eintrag in der Historie (vom Computer)
+      this.stats.isBoughtFromMarket = this.stats.isBought && historyItems.length === 1;
+
+      // Kaufpreis auslesen (0, falls Startkader)
+      this.stats.buyPrice = this.stats.isBought ? Number(lastTransfer?.trp ?? 0) : 0;
+
       if (this.marketValue !== this.stats.mv) {
         this.stats.mv = this.marketValue;
       }

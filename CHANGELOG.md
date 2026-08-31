@@ -4,6 +4,13 @@ Alle wichtigen Änderungen und Updates des Kickbase Calculators auf einen Blick.
 
 ---
 
+## [6.7.5] - 01.09.2026
+
+### 🐛 Bugfixes & Wartung
+### 🚀 Neue Features & Verbesserungen
+- **Erfolge:** Die Berechnung der Erfolge wurde überarbeitet. Nur bei Spielern vom Transfermarkt werden diese berechnet.
+- **Spieler Details:** Eine neu sinnvolle Gruppierung wurde in der Spielerkarte integriert
+
 ## [6.7.4] - 31.08.2026
 
 ### 🐛 Bugfixes & Wartung
