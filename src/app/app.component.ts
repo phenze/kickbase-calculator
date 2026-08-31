@@ -134,7 +134,7 @@ export class AppComponent implements OnInit, AfterViewInit {
   public currentMarket: KickbaseMarket | null = null;
   public kickbaseGroup = new KickbaseGroup();
 
-  public readonly currentVersion = '6.7.2';
+  public readonly currentVersion = '6.7.3';
   public readonly changelogHtml = signal('');
   public readonly isLoadingChangelog = signal(false);
 
