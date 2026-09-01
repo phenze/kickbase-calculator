@@ -99,7 +99,9 @@ export class AppComponent implements OnInit, AfterViewInit {
   public readonly minusValue = signal(0);
   public readonly offerOffset = signal('0');
   public readonly extraAmount = signal(0);
+  public readonly expectedIncome = signal(0);
   public readonly includeAdditionalAmount = signal(false);
+  public readonly includeExpectedIncome = signal(false);
   public readonly includeMinusMarketValues = signal(false);
   public readonly includeAchievements = signal(true);
   public readonly includeLoginBonus = signal(true);
@@ -110,11 +112,16 @@ export class AppComponent implements OnInit, AfterViewInit {
   public readonly fridayDate = signal(new Date());
 
   /** Kontostand abzueglich der erwarteten Ausgaben, falls diese einbezogen werden. */
-  public readonly amountValue = computed(() =>
-    this.includeAdditionalAmount()
-      ? Number(this.minusValue()) - Number(this.extraAmount())
-      : Number(this.minusValue()),
-  );
+  public readonly amountValue = computed(() => {
+    let total = Number(this.minusValue());
+    if (this.includeAdditionalAmount()) {
+      total -= Number(this.extraAmount());
+    }
+    if (this.includeExpectedIncome()) {
+      total += Number(this.expectedIncome());
+    }
+    return total;
+  });
 
   // --- Ansichtszustand ---
   public readonly displayMode = signal<DisplayMode>(DisplayMode.calculator);
@@ -136,7 +143,7 @@ export class AppComponent implements OnInit, AfterViewInit {
   public currentMarket: KickbaseMarket | null = null;
   public kickbaseGroup = new KickbaseGroup();
 
-  public readonly currentVersion = '6.7.5';
+  public readonly currentVersion = '6.8.0';
   public readonly changelogHtml = signal('');
   public readonly isLoadingChangelog = signal(false);
 
@@ -448,6 +455,17 @@ export class AppComponent implements OnInit, AfterViewInit {
   }
 
   onIncludeAdditionalAmountChanged() {
+    this.refreshGroups();
+  }
+
+  onExpectedIncomeChange(value: number | string | null) {
+    this.expectedIncome.set(Number(value ?? 0));
+    try {
+      this.onIncludeExpectedIncomeChanged();
+    } catch {}
+  }
+
+  onIncludeExpectedIncomeChanged() {
     this.refreshGroups();
   }
 

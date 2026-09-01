@@ -1177,4 +1177,58 @@ describe('AppComponent', () => {
       );
     });
   });
+
+  describe('Erwartete Einnahmen (expectedIncome)', () => {
+    it('sollte den amountValue mit und ohne erwartete Einnahmen korrekt berechnen', () => {
+      component.minusValue.set(1000000);
+      component.expectedIncome.set(500000);
+
+      // Standardmäßig deaktiviert -> Einnahmen werden nicht eingerechnet
+      expect(component.includeExpectedIncome()).toBeFalse();
+      expect(component.amountValue()).toBe(1000000);
+
+      // Aktiviert -> Einnahmen werden addiert
+      component.includeExpectedIncome.set(true);
+      expect(component.amountValue()).toBe(1500000);
+    });
+
+    it('sollte amountValue bei Kombination aus Ausgaben und Einnahmen korrekt berechnen', () => {
+      component.minusValue.set(1000000);
+      component.extraAmount.set(200000);
+      component.expectedIncome.set(500000);
+
+      component.includeAdditionalAmount.set(true);
+      component.includeExpectedIncome.set(true);
+
+      // Kontostand - Ausgaben + Einnahmen = 1.000.000 - 200.000 + 500.000
+      expect(component.amountValue()).toBe(1300000);
+    });
+
+    it('sollte expectedIncome aktualisieren und die Gruppen bei onExpectedIncomeChange neu berechnen', () => {
+      spyOn(component, 'onIncludeExpectedIncomeChanged').and.callThrough();
+      spyOn(component, 'refreshGroups');
+
+      component.onExpectedIncomeChange(250000);
+
+      expect(component.expectedIncome()).toBe(250000);
+      expect(component.onIncludeExpectedIncomeChanged).toHaveBeenCalled();
+      expect(component.refreshGroups).toHaveBeenCalled();
+    });
+
+    it('sollte null bei onExpectedIncomeChange als 0 behandeln und String-Zahlen konvertieren', () => {
+      component.onExpectedIncomeChange(null);
+      expect(component.expectedIncome()).toBe(0);
+
+      component.onExpectedIncomeChange('150000');
+      expect(component.expectedIncome()).toBe(150000);
+    });
+
+    it('sollte refreshGroups aufrufen, wenn onIncludeExpectedIncomeChanged ausgeführt wird', () => {
+      spyOn(component, 'refreshGroups');
+
+      component.onIncludeExpectedIncomeChanged();
+
+      expect(component.refreshGroups).toHaveBeenCalled();
+    });
+  });
 });

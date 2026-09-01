@@ -257,6 +257,23 @@
             />
           </div>
 
+          <label class="form-label" for="expectedIncome">Erwartete Einnahmen</label>
+          <div class="input-group mb-3">
+            <span class="input-group-text">€</span>
+            <input
+              type="text"
+              min="0"
+              inputmode="numeric"
+              pattern="[0-9]*"
+              appFormattedNumber
+              class="form-control currency"
+              id="expectedIncome"
+              [ngModel]="expectedIncome()"
+              (ngModelChange)="onExpectedIncomeChange($event)"
+              placeholder="0"
+            />
+          </div>
+
           <label class="form-label" for="offerOffset">Offset für Angebote</label>
           <div class="input-group">
             <span class="input-group-text">%</span>
@@ -294,6 +311,20 @@
               type="checkbox"
               class="form-check-input"
               role="switch"
+              [ngModel]="includeExpectedIncome()"
+              (ngModelChange)="includeExpectedIncome.set($event); onIncludeExpectedIncomeChanged()"
+              id="customSwitchExpectedIncome"
+            />
+            <label class="form-check-label" for="customSwitchExpectedIncome"
+              >Erwartete Einnahmen einbeziehen</label
+            >
+          </div>
+
+          <div class="form-check form-switch mb-2">
+            <input
+              type="checkbox"
+              class="form-check-input"
+              role="switch"
               [ngModel]="includeMinusMarketValues()"
               (ngModelChange)="
                 includeMinusMarketValues.set($event); onIncludeAdditionalAmountChanged()
@@ -319,7 +350,7 @@
             >
           </div>
 
-          <div class="form-check form-switch mb-3">
+          <div class="form-check form-switch mb-2">
             <input
               type="checkbox"
               class="form-check-input"
@@ -337,51 +368,46 @@
             </label>
           </div>
 
-          <div class="col-12 mt-2">
-            <div class="form-check form-switch">
-              <input
-                type="checkbox"
-                class="form-check-input"
-                role="switch"
-                [ngModel]="isGroupedView()"
-                id="customSwitchGrouped"
-                (ngModelChange)="isGroupedView.set($event); onGroupedViewChanged()"
-              />
-              <label class="form-check-label" for="customSwitchGrouped">
-                Kader-Ansicht gruppieren (Verkaufskandidaten / Fester Kader)
-              </label>
-            </div>
+          <div class="form-check form-switch mb-2">
+            <input
+              type="checkbox"
+              class="form-check-input"
+              role="switch"
+              [ngModel]="isGroupedView()"
+              id="customSwitchGrouped"
+              (ngModelChange)="isGroupedView.set($event); onGroupedViewChanged()"
+            />
+            <label class="form-check-label" for="customSwitchGrouped">
+              Kader-Ansicht gruppieren (Verkaufskandidaten / Fester Kader)
+            </label>
           </div>
 
-          <div class="col-12 mt-2 mb-3">
-            <div class="form-check form-switch">
-              <input
-                type="checkbox"
-                class="form-check-input"
-                role="switch"
-                [ngModel]="keepPlayersInitially()"
-                id="customSwitchKeepInitially"
-                (ngModelChange)="keepPlayersInitially.set($event); onKeepPlayersInitiallyChanged()"
-              />
-              <label class="form-check-label" for="customSwitchKeepInitially">
-                Niemanden zum Verkauf vormarkieren
-              </label>
-            </div>
-            <div class="col-12 mt-2 mb-3">
-              <div class="form-check form-switch mb-2">
-                <input
-                  type="checkbox"
-                  class="form-check-input"
-                  role="switch"
-                  [ngModel]="includeLoginBonus()"
-                  (ngModelChange)="includeLoginBonus.set($event); onIncludeLoginBonusChanged()"
-                  id="customSwitchLoginBonus"
-                />
-                <label class="form-check-label" for="customSwitchLoginBonus"
-                  >Täglichen Login-Bonus (100.000 € / Tag) einbeziehen</label
-                >
-              </div>
-            </div>
+          <div class="form-check form-switch mb-2">
+            <input
+              type="checkbox"
+              class="form-check-input"
+              role="switch"
+              [ngModel]="keepPlayersInitially()"
+              id="customSwitchKeepInitially"
+              (ngModelChange)="keepPlayersInitially.set($event); onKeepPlayersInitiallyChanged()"
+            />
+            <label class="form-check-label" for="customSwitchKeepInitially">
+              Niemanden zum Verkauf vormarkieren
+            </label>
+          </div>
+
+          <div class="form-check form-switch mb-2">
+            <input
+              type="checkbox"
+              class="form-check-input"
+              role="switch"
+              [ngModel]="includeLoginBonus()"
+              (ngModelChange)="includeLoginBonus.set($event); onIncludeLoginBonusChanged()"
+              id="customSwitchLoginBonus"
+            />
+            <label class="form-check-label" for="customSwitchLoginBonus"
+              >Täglichen Login-Bonus (100.000 € / Tag) einbeziehen</label
+            >
           </div>
 
           <label class="form-label fw-semibold mb-1">Sortierung</label>
