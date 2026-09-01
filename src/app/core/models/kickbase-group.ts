@@ -13,6 +13,7 @@ export class KickbaseGroup {
   public successValue = 0;
   public differenceValue = 0;
   public differenceFridayValue = 0;
+  public loginBonusValue = 0;
 
   public trendValue = 0;
   public trendFridayValue = 0;
@@ -47,6 +48,7 @@ export class KickbaseGroup {
     includeMinusMarketValues: boolean,
     dayUntilFriday: number,
     achievementsDisabled: boolean = false,
+    includeLoginBonus: boolean = true,
   ) {
     for (const pl of this.players) {
       pl.calcValues();
@@ -62,6 +64,8 @@ export class KickbaseGroup {
 
     this.profitValue = this.calcTrend(false);
 
+    this.loginBonusValue = includeLoginBonus ? 100000 * dayUntilFriday : 0;
+
     let minusReferenceValue = this.teamValue;
     if (this.differenceValue < 0 && this.teamValue > 0) {
       minusReferenceValue += this.differenceValue;
@@ -75,7 +79,11 @@ export class KickbaseGroup {
     this.possibleOfferValue = availOfferValue;
 
     this.differenceFridayValue =
-      currentAmount + (this.numberValue + this.successValue + this.trendValue * dayUntilFriday);
+      currentAmount +
+      (this.numberValue +
+        this.successValue +
+        this.trendValue * dayUntilFriday +
+        this.loginBonusValue);
 
     this.trendFridayValue = this.trendValue * dayUntilFriday;
     this.calcColors(currentAmount);

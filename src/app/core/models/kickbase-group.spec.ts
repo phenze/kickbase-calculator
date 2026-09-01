@@ -135,14 +135,14 @@ describe('KickbaseGroup', () => {
       stats.isBought = true;
       stats.isBoughtFromMarket = true;
 
-      // value = 6.000.000, buyPrice = 3.000.000 -> offset = 3.000.000 -> successValue = 250.000
       const player = makePlayer({ value: 6000000, stats });
       group.players = [player];
 
       group.calcValues(0, false, 3);
 
       const expectedSuccessValue = player.successValue; // 250.000
-      const expectedValue = 6000000 + expectedSuccessValue + 50 * 3;
+      // + 300.000 € Login-Bonus (100k * 3 Tage)
+      const expectedValue = 6000000 + expectedSuccessValue + 50 * 3 + group.loginBonusValue;
 
       expect(group.differenceFridayValue).toBe(expectedValue);
     });
@@ -218,7 +218,8 @@ describe('KickbaseGroup', () => {
       group.calcValues(5000000, true, 3, true);
 
       expect(group.successValue).toBe(0);
-      expect(group.differenceFridayValue).toBe(6300000);
+      // 5.000.000 + 1.000.000 + 300.000 Trend + 300.000 Login-Bonus = 6.600.000
+      expect(group.differenceFridayValue).toBe(6600000);
     });
   });
 
@@ -382,6 +383,36 @@ describe('KickbaseGroup', () => {
       group.calcValues(0, false, 0);
 
       expect(group.trendValue).toBe(0);
+    });
+  });
+
+  describe('Login-Bonus', () => {
+    it('sollte loginBonusValue basierend auf dayUntilFriday berechnen (100.000 € pro Tag)', () => {
+      // 3 Tage bis Freitag = 300.000 €
+      group.calcValues(0, false, 3, false, true);
+
+      expect(group.loginBonusValue).toBe(300000);
+    });
+
+    it('sollte loginBonusValue auf 0 setzen, wenn includeLoginBonus false ist', () => {
+      group.calcValues(0, false, 3, false, false);
+
+      expect(group.loginBonusValue).toBe(0);
+    });
+
+    it('sollte loginBonusValue in differenceFridayValue einrechnen', () => {
+      // Kontostand: 1.000.000 €, 4 Tage bis Freitag -> 400.000 € Login-Bonus
+      group.calcValues(1000000, false, 4, false, true);
+
+      expect(group.loginBonusValue).toBe(400000);
+      expect(group.differenceFridayValue).toBe(1400000);
+    });
+
+    it('sollte differenceFridayValue ohne Login-Bonus berechnen, wenn includeLoginBonus=false', () => {
+      group.calcValues(1000000, false, 4, false, false);
+
+      expect(group.loginBonusValue).toBe(0);
+      expect(group.differenceFridayValue).toBe(1000000);
     });
   });
 });

@@ -367,9 +367,20 @@
                 Niemanden zum Verkauf vormarkieren
               </label>
             </div>
-            <div class="form-text">
-              Alle Spieler starten als "behalten", du markierst nur die, die verkauft werden sollen.
-              Das Umschalten setzt auch die aktuelle Auswahl zurück.
+            <div class="col-12 mt-2 mb-3">
+              <div class="form-check form-switch mb-2">
+                <input
+                  type="checkbox"
+                  class="form-check-input"
+                  role="switch"
+                  [ngModel]="includeLoginBonus()"
+                  (ngModelChange)="includeLoginBonus.set($event); onIncludeLoginBonusChanged()"
+                  id="customSwitchLoginBonus"
+                />
+                <label class="form-check-label" for="customSwitchLoginBonus"
+                  >Täglichen Login-Bonus (100.000 € / Tag) einbeziehen</label
+                >
+              </div>
             </div>
           </div>
 
@@ -740,6 +751,23 @@
                   }}</span>
                 </div>
               }
+
+              <div
+                class="d-flex justify-content-between align-items-center py-1 border-bottom"
+                [class.opacity-50]="!includeLoginBonus()"
+              >
+                <span>
+                  <i class="bi bi-coin me-2 text-warning"></i>
+                  Login-Bonus bis Freitag
+                </span>
+                @if (!includeLoginBonus()) {
+                  <span class="badge bg-secondary">Deaktiviert</span>
+                } @else {
+                  <span class="fw-semibold text-body-emphasis">{{
+                    kickbaseGroup.loginBonusValue | euro
+                  }}</span>
+                }
+              </div>
 
               <div
                 class="d-flex justify-content-between align-items-center py-1 border-bottom"

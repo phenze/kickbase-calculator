@@ -102,6 +102,7 @@ export class AppComponent implements OnInit, AfterViewInit {
   public readonly includeAdditionalAmount = signal(false);
   public readonly includeMinusMarketValues = signal(false);
   public readonly includeAchievements = signal(true);
+  public readonly includeLoginBonus = signal(true);
   public readonly loadStatsAlways = signal(true);
   public readonly keepPlayersInitially = signal(false);
   public readonly selectedSorting = signal<number>(SortMode.default);
@@ -167,6 +168,7 @@ export class AppComponent implements OnInit, AfterViewInit {
   ngOnInit() {
     this.selectedSorting.set(readNumberSetting('sorting', this.selectedSorting()));
     this.isGroupedView.set(readBooleanSetting('groupedView', this.isGroupedView()));
+    this.includeLoginBonus.set(readBooleanSetting('includeLoginBonus', this.includeLoginBonus()));
     this.loadStatsAlways.set(readBooleanSetting('loadStatsAlways', this.loadStatsAlways()));
     this.keepPlayersInitially.set(
       readBooleanSetting('keepPlayersInitially', this.keepPlayersInitially()),
@@ -430,12 +432,18 @@ export class AppComponent implements OnInit, AfterViewInit {
     }
   };
 
+  onIncludeLoginBonusChanged() {
+    writeSetting('includeLoginBonus', this.includeLoginBonus());
+    this.refreshGroups();
+  }
+
   onPlayerValueChanged(player: KickbasePlayer) {
     this.kickbaseGroup.calcValues(
       this.amountValue(),
       this.includeMinusMarketValues(),
       this.dayUntilFriday(),
       !this.includeAchievements(),
+      this.includeLoginBonus(),
     );
   }
 
@@ -496,6 +504,7 @@ export class AppComponent implements OnInit, AfterViewInit {
       this.includeMinusMarketValues(),
       this.dayUntilFriday(),
       !this.includeAchievements(),
+      this.includeLoginBonus(),
     );
     this.sortCurrentPlayers();
   }
