@@ -153,24 +153,26 @@
   }
 
   @if (selectedLeague() !== null) {
-    <div class="segmented-control mt-2 mb-3" role="group" aria-label="Ansicht wählen">
-      <button
-        (click)="switchDisplay(DisplayMode.calculator)"
-        type="button"
-        class="segmented-btn"
-        [class.active]="displayMode() === DisplayMode.calculator"
-      >
-        <i class="bi bi-calculator me-1"></i>Rechner
-      </button>
-      <button
-        (click)="switchDisplay(DisplayMode.marketOverview)"
-        type="button"
-        class="segmented-btn"
-        [class.active]="displayMode() === DisplayMode.marketOverview"
-      >
-        <i class="bi bi-graph-up-arrow me-1"></i>Markt
-      </button>
-    </div>
+    @if (!loadingData()) {
+      <div class="segmented-control mt-2 mb-3" role="group" aria-label="Ansicht wählen">
+        <button
+          (click)="switchDisplay(DisplayMode.calculator)"
+          type="button"
+          class="segmented-btn"
+          [class.active]="displayMode() === DisplayMode.calculator"
+        >
+          <i class="bi bi-calculator me-1"></i>Rechner
+        </button>
+        <button
+          (click)="switchDisplay(DisplayMode.marketOverview)"
+          type="button"
+          class="segmented-btn"
+          [class.active]="displayMode() === DisplayMode.marketOverview"
+        >
+          <i class="bi bi-graph-up-arrow me-1"></i>Markt
+        </button>
+      </div>
+    }
 
     @if (loadingData()) {
       <div class="d-flex justify-content-center">

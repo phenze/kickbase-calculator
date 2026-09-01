@@ -137,13 +137,11 @@
       }
 
       <!-- NEU: Fixer Erwartungswert (Wunschpreis) -->
-      <!-- Wird nur im Rechner angezeigt und nur, wenn der Spieler wirklich zum Verkauf steht -->
       @if (!isMarketOverview && !printMode && !player.isFixedSquad && !player.isKept) {
         <div class="col-12 mt-1">
           <div class="d-flex align-items-center bg-black bg-opacity-10 rounded p-1">
             <label class="text-muted small ms-2 me-2 mb-0 text-nowrap">Fixpreis:</label>
 
-            <!-- stopImmediatePropagation verhindert, dass die Karte sich öffnet, wenn man reinklickt -->
             <input
               type="text"
               inputmode="numeric"
@@ -162,8 +160,7 @@
         </div>
       }
 
-      <!-- Finanz-Metriken: jede Kennzahl als eigene, klar abgesetzte Chip-Box -->
-      <!-- Tab Navigation & Detailansicht (NUR anzeigen, wenn Stats geladen sind) -->
+      <!-- Tab Navigation & Detailansicht -->
       @if (player.stats !== null && !printMode) {
         <div class="col-12 mt-2" (click)="$event.stopPropagation()">
           <ul
@@ -173,25 +170,12 @@
               <button
                 type="button"
                 class="nav-link py-1 px-1 extra-small fw-bold border-0"
-                [class.active]="activeTab === 'mw'"
-                (click)="selectTab('mw', $event)"
+                [class.active]="activeTab === 'finances'"
+                (click)="selectTab('finances', $event)"
               >
-                <i class="bi bi-graph-up me-1"></i>MW
+                <i class="bi bi-cash-stack me-1"></i>Finanzen & MW
               </button>
             </li>
-
-            @if (!isMarketOverview) {
-              <li class="nav-item">
-                <button
-                  type="button"
-                  class="nav-link py-1 px-1 extra-small fw-bold border-0"
-                  [class.active]="activeTab === 'finances'"
-                  (click)="selectTab('finances', $event)"
-                >
-                  <i class="bi bi-cash-stack me-1"></i>Finanzen
-                </button>
-              </li>
-            }
 
             <li class="nav-item">
               <button
@@ -207,21 +191,100 @@
 
           <!-- Tab-Inhalte -->
           @switch (activeTab) {
-            <!-- TAB 1: Marktwert & 3-Tage-Trend -->
-            @case ('mw') {
+            <!-- ZUSAMMENGEFÜHRTER TAB: Finanzen & Marktwert -->
+            @case ('finances') {
               <div class="d-flex flex-column gap-2">
-                <!-- MW-Änderung Chip -->
-                <div class="metric-chip align-self-start" [style.color]="player.colorMarketValue">
-                  <span class="metric-label">MW-Änderung</span>
-                  <span class="metric-value">
-                    {{ player.stats.realMarketValueChange | euro }}
-                    @if (!isMarketOverview) {
-                      ({{ player.stats.realMarketValueChangePercent }})
+                <!-- Kennzahlen Chips -->
+                <div class="d-flex flex-wrap gap-2">
+                  <!-- MW-Änderung Chip -->
+                  <div class="metric-chip" [style.color]="player.colorMarketValue">
+                    <span class="metric-label">MW-Änderung</span>
+                    <span class="metric-value">
+                      {{ player.stats.realMarketValueChange | euro }}
+                      @if (!isMarketOverview) {
+                        ({{ player.stats.realMarketValueChangePercent }})
+                      }
+                    </span>
+                  </div>
+
+                  @if (!isMarketOverview) {
+                    <!-- Herkunft / Kauf-Status Chip -->
+                    @if (player.stats.isBoughtFromMarket) {
+                      <div
+                        class="metric-chip bg-info bg-opacity-10 border border-info border-opacity-25"
+                      >
+                        <span class="metric-label text-info-emphasis">Herkunft</span>
+                        <span class="metric-value text-info-emphasis fw-bold">
+                          <i class="bi bi-shop me-1"></i>Transfermarkt
+                        </span>
+                      </div>
+                    } @else if (player.stats.isBought) {
+                      <div
+                        class="metric-chip bg-primary bg-opacity-10 border border-primary border-opacity-25"
+                      >
+                        <span class="metric-label text-primary-emphasis">Herkunft</span>
+                        <span class="metric-value text-primary-emphasis fw-bold">
+                          <i class="bi bi-person-fill me-1"></i>Mitspieler
+                        </span>
+                      </div>
+                    } @else {
+                      <div
+                        class="metric-chip bg-secondary bg-opacity-10 border border-secondary border-opacity-25"
+                      >
+                        <span class="metric-label text-secondary">Herkunft</span>
+                        <span class="metric-value text-secondary fw-bold">
+                          <i class="bi bi-dice-5-fill me-1"></i>Zugelost
+                        </span>
+                      </div>
                     }
-                  </span>
+
+                    <!-- Kaufpreis -->
+                    @if (player.stats.isBought) {
+                      <div class="metric-chip">
+                        <span class="metric-label">Gekauft für</span>
+                        <span class="metric-value text-body-emphasis">{{
+                          player.stats.buyPrice | euro
+                        }}</span>
+                      </div>
+                    } @else {
+                      <div class="metric-chip">
+                        <span class="metric-label">Zugelost für</span>
+                        <span class="metric-value text-body-emphasis">{{
+                          player.stats.buyPrice | euro
+                        }}</span>
+                      </div>
+                    }
+
+                    <!-- Verlust / Gewinn -->
+                    <div class="metric-chip" [style.color]="player.colorOffsetValue">
+                      <span class="metric-label">Verlust/Gewinn</span>
+                      <span class="metric-value fw-bold">{{ player.offsetNumber | euro }}</span>
+                    </div>
+
+                    <!-- Erfolge (nur bei Computerkauf vom Transfermarkt) -->
+                    @if (player.stats.isBoughtFromMarket) {
+                      <div
+                        class="metric-chip"
+                        [class.opacity-50]="achievementsDisabled"
+                        [style.color]="achievementsDisabled ? 'inherit' : player.colorSuccessValue"
+                      >
+                        <span class="metric-label">Erfolge</span>
+                        @if (achievementsDisabled) {
+                          <span
+                            class="metric-value text-muted text-decoration-line-through"
+                            title="In dieser Liga deaktiviert"
+                            >0 €</span
+                          >
+                        } @else {
+                          <span class="metric-value">{{ player.successValue | euro }}</span>
+                        }
+                      </div>
+                    }
+                  }
                 </div>
 
                 <!-- 3-Tage Trend Tabelle -->
+                <h6>3 Tage Trend</h6>
                 <div class="trend-box">
                   <table
                     class="table table-sm table-striped text-center mb-0 trend-table table-bordered"
@@ -243,85 +306,7 @@
               </div>
             }
 
-            <!-- TAB 2: Finanzen (Gekauft, Gewinn/Verlust, Erfolge) -->
-            <!-- TAB 2: Finanzen & Herkunft -->
-            @case ('finances') {
-              <div class="d-flex flex-wrap gap-2">
-                <!-- 1. Herkunft / Kauf-Status Chip -->
-                @if (player.stats.isBoughtFromMarket) {
-                  <div
-                    class="metric-chip bg-info bg-opacity-10 border border-info border-opacity-25"
-                  >
-                    <span class="metric-label text-info-emphasis">Herkunft</span>
-                    <span class="metric-value text-info-emphasis fw-bold">
-                      <i class="bi bi-shop me-1"></i>Transfermarkt
-                    </span>
-                  </div>
-                } @else if (player.stats.isBought) {
-                  <div
-                    class="metric-chip bg-primary bg-opacity-10 border border-primary border-opacity-25"
-                  >
-                    <span class="metric-label text-primary-emphasis">Herkunft</span>
-                    <span class="metric-value text-primary-emphasis fw-bold">
-                      <i class="bi bi-person-fill me-1"></i>Mitspieler
-                    </span>
-                  </div>
-                } @else {
-                  <div
-                    class="metric-chip bg-secondary bg-opacity-10 border border-secondary border-opacity-25"
-                  >
-                    <span class="metric-label text-secondary">Herkunft</span>
-                    <span class="metric-value text-secondary fw-bold">
-                      <i class="bi bi-dice-5-fill me-1"></i>Zugelost
-                    </span>
-                  </div>
-                }
-
-                <!-- 2. Kaufpreis (nur wenn gekaufte Spieler) -->
-                @if (player.stats.isBought) {
-                  <div class="metric-chip">
-                    <span class="metric-label">Gekauft für</span>
-                    <span class="metric-value text-body-emphasis">{{
-                      player.stats.buyPrice | euro
-                    }}</span>
-                  </div>
-                } @else {
-                  <div class="metric-chip">
-                    <span class="metric-label">Zugelost für</span>
-                    <span class="metric-value text-body-emphasis">{{
-                      player.stats.buyPrice | euro
-                    }}</span>
-                  </div>
-                }
-                <!-- 3. Verlust / Gewinn -->
-                <div class="metric-chip" [style.color]="player.colorOffsetValue">
-                  <span class="metric-label">Verlust/Gewinn</span>
-                  <span class="metric-value fw-bold">{{ player.offsetNumber | euro }}</span>
-                </div>
-
-                <!-- 4. Erfolge (nur bei Computerkauf vom Transfermarkt) -->
-                @if (player.stats.isBoughtFromMarket) {
-                  <div
-                    class="metric-chip"
-                    [class.opacity-50]="achievementsDisabled"
-                    [style.color]="achievementsDisabled ? 'inherit' : player.colorSuccessValue"
-                  >
-                    <span class="metric-label">Erfolge</span>
-                    @if (achievementsDisabled) {
-                      <span
-                        class="metric-value text-muted text-decoration-line-through"
-                        title="In dieser Liga deaktiviert"
-                        >0 €</span
-                      >
-                    } @else {
-                      <span class="metric-value">{{ player.successValue | euro }}</span>
-                    }
-                  </div>
-                }
-              </div>
-            }
-
-            <!-- TAB 3: Punkte, Schnitt & Nächste Spiele -->
+            <!-- TAB 2: Punkte, Schnitt & Nächste Spiele -->
             @case ('matches') {
               <div class="d-flex flex-column gap-2">
                 <!-- Punkte & Schnitt -->

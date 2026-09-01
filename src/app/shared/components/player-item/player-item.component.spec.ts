@@ -54,9 +54,9 @@ describe('PlayerItemComponent', () => {
     it('sollte den aktiven Tab wechseln und event.stopPropagation aufrufen', () => {
       const mockEvent = jasmine.createSpyObj<Event>('Event', ['stopPropagation']);
 
-      component.selectTab('finances', mockEvent);
+      component.selectTab('matches', mockEvent);
 
-      expect(component.activeTab).toBe('finances');
+      expect(component.activeTab).toBe('matches');
       expect(mockEvent.stopPropagation).toHaveBeenCalled();
     });
   });

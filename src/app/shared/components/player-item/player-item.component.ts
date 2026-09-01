@@ -34,9 +34,9 @@ export class PlayerItemComponent {
 
   public readonly apiService = inject(ApiService);
 
-  public activeTab: 'mw' | 'finances' | 'matches' = 'mw';
+  public activeTab: 'finances' | 'matches' = 'finances';
 
-  public selectTab(tab: 'mw' | 'finances' | 'matches', event: Event): void {
+  public selectTab(tab: 'finances' | 'matches', event: Event): void {
     event.stopPropagation();
     this.activeTab = tab;
   }

@@ -143,7 +143,7 @@ export class AppComponent implements OnInit, AfterViewInit {
   public currentMarket: KickbaseMarket | null = null;
   public kickbaseGroup = new KickbaseGroup();
 
-  public readonly currentVersion = '6.8.1';
+  public readonly currentVersion = '6.8.2';
   public readonly changelogHtml = signal('');
   public readonly isLoadingChangelog = signal(false);
 
@@ -276,6 +276,7 @@ export class AppComponent implements OnInit, AfterViewInit {
     try {
       const leagues = await firstValueFrom(this.apiService.getLeagues());
       this.leagues.set(leagues);
+      this.loadingLeagues.set(false);
 
       if (leagues.length > 0) {
         const rawLastId = this.apiService.appSettings().lastLeagueId;
