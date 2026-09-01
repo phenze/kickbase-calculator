@@ -50,6 +50,17 @@ describe('PlayerItemComponent', () => {
     expect(component).toBeTruthy();
   });
 
+  describe('selectTab', () => {
+    it('sollte den aktiven Tab wechseln und event.stopPropagation aufrufen', () => {
+      const mockEvent = jasmine.createSpyObj<Event>('Event', ['stopPropagation']);
+
+      component.selectTab('matches', mockEvent);
+
+      expect(component.activeTab).toBe('matches');
+      expect(mockEvent.stopPropagation).toHaveBeenCalled();
+    });
+  });
+
   describe('matches', () => {
     it('should render result for finished matches and date for upcoming matches', () => {
       component.player = {
@@ -78,6 +89,8 @@ describe('PlayerItemComponent', () => {
         },
       } as any;
 
+      // Spiele-Tab aktivieren, um Inhalte zu rendern
+      component.activeTab = 'matches';
       fixture.detectChanges();
 
       const compiled = fixture.nativeElement as HTMLElement;
@@ -90,6 +103,65 @@ describe('PlayerItemComponent', () => {
       // Beide Spieltage sollen gerendert werden
       expect(cardText).toContain('Spieltag 1');
       expect(cardText).toContain('Spieltag 32');
+    });
+  });
+
+  describe('Finanzen & Herkunft Status', () => {
+    beforeEach(() => {
+      component.printMode = false;
+      component.isMarketOverview = false;
+      component.activeTab = 'finances';
+    });
+
+    it('sollte "Transfermarkt" Herkunft und Icon anzeigen, wenn vom Markt gekauft', () => {
+      component.player = {
+        stats: {
+          isBought: true,
+          isBoughtFromMarket: true,
+          buyPrice: 10000000,
+        },
+      } as any;
+
+      fixture.detectChanges();
+
+      const compiled = fixture.nativeElement as HTMLElement;
+      expect(compiled.textContent).toContain('Herkunft');
+      expect(compiled.textContent).toContain('Transfermarkt');
+      expect(compiled.querySelector('.bi-shop')).not.toBeNull();
+    });
+
+    it('sollte "Mitspieler" Herkunft und Icon anzeigen, wenn von einem Mitspieler gekauft', () => {
+      component.player = {
+        stats: {
+          isBought: true,
+          isBoughtFromMarket: false,
+          buyPrice: 12000000,
+        },
+      } as any;
+
+      fixture.detectChanges();
+
+      const compiled = fixture.nativeElement as HTMLElement;
+      expect(compiled.textContent).toContain('Herkunft');
+      expect(compiled.textContent).toContain('Mitspieler');
+      expect(compiled.querySelector('.bi-person-fill')).not.toBeNull();
+    });
+
+    it('sollte "Zugelost" Herkunft und Icon anzeigen, wenn der Spieler nicht gekauft wurde', () => {
+      component.player = {
+        stats: {
+          isBought: false,
+          isBoughtFromMarket: false,
+          buyPrice: 0,
+        },
+      } as any;
+
+      fixture.detectChanges();
+
+      const compiled = fixture.nativeElement as HTMLElement;
+      expect(compiled.textContent).toContain('Herkunft');
+      expect(compiled.textContent).toContain('Zugelost');
+      expect(compiled.querySelector('.bi-dice-5-fill')).not.toBeNull();
     });
   });
 
@@ -146,7 +218,7 @@ describe('PlayerItemComponent', () => {
     });
   });
 
-  describe('Achivements', () => {
+  describe('Achievements', () => {
     beforeEach(async () => {
       // Dummy Spieler initialisieren
       const mockPlayer = new KickbasePlayer(
@@ -170,11 +242,14 @@ describe('PlayerItemComponent', () => {
         averagePoints: 50,
         nextThreeOpponents: [],
         buyPrice: 5000000,
+        isBought: true,
+        isBoughtFromMarket: true,
       } as any;
 
       component.player = mockPlayer;
       component.printMode = false;
       component.isMarketOverview = false;
+      component.activeTab = 'finances'; // Tab aktivieren, in dem Erfolge liegen
 
       fixture.detectChanges();
     });
@@ -184,7 +259,6 @@ describe('PlayerItemComponent', () => {
       fixture.detectChanges();
 
       const compiled = fixture.nativeElement as HTMLElement;
-      // Label steht jetzt ohne Doppelpunkt in einer eigenen .metric-label-Box
       expect(compiled.textContent).toContain('Erfolge');
       expect(compiled.textContent).toMatch(/750\.000\s*€/);
     });
@@ -196,12 +270,12 @@ describe('PlayerItemComponent', () => {
       const compiled = fixture.nativeElement as HTMLElement;
       const strikeElement = compiled.querySelector('.text-decoration-line-through');
 
-      // Label steht jetzt ohne Doppelpunkt in einer eigenen .metric-label-Box
       expect(compiled.textContent).toContain('Erfolge');
       expect(strikeElement).not.toBeNull();
       expect(strikeElement?.textContent).toContain('0 €');
     });
   });
+
   describe('Print Mode', () => {
     beforeEach(() => {
       component.player = {
@@ -246,10 +320,7 @@ describe('PlayerItemComponent', () => {
     it('sollte Spielername und Marktwert im Print Mode anzeigen', () => {
       const compiled = fixture.nativeElement as HTMLElement;
 
-      // Name prüfen
       expect(compiled.textContent).toContain('Max Mustermann');
-
-      // Marktwert prüfen (mit Euro-Pipe formatiert)
       expect(compiled.textContent).toContain('Marktwert:');
       expect(compiled.textContent).toMatch(/15\.000\.000\s*€/);
     });
@@ -267,23 +338,18 @@ describe('PlayerItemComponent', () => {
     it('sollte Angebote, Fixpreis-Eingabe, 3-Tage-Trend, Punkte und Spiele ausblenden', () => {
       const compiled = fixture.nativeElement as HTMLElement;
 
-      // Angebot-Box
       expect(compiled.querySelector('.offer-box')).toBeNull();
       expect(compiled.textContent).not.toContain('Angebot:');
 
-      // Fixpreis-Input
       expect(compiled.querySelector('input[appFormattedNumber]')).toBeNull();
       expect(compiled.textContent).not.toContain('Fixpreis:');
 
-      // Trend-Tabelle
       expect(compiled.querySelector('.trend-box')).toBeNull();
       expect(compiled.textContent).not.toContain('3 Tage Trend');
 
-      // Punkte & Schnitt
       expect(compiled.textContent).not.toContain('Punkte');
       expect(compiled.textContent).not.toContain('Schnitt');
 
-      // Nächste / Vergangene Spiele
       expect(compiled.querySelector('.match-chip')).toBeNull();
       expect(compiled.textContent).not.toContain('Spiele / Gegner');
     });
@@ -291,7 +357,6 @@ describe('PlayerItemComponent', () => {
 
   describe('Positions-Badge', () => {
     it('sollte das Positions-Badge (z.B. TW) korrekt rendern, wenn eine Position vorhanden ist', () => {
-      // Getter überschreiben, um die Logik des Models für diesen Test zu simulieren
       Object.defineProperty(component.player, 'positionLabel', { get: () => 'TW' });
       Object.defineProperty(component.player, 'positionBadgeClass', {
         get: () => 'bg-warning text-dark',
@@ -313,8 +378,6 @@ describe('PlayerItemComponent', () => {
       fixture.detectChanges();
 
       const compiled = fixture.nativeElement as HTMLElement;
-      // Sucht spezifisch nach einem Badge, das durch die Position erzeugt wird
-      // (Achte darauf, ob andere Badges im DOM existieren)
       const badgeText = compiled.textContent || '';
       expect(badgeText).not.toContain('TW');
       expect(badgeText).not.toContain('ABW');

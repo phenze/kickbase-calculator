@@ -34,6 +34,13 @@ export class PlayerItemComponent {
 
   public readonly apiService = inject(ApiService);
 
+  public activeTab: 'finances' | 'matches' = 'finances';
+
+  public selectTab(tab: 'finances' | 'matches', event: Event): void {
+    event.stopPropagation();
+    this.activeTab = tab;
+  }
+
   onLoadAllDetailsForPlayer = async () => {
     this.loadDetails.emit();
   };

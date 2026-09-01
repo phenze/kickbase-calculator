@@ -18,6 +18,8 @@ export class KickbasePlayerStats {
   public points!: string;
   public averagePoints!: string;
   public buyPrice!: number;
+  public isBought: boolean = false;
+  public isBoughtFromMarket: boolean = false;
   public realMarketValueChange!: number;
 
   public seasons!: string;

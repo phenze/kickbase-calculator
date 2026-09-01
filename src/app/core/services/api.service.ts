@@ -3,7 +3,7 @@ import { Injectable, inject, signal } from '@angular/core';
 import { Observable, map, catchError, throwError, of } from 'rxjs';
 
 import { KickbaseLeague } from '../models/kickbase-league';
-import { KickbaseMarket } from '../models/kickbase-market';
+import { KickbaseMarket, MarketValueResponse } from '../models/kickbase-market';
 import { KickbasePlayerStats } from '../models/kickbase-player-stats';
 import { KickbaseGift } from '../models/kickbase-gift';
 import { DisplayMode } from '../models/display-mode';
@@ -228,9 +228,14 @@ export class ApiService {
     return this.http.get<any>(url).pipe(map((result) => new KickbasePlayerStats(result)));
   }
 
-  getMarketValuePlayerStats(leagueId: number, playerId: number): Observable<KickbasePlayerStats> {
+  getPlayerTransferHistory(leagueId: number, playerId: number): Observable<{ it: any[] }> {
+    const url = `${this.baseUrl}leagues/${leagueId}/players/${playerId}/transferHistory?start=0`;
+    return this.http.get<{ it: any[] }>(url);
+  }
+
+  getMarketValuePlayerStats(leagueId: number, playerId: number): Observable<MarketValueResponse> {
     const url = `${this.baseUrl}competitions/1/players/${playerId}/marketValue/92?leagueId=${leagueId}`;
-    return this.http.get<any>(url).pipe(map((result) => new KickbasePlayerStats(result)));
+    return this.http.get<MarketValueResponse>(url);
   }
 
   // --- LocalStorage Management (Einstellungen & gelöschte Spieler) ---

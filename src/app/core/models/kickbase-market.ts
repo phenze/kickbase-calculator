@@ -1,5 +1,21 @@
 import { KickbasePlayer } from './kickbase-player';
 
+export interface MarketValueItem {
+  dt: number;
+  mv: number;
+}
+
+export interface MarketValueResponse {
+  it: MarketValueItem[];
+  trp: number;
+  prlo?: number;
+  lmv?: number;
+  hmv?: number;
+  iso?: boolean;
+  idp?: boolean;
+  sprmv?: any;
+}
+
 export class KickbaseMarket {
   public players: KickbasePlayer[];
 

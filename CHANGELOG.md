@@ -4,6 +4,15 @@ Alle wichtigen Änderungen und Updates des Kickbase Calculators auf einen Blick.
 
 ---
 
+## [6.8.2] - 01.09.2026
+
+### 🚀 Neue Features & Verbesserungen
+- **Erfolge:** Die Berechnung der Erfolge wurde überarbeitet. Nur bei Spielern vom Transfermarkt werden diese berechnet.
+- **Spieler Details:** Eine neue Gruppierung wurde in der Spielerkarte integriert
+- **Login Bonus:** Der Login Bonus (100k) kann jetzt in die Berechnung mit einbezogen werden abhängig von den Anzahl der Tage die definiert sind
+- **Erwartete Einnahmen:** Neues Eingabefeld zur Erfassung von erwarteten Einnahmen (z. B. durch ausstehende Verkäufe oder Boni) hinzugefügt
+- **Flexible Einberechnung:** Über einen neuen Schalter (`includeExpectedIncome`) können die erwarteten Einnahmen optional direkt in den verfügbaren Kontostand und die Kader-Planung einbezogen werden
+
 ## [6.7.4] - 31.08.2026
 
 ### 🐛 Bugfixes & Wartung

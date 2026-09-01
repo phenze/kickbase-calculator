@@ -152,6 +152,14 @@ describe('AppComponent', () => {
       expect(component.dayUntilFriday()).toBeGreaterThanOrEqual(0);
       expect(component.fridayDate()).toBeInstanceOf(Date);
     });
+
+    it('sollte includeLoginBonus aus dem localStorage auslesen', () => {
+      localStorage.setItem('includeLoginBonus', 'false');
+
+      component.ngOnInit();
+
+      expect(component.includeLoginBonus()).toBeFalse();
+    });
   });
 
   describe('Login & Logout', () => {
@@ -350,6 +358,7 @@ describe('AppComponent', () => {
         component.includeMinusMarketValues(),
         component.dayUntilFriday(),
         true, // !includeAchievements
+        true, // includeLoginBonus
       );
     });
 
@@ -373,6 +382,38 @@ describe('AppComponent', () => {
         component.includeMinusMarketValues(),
         component.dayUntilFriday(),
         false, // !includeAchievements
+        true, // includeLoginBonus
+      );
+    });
+
+    it('sollte !includeAchievements als 4. Argument an kickbaseGroup.calcValues übergeben', () => {
+      spyOn(component.kickbaseGroup, 'calcValues');
+      component.includeAchievements.set(false);
+
+      component.refreshGroups();
+
+      expect(component.kickbaseGroup.calcValues).toHaveBeenCalledWith(
+        component.amountValue(),
+        component.includeMinusMarketValues(),
+        component.dayUntilFriday(),
+        true, // !includeAchievements
+        component.includeLoginBonus(), // 5. Argument für includeLoginBonus
+      );
+    });
+
+    it('sollte calcValues mit aktuellem includeAchievements-Status in onPlayerValueChanged aufrufen', () => {
+      spyOn(component.kickbaseGroup, 'calcValues');
+      component.includeAchievements.set(true);
+      const player = makePlayer(1, 'Kane', 10000000);
+
+      component.onPlayerValueChanged(player);
+
+      expect(component.kickbaseGroup.calcValues).toHaveBeenCalledWith(
+        component.amountValue(),
+        component.includeMinusMarketValues(),
+        component.dayUntilFriday(),
+        false, // !includeAchievements
+        component.includeLoginBonus(), // 5. Argument für includeLoginBonus
       );
     });
   });
@@ -1107,6 +1148,87 @@ describe('AppComponent', () => {
         component.reload();
         expect(component.loadLeagues).toHaveBeenCalled();
       });
+    });
+  });
+
+  describe('Login-Bonus', () => {
+    it('sollte refreshGroups aufrufen und im localStorage speichern, wenn onIncludeLoginBonusChanged ausgeführt wird', () => {
+      spyOn(component, 'refreshGroups');
+      component.includeLoginBonus.set(false);
+
+      component.onIncludeLoginBonusChanged();
+
+      expect(localStorage.getItem('includeLoginBonus')).toBe('false');
+      expect(component.refreshGroups).toHaveBeenCalled();
+    });
+
+    it('sollte includeLoginBonus als 5. Argument an kickbaseGroup.calcValues in refreshGroups übergeben', () => {
+      spyOn(component.kickbaseGroup, 'calcValues');
+      component.includeLoginBonus.set(false);
+
+      component.refreshGroups();
+
+      expect(component.kickbaseGroup.calcValues).toHaveBeenCalledWith(
+        component.amountValue(),
+        component.includeMinusMarketValues(),
+        component.dayUntilFriday(),
+        !component.includeAchievements(),
+        false, // includeLoginBonus
+      );
+    });
+  });
+
+  describe('Erwartete Einnahmen (expectedIncome)', () => {
+    it('sollte den amountValue mit und ohne erwartete Einnahmen korrekt berechnen', () => {
+      component.minusValue.set(1000000);
+      component.expectedIncome.set(500000);
+
+      // Standardmäßig deaktiviert -> Einnahmen werden nicht eingerechnet
+      expect(component.includeExpectedIncome()).toBeFalse();
+      expect(component.amountValue()).toBe(1000000);
+
+      // Aktiviert -> Einnahmen werden addiert
+      component.includeExpectedIncome.set(true);
+      expect(component.amountValue()).toBe(1500000);
+    });
+
+    it('sollte amountValue bei Kombination aus Ausgaben und Einnahmen korrekt berechnen', () => {
+      component.minusValue.set(1000000);
+      component.extraAmount.set(200000);
+      component.expectedIncome.set(500000);
+
+      component.includeAdditionalAmount.set(true);
+      component.includeExpectedIncome.set(true);
+
+      // Kontostand - Ausgaben + Einnahmen = 1.000.000 - 200.000 + 500.000
+      expect(component.amountValue()).toBe(1300000);
+    });
+
+    it('sollte expectedIncome aktualisieren und die Gruppen bei onExpectedIncomeChange neu berechnen', () => {
+      spyOn(component, 'onIncludeExpectedIncomeChanged').and.callThrough();
+      spyOn(component, 'refreshGroups');
+
+      component.onExpectedIncomeChange(250000);
+
+      expect(component.expectedIncome()).toBe(250000);
+      expect(component.onIncludeExpectedIncomeChanged).toHaveBeenCalled();
+      expect(component.refreshGroups).toHaveBeenCalled();
+    });
+
+    it('sollte null bei onExpectedIncomeChange als 0 behandeln und String-Zahlen konvertieren', () => {
+      component.onExpectedIncomeChange(null);
+      expect(component.expectedIncome()).toBe(0);
+
+      component.onExpectedIncomeChange('150000');
+      expect(component.expectedIncome()).toBe(150000);
+    });
+
+    it('sollte refreshGroups aufrufen, wenn onIncludeExpectedIncomeChanged ausgeführt wird', () => {
+      spyOn(component, 'refreshGroups');
+
+      component.onIncludeExpectedIncomeChanged();
+
+      expect(component.refreshGroups).toHaveBeenCalled();
     });
   });
 });

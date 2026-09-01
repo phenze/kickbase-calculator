@@ -137,13 +137,11 @@
       }
 
       <!-- NEU: Fixer Erwartungswert (Wunschpreis) -->
-      <!-- Wird nur im Rechner angezeigt und nur, wenn der Spieler wirklich zum Verkauf steht -->
       @if (!isMarketOverview && !printMode && !player.isFixedSquad && !player.isKept) {
         <div class="col-12 mt-1">
           <div class="d-flex align-items-center bg-black bg-opacity-10 rounded p-1">
             <label class="text-muted small ms-2 me-2 mb-0 text-nowrap">Fixpreis:</label>
 
-            <!-- stopImmediatePropagation verhindert, dass die Karte sich öffnet, wenn man reinklickt -->
             <input
               type="text"
               inputmode="numeric"
@@ -162,141 +160,208 @@
         </div>
       }
 
-      <!-- Finanz-Metriken: jede Kennzahl als eigene, klar abgesetzte Chip-Box -->
-      @if (!printMode) {
-        <div class="col-12">
-          <div class="d-flex flex-wrap gap-2">
-            @if (player.stats !== null) {
-              <!-- Gekauft (nur im Rechner sinnvoll) -->
-              @if (!isMarketOverview) {
-                <div class="metric-chip">
-                  <span class="metric-label">Gekauft</span>
-                  <span class="metric-value text-body-emphasis">{{
-                    player.stats.buyPrice | euro
-                  }}</span>
-                </div>
-              }
-
-              <!-- MW-Änderung (Überall sichtbar) -->
-              <div class="metric-chip" [style.color]="player.colorMarketValue">
-                <span class="metric-label">MW-Änderung</span>
-                <span class="metric-value">
-                  {{ player.stats.realMarketValueChange | euro }}
-                  @if (!isMarketOverview) {
-                    ({{ player.stats.realMarketValueChangePercent }})
-                  }
-                </span>
-              </div>
-
-              <!-- Gewinn/Verlust & Erfolge (nur im Rechner) -->
-              @if (!isMarketOverview) {
-                <div class="metric-chip" [style.color]="player.colorOffsetValue">
-                  <span class="metric-label">Verlust/Gewinn</span>
-                  <span class="metric-value fw-bold">{{ player.offsetNumber | euro }}</span>
-                </div>
-
-                <div
-                  class="metric-chip"
-                  [class.opacity-50]="achievementsDisabled"
-                  [style.color]="achievementsDisabled ? 'inherit' : player.colorSuccessValue"
-                >
-                  <span class="metric-label">Erfolge</span>
-                  @if (achievementsDisabled) {
-                    <span
-                      class="metric-value text-muted text-decoration-line-through"
-                      title="In dieser Liga deaktiviert"
-                      >0 €</span
-                    >
-                  } @else {
-                    <span class="metric-value">{{ player.successValue | euro }}</span>
-                  }
-                </div>
-              }
-            } @else if (player.loadingDetails) {
-              <div class="d-flex align-items-center gap-2 text-muted extra-small py-1">
-                <span
-                  class="spinner-border spinner-border-sm text-primary"
-                  role="status"
-                  aria-hidden="true"
-                ></span>
-                <span>Details werden geladen...</span>
-              </div>
-            } @else {
-              <div class="text-muted extra-small py-1">Tippen, um Details zu laden...</div>
-            }
-          </div>
-        </div>
-      }
-
-      <!-- Vollständige Stats-Details (Gleiche Logik für Markt & Rechner sobald player.stats geladen ist) -->
+      <!-- Tab Navigation & Detailansicht -->
       @if (player.stats !== null && !printMode) {
-        <!-- 3-Tage-Trend Tabelle -->
-        <div class="col-12">
-          <h6 class="section-label">3 Tage Trend</h6>
-          <div class="trend-box">
-            <table class="table table-sm table-striped text-center mb-0 trend-table table-bordered">
-              <tbody>
-                <tr>
-                  @for (item of player.stats.threeDaysValues; track item.key) {
-                    <td class="px-2 py-1 small text-nowrap">{{ item.value | euro }}</td>
+        <div class="col-12 mt-2" (click)="$event.stopPropagation()">
+          <ul
+            class="nav nav-pills nav-justified segmented-control mb-2 p-1 rounded-3 bg-black bg-opacity-10"
+          >
+            <li class="nav-item">
+              <button
+                type="button"
+                class="nav-link py-1 px-1 extra-small fw-bold border-0"
+                [class.active]="activeTab === 'finances'"
+                (click)="selectTab('finances', $event)"
+              >
+                <i class="bi bi-cash-stack me-1"></i>Finanzen & MW
+              </button>
+            </li>
+
+            <li class="nav-item">
+              <button
+                type="button"
+                class="nav-link py-1 px-1 extra-small fw-bold border-0"
+                [class.active]="activeTab === 'matches'"
+                (click)="selectTab('matches', $event)"
+              >
+                <i class="bi bi-trophy me-1"></i>Spiele
+              </button>
+            </li>
+          </ul>
+
+          <!-- Tab-Inhalte -->
+          @switch (activeTab) {
+            <!-- ZUSAMMENGEFÜHRTER TAB: Finanzen & Marktwert -->
+            @case ('finances') {
+              <div class="d-flex flex-column gap-2">
+                <!-- Kennzahlen Chips -->
+                <div class="d-flex flex-wrap gap-2">
+                  <!-- MW-Änderung Chip -->
+                  <div class="metric-chip" [style.color]="player.colorMarketValue">
+                    <span class="metric-label">MW-Änderung</span>
+                    <span class="metric-value">
+                      {{ player.stats.realMarketValueChange | euro }}
+                      @if (!isMarketOverview) {
+                        ({{ player.stats.realMarketValueChangePercent }})
+                      }
+                    </span>
+                  </div>
+
+                  @if (!isMarketOverview) {
+                    <!-- Herkunft / Kauf-Status Chip -->
+                    @if (player.stats.isBoughtFromMarket) {
+                      <div
+                        class="metric-chip bg-info bg-opacity-10 border border-info border-opacity-25"
+                      >
+                        <span class="metric-label text-info-emphasis">Herkunft</span>
+                        <span class="metric-value text-info-emphasis fw-bold">
+                          <i class="bi bi-shop me-1"></i>Transfermarkt
+                        </span>
+                      </div>
+                    } @else if (player.stats.isBought) {
+                      <div
+                        class="metric-chip bg-primary bg-opacity-10 border border-primary border-opacity-25"
+                      >
+                        <span class="metric-label text-primary-emphasis">Herkunft</span>
+                        <span class="metric-value text-primary-emphasis fw-bold">
+                          <i class="bi bi-person-fill me-1"></i>Mitspieler
+                        </span>
+                      </div>
+                    } @else {
+                      <div
+                        class="metric-chip bg-secondary bg-opacity-10 border border-secondary border-opacity-25"
+                      >
+                        <span class="metric-label text-secondary">Herkunft</span>
+                        <span class="metric-value text-secondary fw-bold">
+                          <i class="bi bi-dice-5-fill me-1"></i>Zugelost
+                        </span>
+                      </div>
+                    }
+
+                    <!-- Kaufpreis -->
+                    @if (player.stats.isBought) {
+                      <div class="metric-chip">
+                        <span class="metric-label">Gekauft für</span>
+                        <span class="metric-value text-body-emphasis">{{
+                          player.stats.buyPrice | euro
+                        }}</span>
+                      </div>
+                    } @else {
+                      <div class="metric-chip">
+                        <span class="metric-label">Zugelost für</span>
+                        <span class="metric-value text-body-emphasis">{{
+                          player.stats.buyPrice | euro
+                        }}</span>
+                      </div>
+                    }
+
+                    <!-- Verlust / Gewinn -->
+                    <div class="metric-chip" [style.color]="player.colorOffsetValue">
+                      <span class="metric-label">Verlust/Gewinn</span>
+                      <span class="metric-value fw-bold">{{ player.offsetNumber | euro }}</span>
+                    </div>
+
+                    <!-- Erfolge (nur bei Computerkauf vom Transfermarkt) -->
+                    @if (player.stats.isBoughtFromMarket) {
+                      <div
+                        class="metric-chip"
+                        [class.opacity-50]="achievementsDisabled"
+                        [style.color]="achievementsDisabled ? 'inherit' : player.colorSuccessValue"
+                      >
+                        <span class="metric-label">Erfolge</span>
+                        @if (achievementsDisabled) {
+                          <span
+                            class="metric-value text-muted text-decoration-line-through"
+                            title="In dieser Liga deaktiviert"
+                            >0 €</span
+                          >
+                        } @else {
+                          <span class="metric-value">{{ player.successValue | euro }}</span>
+                        }
+                      </div>
+                    }
                   }
-                </tr>
-                <tr>
-                  @for (item of player.stats.threeDaysValuesPercent; track item.key) {
-                    <td class="px-2 py-1 small text-muted text-nowrap">{{ item.value }}</td>
-                  }
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
+                </div>
 
-        <!-- Punkte & Schnitt -->
-        <div class="col-12">
-          <div class="d-flex flex-wrap gap-2">
-            <div class="metric-chip">
-              <span class="metric-label">Punkte</span>
-              <span class="metric-value fw-bold">{{ player.stats.points }}</span>
-            </div>
-
-            <div class="metric-chip">
-              <span class="metric-label">Schnitt</span>
-              <span class="metric-value fw-bold">{{ player.stats.averagePoints }}</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Nächste / Vergangene Spiele -->
-        <div class="col-12 mt-1">
-          <h6 class="section-label">Spiele / Gegner</h6>
-
-          <div class="d-flex flex-wrap gap-2 align-items-center">
-            @for (match of player.stats.nextThreeOpponents; track $index) {
-              <div class="match-chip">
-                <!-- Gegner Logo -->
-                <img
-                  [src]="match.imageUrl"
-                  class="team-picture img-fluid align-middle"
-                  (error)="errorHandler($event)"
-                  style="max-width: 30px; max-height: 30px"
-                  alt="Team Logo"
-                />
-
-                <!-- Heim / Auswärts -->
-                <span class="fw-semibold text-muted">{{ match.isHomeGame ? '(H)' : '(A)' }}</span>
-
-                <!-- Ergebnis oder Datum -->
-                @if (match.isFinished) {
-                  <span class="fw-bold text-body-emphasis ms-1">{{ match.resultString }}</span>
-                } @else {
-                  <span class="fw-bold text-primary ms-1">{{ match.dateString }}</span>
-                }
-
-                <!-- Spieltag -->
-                <span class="text-muted extra-small ms-1">({{ match.dayLabel }})</span>
+                <!-- 3-Tage Trend Tabelle -->
+                <h6>3 Tage Trend</h6>
+                <div class="trend-box">
+                  <table
+                    class="table table-sm table-striped text-center mb-0 trend-table table-bordered"
+                  >
+                    <tbody>
+                      <tr>
+                        @for (item of player.stats.threeDaysValues; track item.key) {
+                          <td class="px-2 py-1 small text-nowrap">{{ item.value | euro }}</td>
+                        }
+                      </tr>
+                      <tr>
+                        @for (item of player.stats.threeDaysValuesPercent; track item.key) {
+                          <td class="px-2 py-1 small text-muted text-nowrap">{{ item.value }}</td>
+                        }
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
               </div>
             }
+
+            <!-- TAB 2: Punkte, Schnitt & Nächste Spiele -->
+            @case ('matches') {
+              <div class="d-flex flex-column gap-2">
+                <!-- Punkte & Schnitt -->
+                <div class="d-flex gap-2">
+                  <div class="metric-chip">
+                    <span class="metric-label">Punkte</span>
+                    <span class="metric-value fw-bold">{{ player.stats.points }}</span>
+                  </div>
+
+                  <div class="metric-chip">
+                    <span class="metric-label">Schnitt</span>
+                    <span class="metric-value fw-bold">{{ player.stats.averagePoints }}</span>
+                  </div>
+                </div>
+
+                <!-- Gegner-Vorschau -->
+                <div class="d-flex flex-wrap gap-2 align-items-center">
+                  @for (match of player.stats.nextThreeOpponents; track $index) {
+                    <div class="match-chip">
+                      <img
+                        [src]="match.imageUrl"
+                        class="team-picture img-fluid align-middle"
+                        (error)="errorHandler($event)"
+                        style="max-width: 26px; max-height: 26px"
+                        alt="Team Logo"
+                      />
+                      <span class="fw-semibold text-muted small">{{
+                        match.isHomeGame ? '(H)' : '(A)'
+                      }}</span>
+
+                      @if (match.isFinished) {
+                        <span class="fw-bold text-body-emphasis ms-1 small">{{
+                          match.resultString
+                        }}</span>
+                      } @else {
+                        <span class="fw-bold text-primary ms-1 small">{{ match.dateString }}</span>
+                      }
+                      <span class="text-muted extra-small ms-1">({{ match.dayLabel }})</span>
+                    </div>
+                  }
+                </div>
+              </div>
+            }
+          }
+        </div>
+      } @else if (player.loadingDetails) {
+        <div class="col-12 py-2">
+          <div class="d-flex align-items-center gap-2 text-muted extra-small">
+            <span class="spinner-border spinner-border-sm text-primary" role="status"></span>
+            <span>Details werden geladen...</span>
           </div>
+        </div>
+      } @else if (!printMode && player.stats === null) {
+        <div class="col-12 py-1">
+          <div class="text-muted extra-small">Tippen, um Details zu laden...</div>
         </div>
       }
     </div>

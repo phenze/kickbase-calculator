@@ -99,9 +99,12 @@ export class AppComponent implements OnInit, AfterViewInit {
   public readonly minusValue = signal(0);
   public readonly offerOffset = signal('0');
   public readonly extraAmount = signal(0);
+  public readonly expectedIncome = signal(0);
   public readonly includeAdditionalAmount = signal(false);
+  public readonly includeExpectedIncome = signal(false);
   public readonly includeMinusMarketValues = signal(false);
   public readonly includeAchievements = signal(true);
+  public readonly includeLoginBonus = signal(true);
   public readonly loadStatsAlways = signal(true);
   public readonly keepPlayersInitially = signal(false);
   public readonly selectedSorting = signal<number>(SortMode.default);
@@ -109,11 +112,16 @@ export class AppComponent implements OnInit, AfterViewInit {
   public readonly fridayDate = signal(new Date());
 
   /** Kontostand abzueglich der erwarteten Ausgaben, falls diese einbezogen werden. */
-  public readonly amountValue = computed(() =>
-    this.includeAdditionalAmount()
-      ? Number(this.minusValue()) - Number(this.extraAmount())
-      : Number(this.minusValue()),
-  );
+  public readonly amountValue = computed(() => {
+    let total = Number(this.minusValue());
+    if (this.includeAdditionalAmount()) {
+      total -= Number(this.extraAmount());
+    }
+    if (this.includeExpectedIncome()) {
+      total += Number(this.expectedIncome());
+    }
+    return total;
+  });
 
   // --- Ansichtszustand ---
   public readonly displayMode = signal<DisplayMode>(DisplayMode.calculator);
@@ -122,6 +130,7 @@ export class AppComponent implements OnInit, AfterViewInit {
   public readonly printMode = signal(false);
   public readonly showPermanentDeletedPlayers = signal(true);
   public readonly loadingData = signal(false);
+  public readonly loadingLeagues = signal(false);
   public readonly loadingAllDetailsManual = signal(false);
   public readonly doLogin = signal(false);
 
@@ -134,7 +143,7 @@ export class AppComponent implements OnInit, AfterViewInit {
   public currentMarket: KickbaseMarket | null = null;
   public kickbaseGroup = new KickbaseGroup();
 
-  public readonly currentVersion = '6.7.4';
+  public readonly currentVersion = '6.8.2';
   public readonly changelogHtml = signal('');
   public readonly isLoadingChangelog = signal(false);
 
@@ -166,6 +175,7 @@ export class AppComponent implements OnInit, AfterViewInit {
   ngOnInit() {
     this.selectedSorting.set(readNumberSetting('sorting', this.selectedSorting()));
     this.isGroupedView.set(readBooleanSetting('groupedView', this.isGroupedView()));
+    this.includeLoginBonus.set(readBooleanSetting('includeLoginBonus', this.includeLoginBonus()));
     this.loadStatsAlways.set(readBooleanSetting('loadStatsAlways', this.loadStatsAlways()));
     this.keepPlayersInitially.set(
       readBooleanSetting('keepPlayersInitially', this.keepPlayersInitially()),
@@ -261,10 +271,12 @@ export class AppComponent implements OnInit, AfterViewInit {
   }
 
   loadLeagues = async (): Promise<void> => {
-    this.loadingData.set(true);
+    this.loadingLeagues.set(true);
+    this.cdRef.detectChanges();
     try {
       const leagues = await firstValueFrom(this.apiService.getLeagues());
       this.leagues.set(leagues);
+      this.loadingLeagues.set(false);
 
       if (leagues.length > 0) {
         const rawLastId = this.apiService.appSettings().lastLeagueId;
@@ -287,7 +299,7 @@ export class AppComponent implements OnInit, AfterViewInit {
     } catch (error) {
       console.error(error);
     } finally {
-      this.loadingData.set(false);
+      this.loadingLeagues.set(false);
       this.cdRef.detectChanges();
     }
   };
@@ -428,16 +440,33 @@ export class AppComponent implements OnInit, AfterViewInit {
     }
   };
 
+  onIncludeLoginBonusChanged() {
+    writeSetting('includeLoginBonus', this.includeLoginBonus());
+    this.refreshGroups();
+  }
+
   onPlayerValueChanged(player: KickbasePlayer) {
     this.kickbaseGroup.calcValues(
       this.amountValue(),
       this.includeMinusMarketValues(),
       this.dayUntilFriday(),
       !this.includeAchievements(),
+      this.includeLoginBonus(),
     );
   }
 
   onIncludeAdditionalAmountChanged() {
+    this.refreshGroups();
+  }
+
+  onExpectedIncomeChange(value: number | string | null) {
+    this.expectedIncome.set(Number(value ?? 0));
+    try {
+      this.onIncludeExpectedIncomeChanged();
+    } catch {}
+  }
+
+  onIncludeExpectedIncomeChanged() {
     this.refreshGroups();
   }
 
@@ -494,6 +523,7 @@ export class AppComponent implements OnInit, AfterViewInit {
       this.includeMinusMarketValues(),
       this.dayUntilFriday(),
       !this.includeAchievements(),
+      this.includeLoginBonus(),
     );
     this.sortCurrentPlayers();
   }

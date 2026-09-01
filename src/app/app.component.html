@@ -119,50 +119,60 @@
     <app-help></app-help>
   </div>
 
-  <div class="section-card mb-3">
-    <label class="form-label fw-semibold" for="selectedLeague">Liga</label>
-    <select
-      id="selectedLeague"
-      class="form-select"
-      [ngModel]="selectedLeague()"
-      (ngModelChange)="onSelectedLeagueChanged($event)"
-    >
-      <option [ngValue]="null">-- Bitte eine Liga auswählen --</option>
-      @for (league of leagues(); track league.id) {
-        <option [ngValue]="+league.id">{{ league.name }}</option>
-      }
-    </select>
-  </div>
-
-  @if (selectedLeague() === null && !loadingData()) {
-    <div class="alert alert-info d-flex align-items-center mt-3 shadow-sm" role="alert">
-      <i class="bi bi-info-circle-fill me-2 fs-5 flex-shrink-0"></i>
-      <div>
-        <strong>Keine Liga ausgewählt:</strong> Bitte wähle oben eine Liga aus, um den Rechner oder
-        Marktübersichten zu nutzen.
+  @if (loadingLeagues()) {
+    <div class="d-flex justify-content-center">
+      <div class="spinner-border m-5" role="status">
+        <span class="visually-hidden">Lade Ligen...</span>
       </div>
     </div>
+  } @else {
+    <div class="section-card mb-3">
+      <label class="form-label fw-semibold" for="selectedLeague">Liga</label>
+      <select
+        id="selectedLeague"
+        class="form-select"
+        [ngModel]="selectedLeague()"
+        (ngModelChange)="onSelectedLeagueChanged($event)"
+      >
+        <option [ngValue]="null">-- Bitte eine Liga auswählen --</option>
+        @for (league of leagues(); track league.id) {
+          <option [ngValue]="+league.id">{{ league.name }}</option>
+        }
+      </select>
+    </div>
+
+    @if (selectedLeague() === null) {
+      <div class="alert alert-info d-flex align-items-center mt-3 shadow-sm" role="alert">
+        <i class="bi bi-info-circle-fill me-2 fs-5 flex-shrink-0"></i>
+        <div>
+          <strong>Keine Liga ausgewählt:</strong> Bitte wähle oben eine Liga aus, um den Rechner
+          oder Marktübersichten zu nutzen.
+        </div>
+      </div>
+    }
   }
 
   @if (selectedLeague() !== null) {
-    <div class="segmented-control mt-2 mb-3" role="group" aria-label="Ansicht wählen">
-      <button
-        (click)="switchDisplay(DisplayMode.calculator)"
-        type="button"
-        class="segmented-btn"
-        [class.active]="displayMode() === DisplayMode.calculator"
-      >
-        <i class="bi bi-calculator me-1"></i>Rechner
-      </button>
-      <button
-        (click)="switchDisplay(DisplayMode.marketOverview)"
-        type="button"
-        class="segmented-btn"
-        [class.active]="displayMode() === DisplayMode.marketOverview"
-      >
-        <i class="bi bi-graph-up-arrow me-1"></i>Markt
-      </button>
-    </div>
+    @if (!loadingData()) {
+      <div class="segmented-control mt-2 mb-3" role="group" aria-label="Ansicht wählen">
+        <button
+          (click)="switchDisplay(DisplayMode.calculator)"
+          type="button"
+          class="segmented-btn"
+          [class.active]="displayMode() === DisplayMode.calculator"
+        >
+          <i class="bi bi-calculator me-1"></i>Rechner
+        </button>
+        <button
+          (click)="switchDisplay(DisplayMode.marketOverview)"
+          type="button"
+          class="segmented-btn"
+          [class.active]="displayMode() === DisplayMode.marketOverview"
+        >
+          <i class="bi bi-graph-up-arrow me-1"></i>Markt
+        </button>
+      </div>
+    }
 
     @if (loadingData()) {
       <div class="d-flex justify-content-center">
@@ -231,7 +241,9 @@
             />
           </div>
 
-          <label class="form-label" for="extraAmount">Erwarte Ausgaben/Ausstehende Angebote</label>
+          <label class="form-label" for="extraAmount"
+            >Erwartete Ausgaben/Ausstehende Angebote</label
+          >
           <div class="input-group mb-3">
             <span class="input-group-text">€</span>
 
@@ -245,6 +257,23 @@
               id="extraAmount"
               [ngModel]="extraAmount()"
               (ngModelChange)="onExtraAmountChange($event)"
+              placeholder="0"
+            />
+          </div>
+
+          <label class="form-label" for="expectedIncome">Erwartete Einnahmen</label>
+          <div class="input-group mb-3">
+            <span class="input-group-text">€</span>
+            <input
+              type="text"
+              min="0"
+              inputmode="numeric"
+              pattern="[0-9]*"
+              appFormattedNumber
+              class="form-control currency"
+              id="expectedIncome"
+              [ngModel]="expectedIncome()"
+              (ngModelChange)="onExpectedIncomeChange($event)"
               placeholder="0"
             />
           </div>
@@ -277,7 +306,21 @@
               id="customSwitch1"
             />
             <label class="form-check-label" for="customSwitch1"
-              >Erwarte Ausgaben/Ausstehende Angebote einbeziehen</label
+              >Erwartete Ausgaben/Ausstehende Angebote einbeziehen</label
+            >
+          </div>
+
+          <div class="form-check form-switch mb-2">
+            <input
+              type="checkbox"
+              class="form-check-input"
+              role="switch"
+              [ngModel]="includeExpectedIncome()"
+              (ngModelChange)="includeExpectedIncome.set($event); onIncludeExpectedIncomeChanged()"
+              id="customSwitchExpectedIncome"
+            />
+            <label class="form-check-label" for="customSwitchExpectedIncome"
+              >Erwartete Einnahmen einbeziehen</label
             >
           </div>
 
@@ -311,7 +354,7 @@
             >
           </div>
 
-          <div class="form-check form-switch mb-3">
+          <div class="form-check form-switch mb-2">
             <input
               type="checkbox"
               class="form-check-input"
@@ -329,40 +372,46 @@
             </label>
           </div>
 
-          <div class="col-12 mt-2">
-            <div class="form-check form-switch">
-              <input
-                type="checkbox"
-                class="form-check-input"
-                role="switch"
-                [ngModel]="isGroupedView()"
-                id="customSwitchGrouped"
-                (ngModelChange)="isGroupedView.set($event); onGroupedViewChanged()"
-              />
-              <label class="form-check-label" for="customSwitchGrouped">
-                Kader-Ansicht gruppieren (Verkaufskandidaten / Fester Kader)
-              </label>
-            </div>
+          <div class="form-check form-switch mb-2">
+            <input
+              type="checkbox"
+              class="form-check-input"
+              role="switch"
+              [ngModel]="isGroupedView()"
+              id="customSwitchGrouped"
+              (ngModelChange)="isGroupedView.set($event); onGroupedViewChanged()"
+            />
+            <label class="form-check-label" for="customSwitchGrouped">
+              Kader-Ansicht gruppieren (Verkaufskandidaten / Fester Kader)
+            </label>
           </div>
 
-          <div class="col-12 mt-2 mb-3">
-            <div class="form-check form-switch">
-              <input
-                type="checkbox"
-                class="form-check-input"
-                role="switch"
-                [ngModel]="keepPlayersInitially()"
-                id="customSwitchKeepInitially"
-                (ngModelChange)="keepPlayersInitially.set($event); onKeepPlayersInitiallyChanged()"
-              />
-              <label class="form-check-label" for="customSwitchKeepInitially">
-                Niemanden zum Verkauf vormarkieren
-              </label>
-            </div>
-            <div class="form-text">
-              Alle Spieler starten als "behalten", du markierst nur die, die verkauft werden sollen.
-              Das Umschalten setzt auch die aktuelle Auswahl zurück.
-            </div>
+          <div class="form-check form-switch mb-2">
+            <input
+              type="checkbox"
+              class="form-check-input"
+              role="switch"
+              [ngModel]="keepPlayersInitially()"
+              id="customSwitchKeepInitially"
+              (ngModelChange)="keepPlayersInitially.set($event); onKeepPlayersInitiallyChanged()"
+            />
+            <label class="form-check-label" for="customSwitchKeepInitially">
+              Niemanden zum Verkauf vormarkieren
+            </label>
+          </div>
+
+          <div class="form-check form-switch mb-2">
+            <input
+              type="checkbox"
+              class="form-check-input"
+              role="switch"
+              [ngModel]="includeLoginBonus()"
+              (ngModelChange)="includeLoginBonus.set($event); onIncludeLoginBonusChanged()"
+              id="customSwitchLoginBonus"
+            />
+            <label class="form-check-label" for="customSwitchLoginBonus"
+              >Täglichen Login-Bonus (100.000 € / Tag) einbeziehen</label
+            >
           </div>
 
           <label class="form-label fw-semibold mb-1">Sortierung</label>
@@ -732,6 +781,23 @@
                   }}</span>
                 </div>
               }
+
+              <div
+                class="d-flex justify-content-between align-items-center py-1 border-bottom"
+                [class.opacity-50]="!includeLoginBonus()"
+              >
+                <span>
+                  <i class="bi bi-coin me-2 text-warning"></i>
+                  Login-Bonus bis Freitag
+                </span>
+                @if (!includeLoginBonus()) {
+                  <span class="badge bg-secondary">Deaktiviert</span>
+                } @else {
+                  <span class="fw-semibold text-body-emphasis">{{
+                    kickbaseGroup.loginBonusValue | euro
+                  }}</span>
+                }
+              </div>
 
               <div
                 class="d-flex justify-content-between align-items-center py-1 border-bottom"
