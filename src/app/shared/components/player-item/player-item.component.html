@@ -285,13 +285,19 @@
                       player.stats.buyPrice | euro
                     }}</span>
                   </div>
-
-                  <!-- 3. Verlust / Gewinn -->
-                  <div class="metric-chip" [style.color]="player.colorOffsetValue">
-                    <span class="metric-label">Verlust/Gewinn</span>
-                    <span class="metric-value fw-bold">{{ player.offsetNumber | euro }}</span>
+                } @else {
+                  <div class="metric-chip">
+                    <span class="metric-label">Zugelost für</span>
+                    <span class="metric-value text-body-emphasis">{{
+                      player.stats.buyPrice | euro
+                    }}</span>
                   </div>
                 }
+                <!-- 3. Verlust / Gewinn -->
+                <div class="metric-chip" [style.color]="player.colorOffsetValue">
+                  <span class="metric-label">Verlust/Gewinn</span>
+                  <span class="metric-value fw-bold">{{ player.offsetNumber | euro }}</span>
+                </div>
 
                 <!-- 4. Erfolge (nur bei Computerkauf vom Transfermarkt) -->
                 @if (player.stats.isBoughtFromMarket) {

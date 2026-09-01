@@ -243,7 +243,7 @@ export class KickbasePlayer {
   }
 
   get offsetNumber(): number | null {
-    if (this.stats !== null && this.stats.isBought) {
+    if (this.stats !== null) {
       return (
         (this.expectedSaleValue !== null ? this.expectedSaleValue : this.value) -
         this.stats.buyPrice
@@ -319,7 +319,7 @@ export class KickbasePlayer {
       ]);
 
       // Marktwert-Verlauf für den 3-Tage-Trend setzen
-      this.stats.marketValues = mvData?.it ?? [];
+      this.stats.marketValues = mvData.it ?? [];
 
       // Transfer-Historie für Kaufpreis und Erfolge auswerten
       const historyItems = transferData?.it ?? [];
@@ -329,10 +329,19 @@ export class KickbasePlayer {
       this.stats.isBought = lastTransfer?.t === 2;
 
       // isBoughtFromMarket = gekauf und einziger Eintrag in der Historie (vom Computer)
-      this.stats.isBoughtFromMarket = this.stats.isBought && historyItems.length === 1;
+      this.stats.isBoughtFromMarket = false;
+      if (this.stats.isBought) {
+        const secondToLast = historyItems[historyItems.length - 2];
+        const hasUserOnPrevious = historyItems.length > 1 ? Boolean(secondToLast?.u) : false;
+        this.stats.isBoughtFromMarket = !hasUserOnPrevious;
+      }
 
       // Kaufpreis auslesen (0, falls Startkader)
-      this.stats.buyPrice = this.stats.isBought ? Number(lastTransfer?.trp ?? 0) : 0;
+      if (this.stats.isBought) {
+        this.stats.buyPrice = Number(lastTransfer?.trp ?? 0);
+      } else {
+        this.stats.buyPrice = Number(mvData?.trp ?? 0);
+      }
 
       if (this.marketValue !== this.stats.mv) {
         this.stats.mv = this.marketValue;
