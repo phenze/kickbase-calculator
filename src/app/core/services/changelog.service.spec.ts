@@ -5,7 +5,7 @@ import { ChangelogService } from './changelog.service';
 
 describe('ChangelogService', () => {
   const changelogUrl =
-    'https://raw.githubusercontent.com/phenze/kickbase-calculator/main/CHANGELOG.md';
+    'https://api.github.com/repos/phenze/kickbase-calculator/contents/CHANGELOG.md';
 
   let service: ChangelogService;
   let httpMock: HttpTestingController;

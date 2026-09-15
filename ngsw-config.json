@@ -32,7 +32,8 @@
       "name": "no-cache-api",
       "urls": [
         "https://pascalhenze.de/kickbase-proxy/**",
-        "https://api.kickbase.com/**"
+        "https://api.kickbase.com/**",
+        "https://api.github.com/repos/phenze/kickbase-calculator/contents/CHANGELOG.md"
       ],
       "cacheConfig": {
         "maxSize": 0,
