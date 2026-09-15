@@ -92,4 +92,14 @@ describe('authInterceptor', () => {
     expect(apiServiceSpy.refreshToken).not.toHaveBeenCalled();
     expect(apiServiceSpy.logout).toHaveBeenCalled();
   });
+
+  it('sollte den Authorization-Header und ngsw-bypass mitsenden, wenn ein Token vorhanden ist', () => {
+    apiServiceSpy.getToken.and.returnValue('fake-jwt-token');
+
+    http.get('https://pascalhenze.de/api/v4/leagues').subscribe();
+
+    const req = httpMock.expectOne('https://pascalhenze.de/api/v4/leagues');
+    expect(req.request.headers.get('Authorization')).toBe('Bearer fake-jwt-token');
+    expect(req.request.headers.get('ngsw-bypass')).toBe('true');
+  });
 });

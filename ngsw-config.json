@@ -26,5 +26,20 @@
         ]
       }
     }
+  ],
+  "dataGroups": [
+    {
+      "name": "no-cache-api",
+      "urls": [
+        "https://pascalhenze.de/kickbase-proxy/**",
+        "https://api.kickbase.com/**"
+      ],
+      "cacheConfig": {
+        "maxSize": 0,
+        "maxAge": "0u",
+        "strategy": "freshness",
+        "timeout": "0s"
+      }
+    }
   ]
 }
