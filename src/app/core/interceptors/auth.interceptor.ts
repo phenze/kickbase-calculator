@@ -14,13 +14,17 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
     req.url.startsWith('https://api.kickbase.com/');
 
   let authReq = req;
-  if (token && isApiRequest) {
-    authReq = req.clone({
-      setHeaders: {
-        Accept: 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
-    });
+  if (isApiRequest) {
+    const headers: Record<string, string> = {
+      'ngsw-bypass': 'true',
+    };
+
+    if (token) {
+      headers['Accept'] = 'application/json';
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    authReq = req.clone({ setHeaders: headers });
   }
 
   return next(authReq).pipe(
@@ -33,6 +37,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
           switchMap((newToken) => {
             const retriedReq = req.clone({
               setHeaders: {
+                'ngsw-bypass': 'true',
                 Accept: 'application/json',
                 Authorization: `Bearer ${newToken}`,
               },

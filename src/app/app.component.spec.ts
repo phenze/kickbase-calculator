@@ -1231,4 +1231,60 @@ describe('AppComponent', () => {
       expect(component.refreshGroups).toHaveBeenCalled();
     });
   });
+
+  describe('getPositionCount', () => {
+    let pTW: KickbasePlayer;
+    let pABW1: KickbasePlayer;
+    let pABW2: KickbasePlayer;
+    let pFixedABW: KickbasePlayer;
+    let pDeletedABW: KickbasePlayer;
+
+    beforeEach(() => {
+      // position: 1 (TW), 2 (ABW)
+      pTW = makePlayer(1, 'Neuer', 1000, 0, 1);
+      pABW1 = makePlayer(2, 'Davies', 1000, 0, 2);
+      pABW2 = makePlayer(3, 'Upamecano', 1000, 0, 2);
+
+      pFixedABW = makePlayer(4, 'Kim', 1000, 0, 2);
+      pFixedABW.isFixedSquad = true;
+
+      pDeletedABW = makePlayer(5, 'Ito', 1000, 0, 2);
+      pDeletedABW.isDeleted = true;
+    });
+
+    it('sollte die Anzahl der aktiven Verkaufskandidaten für eine bestimmte Position zählen', () => {
+      const players = [pTW, pABW1, pABW2, pFixedABW, pDeletedABW];
+
+      // Verkaufskandidaten (isFixedSquadSection = false): 2 Abwehrspieler (Davies, Upamecano)
+      const countSale = component.getPositionCount(players, 2, false);
+      expect(countSale).toBe(2);
+
+      // Verkaufskandidaten (isFixedSquadSection = false): 1 Torwart (Neuer)
+      const countTW = component.getPositionCount(players, 1, false);
+      expect(countTW).toBe(1);
+    });
+
+    it('sollte die Anzahl der Spieler im festen Kader für eine bestimmte Position zählen', () => {
+      const players = [pTW, pABW1, pABW2, pFixedABW, pDeletedABW];
+
+      // Fester Kader (isFixedSquadSection = true): 1 Abwehrspieler (Kim)
+      const countFixed = component.getPositionCount(players, 2, true);
+      expect(countFixed).toBe(1);
+    });
+
+    it('sollte unsichtbare/gelöschte Spieler (showPlayer = false) ignorieren', () => {
+      const players = [pABW1, pDeletedABW];
+
+      const count = component.getPositionCount(players, 2, false);
+      expect(count).toBe(1);
+    });
+
+    it('sollte 0 zurückgeben, wenn keine Spieler für die Position in dieser Sektion existieren', () => {
+      const players = [pTW, pABW1];
+
+      // Mittelfeld (position = 3) ist nicht enthalten
+      const countMF = component.getPositionCount(players, 3, false);
+      expect(countMF).toBe(0);
+    });
+  });
 });

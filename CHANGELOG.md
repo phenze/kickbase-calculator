@@ -4,6 +4,14 @@ Alle wichtigen Änderungen und Updates des Kickbase Calculators auf einen Blick.
 
 ---
 
+## [6.8.3] - 15.09.2026
+
+### 🚀 Neue Features & Verbesserungen
+- **Positions-Counter:** Die Anzahl der Spieler einer Position wird jetzt direkt im Positionen-Trenner innerhalb der jeweiligen Gruppierung (Verkaufskandidaten vs. Fester Kader) angezeigt.
+
+### 🐛 Bugfixes & Wartung
+- **Echtzeit-Aktualisierung:** Neu gekaufte oder verkaufte Spieler aus der Kickbase-App werden jetzt im Rechner sofort angezeigt, ohne dass veraltete Daten aus dem Speicher geladen werden.
+
 ## [6.8.2] - 01.09.2026
 
 ### 🚀 Neue Features & Verbesserungen

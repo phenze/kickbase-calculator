@@ -143,7 +143,7 @@ export class AppComponent implements OnInit, AfterViewInit {
   public currentMarket: KickbaseMarket | null = null;
   public kickbaseGroup = new KickbaseGroup();
 
-  public readonly currentVersion = '6.8.2';
+  public readonly currentVersion = '6.8.3';
   public readonly changelogHtml = signal('');
   public readonly isLoadingChangelog = signal(false);
 
@@ -665,6 +665,17 @@ export class AppComponent implements OnInit, AfterViewInit {
 
     // Header nur anzeigen, wenn sich die Position zum vorherigen sichtbaren Spieler unterscheidet
     return currentPlayer.position !== previousPlayer.position;
+  }
+
+  getPositionCount(
+    players: KickbasePlayer[],
+    position: number,
+    isFixedSquadSection: boolean,
+  ): number {
+    return players.filter(
+      (p) =>
+        this.showPlayer(p) && p.position === position && p.isFixedSquad === isFixedSquadSection,
+    ).length;
   }
 
   public async openReleaseNotes(): Promise<void> {

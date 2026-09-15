@@ -600,9 +600,12 @@
                       shouldShowPositionDivider(kickbaseGroup.players, i, false)
                     ) {
                       <div
-                        class="position-divider text-muted fw-bold extra-small text-uppercase mt-2 mb-1 border-bottom pb-1"
+                        class="position-divider text-muted fw-bold extra-small text-uppercase mt-2 mb-1 border-bottom pb-1 d-flex justify-content-between align-items-center"
                       >
-                        {{ player.positionLabel }}
+                        <span>{{ player.positionLabel }}</span>
+                        <span class="badge rounded-pill bg-secondary border">
+                          {{ getPositionCount(kickbaseGroup.players, player.position, false) }}
+                        </span>
                       </div>
                     }
                     <app-player-item
@@ -658,9 +661,12 @@
                           shouldShowPositionDivider(kickbaseGroup.players, i, true)
                         ) {
                           <div
-                            class="position-divider text-muted fw-bold extra-small text-uppercase mt-2 mb-1 border-bottom pb-1"
+                            class="position-divider text-muted fw-bold extra-small text-uppercase mt-2 mb-1 border-bottom pb-1 d-flex justify-content-between align-items-center"
                           >
-                            {{ player.positionLabel }}
+                            <span>{{ player.positionLabel }}</span>
+                            <span class="badge rounded-pill bg-secondary border">
+                              {{ getPositionCount(kickbaseGroup.players, player.position, true) }}
+                            </span>
                           </div>
                         }
                         <app-player-item
