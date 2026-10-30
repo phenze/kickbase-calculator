@@ -4,6 +4,12 @@ Alle wichtigen Änderungen und Updates des Kickbase Calculators auf einen Blick.
 
 ---
 
+## [6.9.0] - 30.10.2026
+
+### 🐛 Bugfixes & Wartung
+- **CORS-ERROR:** Alle Anfrage werden jetzt über eine Cloudflare Function geroutet um CORS Probleme zu verhindern
+- **Versionsupdates:** Versions updates
+
 ## [6.8.3] - 15.09.2026
 
 ### 🚀 Neue Features & Verbesserungen
