@@ -9,15 +9,12 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const errorService = inject(ErrorService); // <-- Injezieren
   const token = apiService.getToken();
   const isApiRequest =
-    req.url.startsWith('https://pascalhenze.de/') ||
-    req.url.startsWith('/api') ||
+    req.url.startsWith('https://kickbase.pascal-henze.workers.dev/') ||
     req.url.startsWith('https://api.kickbase.com/');
 
   let authReq = req;
   if (isApiRequest) {
-    const headers: Record<string, string> = {
-      'ngsw-bypass': 'true',
-    };
+    const headers: Record<string, string> = {};
 
     if (token) {
       headers['Accept'] = 'application/json';
@@ -37,7 +34,6 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
           switchMap((newToken) => {
             const retriedReq = req.clone({
               setHeaders: {
-                'ngsw-bypass': 'true',
                 Accept: 'application/json',
                 Authorization: `Bearer ${newToken}`,
               },
