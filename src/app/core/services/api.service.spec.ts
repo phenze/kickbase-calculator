@@ -8,8 +8,7 @@ describe('ApiService', () => {
   let service: ApiService;
   let httpMock: HttpTestingController;
 
-  const baseUrl = 'https://api.kickbase.com/v4/';
-  const baseUrlProxy = 'https://pascalhenze.de/kickbase-proxy/api/v4/';
+  const baseUrlProxy = 'https://kickbase.pascal-henze.workers.dev/v4/';
   const mockUserResponse = {
     u: { id: 123 },
     tkn: 'mock-token-123',
@@ -127,7 +126,7 @@ describe('ApiService', () => {
       service.login('testuser', 'pass').subscribe();
 
       // Prüft exakt, dass baseUrlProxy verwendet wurde und NICHT https://api.kickbase.com/v4/
-      const req = httpMock.expectOne('https://pascalhenze.de/kickbase-proxy/api/v4/user/login');
+      const req = httpMock.expectOne('https://kickbase.pascal-henze.workers.dev/v4/user/login');
       expect(req.request.method).toBe('POST');
       req.flush(mockUserResponse);
     });
@@ -138,7 +137,7 @@ describe('ApiService', () => {
       service.refreshToken().subscribe();
 
       const req = httpMock.expectOne(
-        'https://pascalhenze.de/kickbase-proxy/api/v4/user/refreshtokens',
+        'https://kickbase.pascal-henze.workers.dev/v4/user/refreshtokens',
       );
       expect(req.request.method).toBe('POST');
       req.flush({ tkn: 'new-token' });
@@ -160,7 +159,7 @@ describe('ApiService', () => {
         response = data;
       });
 
-      const req = httpMock.expectOne(`${baseUrl}leagues/${leagueId}/market?sort=expiry`);
+      const req = httpMock.expectOne(`${baseUrlProxy}leagues/${leagueId}/market?sort=expiry`);
       expect(req.request.method).toBe('GET');
 
       req.flush({ players: [] });
@@ -175,7 +174,7 @@ describe('ApiService', () => {
         response = data;
       });
 
-      const req = httpMock.expectOne(`${baseUrl}leagues/${leagueId}/squad`);
+      const req = httpMock.expectOne(`${baseUrlProxy}leagues/${leagueId}/squad`);
       expect(req.request.method).toBe('GET');
 
       req.flush({ players: [] });
@@ -190,7 +189,7 @@ describe('ApiService', () => {
         response = data;
       });
 
-      const req = httpMock.expectOne(`${baseUrl}leagues/${leagueId}/collectgift`);
+      const req = httpMock.expectOne(`${baseUrlProxy}leagues/${leagueId}/collectgift`);
       expect(req.request.method).toBe('POST');
 
       req.flush({ success: true });
@@ -204,7 +203,7 @@ describe('ApiService', () => {
         response = data;
       });
 
-      const req = httpMock.expectOne(`${baseUrl}leagues/10/players/99`);
+      const req = httpMock.expectOne(`${baseUrlProxy}leagues/10/players/99`);
       expect(req.request.method).toBe('GET');
 
       req.flush({});
@@ -219,7 +218,7 @@ describe('ApiService', () => {
       });
 
       const req = httpMock.expectOne(
-        `${baseUrl}competitions/1/players/55/marketValue/92?leagueId=10`,
+        `${baseUrlProxy}competitions/1/players/55/marketValue/92?leagueId=10`,
       );
       expect(req.request.method).toBe('GET');
 
@@ -289,7 +288,7 @@ describe('ApiService', () => {
       service.getLeagues().subscribe((res) => (result = res));
 
       expect(result.length).toBe(1);
-      httpMock.expectNone(`${baseUrl}leagues/selection`);
+      httpMock.expectNone(`${baseUrlProxy}leagues/selection`);
     });
 
     it('sollte Ligen per HTTP abrufen, falls das Signal leer ist', () => {
@@ -297,7 +296,7 @@ describe('ApiService', () => {
 
       service.getLeagues().subscribe((res) => (result = res));
 
-      const req = httpMock.expectOne(`${baseUrl}leagues/selection`);
+      const req = httpMock.expectOne(`${baseUrlProxy}leagues/selection`);
       expect(req.request.method).toBe('GET');
 
       req.flush([{ id: '1', name: 'Liga 1' }]);

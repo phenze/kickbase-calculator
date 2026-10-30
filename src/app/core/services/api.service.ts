@@ -34,8 +34,7 @@ export class ApiService {
    *  https://github.com/phenze/kickbase-calculator/blob/main/proxy/proxy.php
    * 5. I dont steal your passwords !
    */
-  private readonly baseUrlProxy = 'https://pascalhenze.de/kickbase-proxy/api/v4/';
-  private readonly baseUrl = 'https://api.kickbase.com/v4/';
+  private readonly baseUrlProxy = 'https://kickbase.pascal-henze.workers.dev/v4/';
 
   // Reactive State via Signals
   public isLoggedIn = signal<boolean>(false);
@@ -184,7 +183,7 @@ export class ApiService {
       return of(this.leagues());
     }
 
-    return this.http.get<any>(`${this.baseUrl}leagues/selection`).pipe(
+    return this.http.get<any>(`${this.baseUrlProxy}leagues/selection`).pipe(
       map((response) => {
         const leagues = KickbaseLeague.createArrayInstance(response.it || response);
         this.leagues.set(leagues);
@@ -194,12 +193,12 @@ export class ApiService {
   }
 
   getLeagueOverview(leagueId: number): Observable<KickbaseLeague> {
-    const url = `${this.baseUrl}leagues/${leagueId}/overview`;
+    const url = `${this.baseUrlProxy}leagues/${leagueId}/overview`;
     return this.http.get<any>(url).pipe(map((result) => new KickbaseLeague(result)));
   }
 
   getMarket(leagueId: number): Observable<KickbaseMarket> {
-    const url = `${this.baseUrl}leagues/${leagueId}/market?sort=expiry`;
+    const url = `${this.baseUrlProxy}leagues/${leagueId}/market?sort=expiry`;
     return this.http.get<any>(url).pipe(
       // userID() wird garantiert als string übergeben (oder '' als Fallback)
       map((result) => new KickbaseMarket(result, this.userID() ?? '')),
@@ -207,34 +206,34 @@ export class ApiService {
   }
 
   getLineup(leagueId: number): Observable<KickbaseMarket> {
-    const url = `${this.baseUrl}leagues/${leagueId}/squad`;
+    const url = `${this.baseUrlProxy}leagues/${leagueId}/squad`;
     return this.http
       .get<any>(url)
       .pipe(map((result) => new KickbaseMarket(result, this.userID() ?? '')));
   }
 
   getGiftStatus(leagueId: number): Observable<KickbaseGift> {
-    const url = `${this.baseUrl}leagues/${leagueId}/currentgift`;
+    const url = `${this.baseUrlProxy}leagues/${leagueId}/currentgift`;
     return this.http.get<any>(url).pipe(map((result) => new KickbaseGift(result)));
   }
 
   collectGift(leagueId: number): Observable<any> {
-    const url = `${this.baseUrl}leagues/${leagueId}/collectgift`;
+    const url = `${this.baseUrlProxy}leagues/${leagueId}/collectgift`;
     return this.http.post<any>(url, {});
   }
 
   getPlayerStats(leagueId: number, playerId: number): Observable<KickbasePlayerStats> {
-    const url = `${this.baseUrl}leagues/${leagueId}/players/${playerId}`;
+    const url = `${this.baseUrlProxy}leagues/${leagueId}/players/${playerId}`;
     return this.http.get<any>(url).pipe(map((result) => new KickbasePlayerStats(result)));
   }
 
   getPlayerTransferHistory(leagueId: number, playerId: number): Observable<{ it: any[] }> {
-    const url = `${this.baseUrl}leagues/${leagueId}/players/${playerId}/transferHistory?start=0`;
+    const url = `${this.baseUrlProxy}leagues/${leagueId}/players/${playerId}/transferHistory?start=0`;
     return this.http.get<{ it: any[] }>(url);
   }
 
   getMarketValuePlayerStats(leagueId: number, playerId: number): Observable<MarketValueResponse> {
-    const url = `${this.baseUrl}competitions/1/players/${playerId}/marketValue/92?leagueId=${leagueId}`;
+    const url = `${this.baseUrlProxy}competitions/1/players/${playerId}/marketValue/92?leagueId=${leagueId}`;
     return this.http.get<MarketValueResponse>(url);
   }
 

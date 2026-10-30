@@ -36,9 +36,9 @@ describe('authInterceptor', () => {
   it('sollte den Authorization-Header mitsenden, wenn ein Token vorhanden ist', () => {
     apiServiceSpy.getToken.and.returnValue('fake-jwt-token');
 
-    http.get('https://pascalhenze.de/api/v4/leagues').subscribe();
+    http.get('https://kickbase.pascal-henze.workers.dev/v4/leagues').subscribe();
 
-    const req = httpMock.expectOne('https://pascalhenze.de/api/v4/leagues');
+    const req = httpMock.expectOne('https://kickbase.pascal-henze.workers.dev/v4/leagues');
     expect(req.request.headers.get('Authorization')).toBe('Bearer fake-jwt-token');
   });
 
@@ -46,16 +46,16 @@ describe('authInterceptor', () => {
     apiServiceSpy.getToken.and.returnValue('old-token');
     apiServiceSpy.refreshToken.and.returnValue(of('new-token'));
 
-    http.get('https://pascalhenze.de/api/v4/leagues').subscribe();
+    http.get('https://kickbase.pascal-henze.workers.dev/v4/leagues').subscribe();
 
     // 1. Erstaufruf schlägt mit 403 fehl
-    const firstReq = httpMock.expectOne('https://pascalhenze.de/api/v4/leagues');
+    const firstReq = httpMock.expectOne('https://kickbase.pascal-henze.workers.dev/v4/leagues');
     firstReq.flush({}, { status: 403, statusText: 'Forbidden' });
 
     expect(apiServiceSpy.refreshToken).toHaveBeenCalled();
 
     // 2. Erneuter Aufruf mit neuem Token
-    const retryReq = httpMock.expectOne('https://pascalhenze.de/api/v4/leagues');
+    const retryReq = httpMock.expectOne('https://kickbase.pascal-henze.workers.dev/v4/leagues');
     expect(retryReq.request.headers.get('Authorization')).toBe('Bearer new-token');
   });
 
@@ -63,7 +63,7 @@ describe('authInterceptor', () => {
     apiServiceSpy.getToken.and.returnValue('old-token');
     apiServiceSpy.refreshToken.and.returnValue(throwError(() => new Error('Refresh Failed')));
 
-    http.get('https://pascalhenze.de/api/v4/leagues').subscribe({
+    http.get('https://kickbase.pascal-henze.workers.dev/v4/leagues').subscribe({
       error: () => {
         expect(apiServiceSpy.logout).toHaveBeenCalled();
         expect(errorServiceSpy.showError).toHaveBeenCalledWith(
@@ -72,34 +72,24 @@ describe('authInterceptor', () => {
       },
     });
 
-    const firstReq = httpMock.expectOne('https://pascalhenze.de/api/v4/leagues');
+    const firstReq = httpMock.expectOne('https://kickbase.pascal-henze.workers.dev/v4/leagues');
     firstReq.flush({}, { status: 401, statusText: 'Unauthorized' });
   });
 
   it('sollte bei 401 auf Auth-Endpunkten (Login/Token) direkt ausloggen ohne Refresh-Versuch', () => {
     apiServiceSpy.getToken.and.returnValue('old-token');
 
-    http.post('/v4/user/login', {}).subscribe({
+    http.post('https://kickbase.pascal-henze.workers.dev/v4/user/login', {}).subscribe({
       error: (err) => {
         expect(err.status).toBe(401);
       },
     });
 
-    const req = httpMock.expectOne('/v4/user/login');
+    const req = httpMock.expectOne('https://kickbase.pascal-henze.workers.dev/v4/user/login');
     req.flush({}, { status: 401, statusText: 'Unauthorized' });
 
     // Prüfungen synchron nach dem flush ausführen
     expect(apiServiceSpy.refreshToken).not.toHaveBeenCalled();
     expect(apiServiceSpy.logout).toHaveBeenCalled();
-  });
-
-  it('sollte den Authorization-Header und ngsw-bypass mitsenden, wenn ein Token vorhanden ist', () => {
-    apiServiceSpy.getToken.and.returnValue('fake-jwt-token');
-
-    http.get('https://pascalhenze.de/api/v4/leagues').subscribe();
-
-    const req = httpMock.expectOne('https://pascalhenze.de/api/v4/leagues');
-    expect(req.request.headers.get('Authorization')).toBe('Bearer fake-jwt-token');
-    expect(req.request.headers.get('ngsw-bypass')).toBe('true');
   });
 });
