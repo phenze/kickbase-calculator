@@ -1,8 +1,31 @@
+// Globaler In-Memory Cache für die aktuelle Kickbase-Version (wird 1x pro Stunde aktualisiert)
+let cachedUserAgent = 'Kickster/4.10.0/9245 (iPhone; iOS 26.6; Scale/3.00)';
+let lastVersionFetch = 0;
+
+async function getLatestUserAgent() {
+  const now = Date.now();
+  // Nur einmal pro Stunde (3.600.000 ms) bei Apple anfragen
+  if (now - lastVersionFetch > 3600000) {
+    try {
+      const res = await fetch('https://itunes.apple.com/lookup?id=678241305&country=de');
+      const data = await res.json();
+      if (data.results && data.results[0] && data.results[0].version) {
+        const latestVersion = data.results[0].version;
+        cachedUserAgent = `Kickster/${latestVersion}/9245 (iPhone; iOS 26.6; Scale/3.00)`;
+        lastVersionFetch = now;
+      }
+    } catch (e) {
+      console.error('Fehler beim Abrufen der neusten Kickbase-Version:', e);
+    }
+  }
+  return cachedUserAgent;
+}
+
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
 
-    // 1. CORS Preflight (OPTIONS)
+    // 1. CORS Preflight (OPTIONS) mit 24h Max-Age cachen
     if (request.method === 'OPTIONS') {
       return new Response(null, {
         status: 200,
@@ -10,7 +33,7 @@ export default {
           'Access-Control-Allow-Origin': '*',
           'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, PATCH, OPTIONS',
           'Access-Control-Allow-Headers': 'Content-Type, Authorization, KB-Region, KB-Store-Region',
-          'Access-Control-Max-Age': '86400', // CORS für 24h cachen (spart ~50% Requests)
+          'Access-Control-Max-Age': '86400',
         },
       });
     }
@@ -18,14 +41,14 @@ export default {
     const cache = caches.default;
     const authHeader = request.headers.get('Authorization') || '';
     
-    // Eindeutiger Cache-Key pro Nutzer/Token erzeugen
+    // Eindeutigen Cache-Key pro Nutzer/Token erzeugen (verhindert Datenmischung zwischen Ligen)
     const uniqueCacheUrl = new URL(request.url);
     if (authHeader) {
       uniqueCacheUrl.searchParams.set('__auth_token', authHeader.slice(-15));
     }
     const cacheKey = new Request(uniqueCacheUrl.toString(), request);
 
-    // 2. GET-Anfragen aus dem Cache beantworten
+    // 2. GET-Anfragen aus dem Cache beantworten (falls vorhanden)
     if (request.method === 'GET') {
       const cachedResponse = await cache.match(cacheKey);
       if (cachedResponse) {
@@ -35,10 +58,13 @@ export default {
       }
     }
 
-    // 3. Request an die Kickbase API weiterleiten
+    // 3. Aktuelle App-Version für den User-Agent ermitteln
+    const dynamicUserAgent = await getLatestUserAgent();
+
+    // 4. Request an die Kickbase API vorbereiten
     const targetUrl = `https://api.kickbase.com${url.pathname}${url.search}`;
     const headers = new Headers();
-    headers.set('User-Agent', 'Kickster/4.10.0/9245 (iPhone; iOS 26.6; Scale/3.00)');
+    headers.set('User-Agent', dynamicUserAgent);
     headers.set('KB-Region', 'DE');
     headers.set('KB-Store-Region', 'DEU');
     headers.set('Accept', 'application/json');
@@ -58,6 +84,7 @@ export default {
     }
 
     try {
+      // 5. Anfrage an Kickbase ausführen
       const response = await fetch(targetUrl, fetchOptions);
       const newResponse = new Response(response.body, response);
       
@@ -65,18 +92,18 @@ export default {
       newResponse.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
       newResponse.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization, KB-Region, KB-Store-Region');
 
-      // 4. GET-Antworten im Cache speichern
+      // 6. GET-Antworten im Cache speichern
       if (request.method === 'GET' && response.status === 200) {
         newResponse.headers.set('X-Worker-Cache', 'MISS');
         let ttl = 0;
 
-        // Globale Spieler-Daten & Marktwerte
+        // Globale Spieler-Daten & Marktwerte (15 Minuten)
         if (url.pathname.includes('/marketValue/') || url.pathname.includes('/transferHistory')) {
-          ttl = 900; // 15 Minuten Cache
+          ttl = 900; 
         } 
-        // Liga-spezifische Daten (Kader, Transfermarkt, Aufstellung)
+        // Liga-spezifische Daten wie Kader & Markt (2 Minuten)
         else if (url.pathname.includes('/leagues/')) {
-          ttl = 120; // 2 Minuten Cache
+          ttl = 120; 
         }
 
         if (ttl > 0) {
@@ -85,15 +112,13 @@ export default {
         }
       }
 
-      // 5. CACHE INVALIDIERUNG bei Schreib-Aktionen (POST, PUT, DELETE, PATCH)
+      // 7. Automatische Cache-Invalidierung bei Schreib-Aktionen
       if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(request.method) && response.status >= 200 && response.status < 300) {
         ctx.waitUntil((async () => {
-          // Extrahiere Liga-ID aus dem Pfad, falls vorhanden
           const leagueMatch = url.pathname.match(/\/leagues\/(\d+)/);
           if (leagueMatch && leagueMatch[1]) {
             const leagueId = leagueMatch[1];
             
-            // Liste wichtiger GET-Pfade dieser Liga, die ungültig werden
             const pathsToInvalidate = [
               `/v4/leagues/${leagueId}/market`,
               `/v4/leagues/${leagueId}/squad`,
@@ -114,7 +139,10 @@ export default {
 
       return newResponse;
     } catch (err) {
-      return new Response(JSON.stringify({ error: err.message }), { status: 500 });
+      return new Response(JSON.stringify({ error: err.message }), { 
+        status: 500,
+        headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }
+      });
     }
   },
 };
