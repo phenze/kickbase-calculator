@@ -4,6 +4,12 @@ Alle wichtigen Änderungen und Updates des Kickbase Calculators auf einen Blick.
 
 ---
 
+## [6.9.1] - 31.10.2026
+
+### 🚀 Neue Features & Verbesserungen
+- **Anmeldung per Enter-Taste:** Der Login-Vorgang kann nun bequem durch Drücken der Enter-Taste ausgelöst werden.
+- **Cloudflare Worker:** Der API-Proxy zur Umgehung von CORS-Beschränkungen wurde auf einen Cloudflare Worker migriert. Der zugehörige Quellcode ist im `worker.js` hinterlegt.
+
 ## [6.9.0] - 30.10.2026
 
 ### 🐛 Bugfixes & Wartung
