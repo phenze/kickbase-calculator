@@ -8,6 +8,7 @@ describe('LoginComponent', () => {
 
   const field = (id: string): HTMLInputElement => fixture.nativeElement.querySelector(`#${id}`);
   const submit = (): HTMLButtonElement => fixture.nativeElement.querySelector('button');
+  const form = (): HTMLFormElement => fixture.nativeElement.querySelector('form');
 
   function type(input: HTMLInputElement, value: string): void {
     input.value = value;
@@ -47,6 +48,20 @@ describe('LoginComponent', () => {
     tick();
 
     submit().click();
+
+    expect(payload).toEqual({ username: 'trainer@example.com', password: 'geheim' });
+  }));
+
+  it('sollte beim Drücken von Enter im Passwortfeld die Zugangsdaten absenden', fakeAsync(() => {
+    let payload: LoginPayload | undefined;
+    component.login.subscribe((value) => (payload = value));
+
+    type(field('exampleInputEmail1'), 'trainer@example.com');
+    type(field('exampleInputPassword1'), 'geheim');
+    tick();
+
+    // Simuliert das Absenden des Formulars, das standardmäßig durch Enter im Formular ausgelöst wird
+    form().dispatchEvent(new Event('submit'));
 
     expect(payload).toEqual({ username: 'trainer@example.com', password: 'geheim' });
   }));
